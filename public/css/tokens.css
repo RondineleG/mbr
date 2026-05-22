@@ -1,0 +1,68 @@
+/* ═══════════════════════════════════════════════════
+   TOKENS — MrBur Design System v1.0
+   Dark: paleta carvão + dourado clube
+   Light: pergaminho marfim com tinta sépia
+   CSS variables → troca de tema instantânea.
+   ═══════════════════════════════════════════════════ */
+:root {
+  /* Surfaces — coal */
+  --bg: #060503;
+  --bg-card: #0e0b06;
+  --bg-elevated: #181309;
+  --bg-input: #0a0805;
+  /* Ink — bone */
+  --text: #EDE0C4;
+  --text-muted: rgba(237,224,196,0.55);
+  --text-dim: rgba(237,224,196,0.32);
+  /* Gold */
+  --gold: #C9A84C;
+  --gold-l: #F0D880;
+  --gold-d: #7A5C1E;
+  --gold-dim: #8A7333;
+  --gold-glow: rgba(201,168,76,0.12);
+  --gold-border: rgba(201,168,76,0.28);
+  /* Lines */
+  --border: rgba(201,168,76,0.18);
+  --border-light: rgba(237,224,196,0.08);
+  /* Signals */
+  --danger: #C84B3A;
+  --success: #6B8E3D;
+  --info: #4A6B8A;
+  /* Chrome */
+  --nav-bg: rgba(6,5,3,0.94);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --shadow: 0 4px 28px rgba(0,0,0,0.55), 0 0 1px rgba(201,168,76,0.08);
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+  /* Type */
+  --f-display: 'Cinzel', 'Times New Roman', serif;
+  --f-script: 'Cormorant Garamond', 'Georgia', serif;
+  --f-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --f-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+}
+[data-theme="light"] {
+  /* Surfaces — parchment */
+  --bg: #FBF5E6;
+  --bg-card: #FFFDF6;
+  --bg-elevated: #FFFFFF;
+  --bg-input: #F4ECD6;
+  /* Ink — espresso */
+  --text: #1A0F00;
+  --text-muted: rgba(26,15,0,0.62);
+  --text-dim: rgba(26,15,0,0.38);
+  /* Gold — sepia for contrast on cream */
+  --gold: #8A5500;
+  --gold-l: #C9A84C;
+  --gold-d: #5A3200;
+  --gold-dim: #A87A1C;
+  --gold-glow: rgba(138,85,0,0.07);
+  --gold-border: rgba(138,85,0,0.22);
+  --border: rgba(138,85,0,0.18);
+  --border-light: rgba(26,15,0,0.06);
+  --danger: #A2351E;
+  --success: #4F6B1F;
+  --info: #2E4F70;
+  --nav-bg: rgba(251,245,230,0.96);
+  --shadow: 0 4px 24px rgba(60,40,0,0.08), 0 0 1px rgba(138,85,0,0.06);
+}

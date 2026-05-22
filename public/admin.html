@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MrBur — Comando da Ordem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin">
+
+<!-- ═══ GATE DE ACESSO ═══ -->
+<div class="admin-gate" id="adminGate">
+  <div class="admin-gate-card login-card">
+    <div class="login-logo">🛡️</div>
+    <div class="login-brand">COMANDO</div>
+    <div class="login-subtitle">ACESSO ADMINISTRATIVO</div>
+    <div class="login-field"><label class="login-label">E-MAIL</label><input class="login-input" id="adminEmail" type="email" placeholder="admin@mrbur.com"></div>
+    <div class="login-field"><label class="login-label">SENHA</label><input class="login-input" id="adminPass" type="password" placeholder="••••••••"></div>
+    <div class="login-error" id="adminGateError"></div>
+    <button class="login-btn" id="adminLoginBtn" data-action="admin-login">ENTRAR NO COMANDO</button>
+    <div id="demoAdminHint" style="display:none;margin-top:18px">
+      <div class="login-hint" style="text-align:center">Modo demo — crie um admin para explorar:</div>
+      <button class="admin-btn ghost" style="width:100%" data-action="create-demo-admin">⚙️ Criar admin demo</button>
+    </div>
+    <div class="login-footer">RESTRITO · CAPÍTULO GÊNESIS</div>
+  </div>
+</div>
+
+<!-- ═══ SHELL ═══ -->
+<div class="admin-shell" id="adminShell" style="display:none">
+  <aside class="admin-side">
+    <div class="admin-brand">
+      <span class="admin-brand-logo">🔥</span>
+      <div><div class="admin-brand-text">MRBUR</div><div class="admin-brand-sub">COMANDO</div></div>
+    </div>
+    <button class="admin-navbtn active" data-action="admin-nav" data-section="dashboard"><span class="admin-navbtn-icon">📊</span> Dashboard</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="pedidos"><span class="admin-navbtn-icon">📥</span> Pedidos</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="produtos"><span class="admin-navbtn-icon">🍔</span> Produtos</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="clientes"><span class="admin-navbtn-icon">🕵️</span> Agentes</button>
+    <div class="admin-side-foot">
+      <div style="font-size:10px;color:var(--text-dim);font-family:var(--f-mono);padding:8px;letter-spacing:1px" id="adminWho">—</div>
+      <button class="admin-logout" data-action="admin-logout">🚪 SAIR</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <!-- Dashboard -->
+    <section class="admin-section active" id="section-dashboard">
+      <div class="admin-head"><div><div class="admin-title">Dashboard</div><div class="admin-title-sub">VISÃO GERAL · TEMPO REAL</div></div></div>
+      <div class="kpi-grid" id="dashKpis"></div>
+    </section>
+
+    <!-- Pedidos -->
+    <section class="admin-section" id="section-pedidos">
+      <div class="admin-head">
+        <div><div class="admin-title">Pedidos</div><div class="admin-title-sub">ATUALIZAÇÃO INSTANTÂNEA</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="admin-btn sm active" data-action="order-filter" data-status="all">Todos</button>
+          <button class="admin-btn sm ghost" data-action="order-filter" data-status="received">Recebidos</button>
+          <button class="admin-btn sm ghost" data-action="order-filter" data-status="preparing">Em preparo</button>
+          <button class="admin-btn sm ghost" data-action="order-filter" data-status="out_for_delivery">Em entrega</button>
+          <button class="admin-btn sm ghost" data-action="order-filter" data-status="delivered">Entregues</button>
+        </div>
+      </div>
+      <div id="ordersList"></div>
+    </section>
+
+    <!-- Produtos -->
+    <section class="admin-section" id="section-produtos">
+      <div class="admin-head"><div><div class="admin-title">Produtos</div><div class="admin-title-sub">CARDÁPIO DA ORDEM</div></div><button class="admin-btn" data-action="prod-new">+ Novo produto</button></div>
+      <div id="productsList"></div>
+    </section>
+
+    <!-- Clientes -->
+    <section class="admin-section" id="section-clientes">
+      <div class="admin-head"><div><div class="admin-title">Agentes</div><div class="admin-title-sub">RANKING · PONTOS · HISTÓRICO</div></div></div>
+      <div id="customersList"></div>
+    </section>
+  </main>
+</div>
+
+<script type="module" src="js/admin/admin-main.js"></script>
+</body>
+</html>

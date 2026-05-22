@@ -1,0 +1,156 @@
+/* ═══════════════════════════════════════════════════════════════
+   CARDÁPIO PAGE — "Monte Seu Lanche" (wizard) + categorias (Firestore)
+   ═══════════════════════════════════════════════════════════════ */
+import { $, $$, onAction, setHtml, show, escapeHtml } from "../utils/dom.js";
+import * as store from "../app/state.js";
+import { BUILD_STEPS, BUILD_BASE_PRICE } from "../utils/constants.js";
+import { money } from "../utils/format.js";
+import { skeletonList } from "../components/skeleton.js";
+import { toast, toastInfo } from "../components/toast.js";
+
+let currentStep = 0;
+let selections = {}; // stepId -> [items]
+let cat = "monte";
+
+/* ─── Wizard ─── */
+function renderStepTabs() {
+  setHtml("stepTabs", BUILD_STEPS.map((s, i) =>
+    `<button class="step-tab ${i === currentStep ? "active" : ""}" data-action="build-step" data-step="${i}">
+      <span class="step-tab-icon">${s.icon}</span><span class="step-tab-label">${s.label}</span>
+    </button>`).join(""));
+  setHtml("stepDots", BUILD_STEPS.map((_, i) => {
+    let cls = "step-dot"; if (i === currentStep) cls += " active"; else if (i < currentStep) cls += " completed";
+    return `<div class="${cls}" data-action="build-step" data-step="${i}"></div>`;
+  }).join(""));
+  show($("#stepBackBtn"), currentStep > 0);
+  const btn = $("#stepBtn");
+  if (currentStep === BUILD_STEPS.length - 1) { btn.textContent = "Adicionar à Sacola 🛒"; btn.dataset.action = "build-add"; }
+  else { btn.textContent = "Próximo →"; btn.dataset.action = "build-next"; }
+  $(".step-tab.active")?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+}
+
+function renderStepContent() {
+  const step = BUILD_STEPS[currentStep];
+  if (step.id === "finalizar") return renderReview();
+  const sel = selections[step.id] || [];
+  setHtml("stepContent", `
+    <div class="menu-section-header">
+      <div class="menu-section-title">Escolha — ${escapeHtml(step.label)}</div>
+      <span class="menu-section-max">Máx: ${step.max}</span>
+    </div>
+    <div class="menu-items">${step.items.map((item, i) => {
+      const on = sel.some((s) => s.name === item.name);
+      return `<div class="menu-item ${on ? "selected" : ""}" data-action="build-toggle" data-step="${step.id}" data-idx="${i}">
+        <span class="menu-item-icon">${item.icon}</span>
+        <div class="menu-item-info"><div class="menu-item-name">${escapeHtml(item.name)}</div><div class="menu-item-desc">${escapeHtml(item.desc)}</div></div>
+        ${item.price > 0 ? `<span class="menu-item-price">+ ${money(item.price)}</span>` : ""}
+        <div class="menu-item-check">${on ? "✓" : ""}</div>
+      </div>`;
+    }).join("")}</div>`);
+}
+
+function renderReview() {
+  let extras = 0;
+  let body = `<div style="padding:16px"><div class="menu-section-header"><div class="menu-section-title">Resumo do seu Lanche</div></div>`;
+  BUILD_STEPS.forEach((s) => {
+    if (s.id === "finalizar") return;
+    const sel = selections[s.id] || [];
+    if (!sel.length) return;
+    body += `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:10px;letter-spacing:2px;color:var(--text-dim);font-family:var(--f-mono);margin-bottom:6px">${s.label.toUpperCase()}</div>`;
+    sel.forEach((it) => {
+      extras += it.price || 0;
+      body += `<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">${it.icon} ${escapeHtml(it.name)}</span><span style="font-size:12px;color:var(--gold);font-family:var(--f-mono)">${it.price > 0 ? "+ " + money(it.price) : "incluso"}</span></div>`;
+    });
+    body += `</div>`;
+  });
+  const total = BUILD_BASE_PRICE + extras;
+  body += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:14px;font-weight:700">TOTAL</span>
+      <span style="font-size:22px;font-weight:900;color:var(--gold);font-family:var(--f-mono)">${money(total)}</span></div>
+    <div style="font-size:11px;color:var(--success);font-weight:700;text-align:right;margin-top:4px;font-family:var(--f-mono)">+${Math.round(total)}⚡ méritos</div></div>`;
+  setHtml("stepContent", body);
+}
+
+function toggleItem(stepId, idx) {
+  const step = BUILD_STEPS.find((s) => s.id === stepId);
+  const item = step.items[idx];
+  selections[stepId] ||= [];
+  const sel = selections[stepId];
+  const i = sel.findIndex((s) => s.name === item.name);
+  if (i >= 0) sel.splice(i, 1);
+  else { if (sel.length >= step.max) sel.shift(); sel.push(item); }
+  renderStepContent();
+}
+
+function buildAddToCart() {
+  let total = BUILD_BASE_PRICE;
+  const parts = [];
+  BUILD_STEPS.forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
+  store.cartAdd({ custom: true, name: "Monte Seu Lanche", icon: "🔧", price: total, qty: 1, desc: parts.join(", ") });
+  toast("success", "🔧", `Lanche personalizado adicionado! ${money(total)}`);
+  selections = {}; currentStep = 0; renderWizard();
+  import("../app/router.js").then((m) => m.navigate("sacola"));
+}
+
+function renderWizard() { renderStepTabs(); renderStepContent(); }
+
+/* ─── Categorias de produtos (Firestore) ─── */
+function prontoCard(p) {
+  return `<div class="pronto-card ${p.category === "mbox" ? "mbox" : ""}">
+    ${p.tag ? `<div class="pronto-tag ${p.category === "mbox" ? "sabado" : "limitado"}">${escapeHtml(p.tag)}</div>` : ""}
+    <div class="pronto-top">
+      <div class="pronto-emoji">${p.icon || "🍔"}</div>
+      <div class="pronto-info"><div class="pronto-name">${escapeHtml(p.name)}</div><div class="pronto-desc">${escapeHtml(p.description || "")}</div></div>
+    </div>
+    <div class="pronto-footer">
+      <div><div class="pronto-price">${money(p.price)}</div><div class="pronto-merits">+${Math.round(p.price)}⚡ méritos</div></div>
+      <button class="pronto-add-btn" data-action="add-product" data-id="${p.id}">ADICIONAR</button>
+    </div></div>`;
+}
+
+function menuItem(p) {
+  return `<div class="menu-item" data-action="add-product" data-id="${p.id}">
+    <span class="menu-item-icon">${p.icon || "🍔"}</span>
+    <div class="menu-item-info"><div class="menu-item-name">${escapeHtml(p.name)}</div><div class="menu-item-desc">${escapeHtml(p.description || "")}</div></div>
+    <span class="menu-item-price">${money(p.price)}</span>
+  </div>`;
+}
+
+function renderCategories() {
+  const products = store.get("products");
+  const byCat = (c) => products.filter((p) => p.category === c && p.active !== false);
+  const loading = products.length === 0;
+
+  setHtml("catDia", loading ? skeletonList(2) : byCat("dia").map(prontoCard).join("") || '<div class="empty-state">📋</div>');
+  setHtml("catMbox", loading ? skeletonList(2) : byCat("mbox").map(prontoCard).join("") || '<div class="empty-state">📦</div>');
+  setHtml("catAcomp", loading ? skeletonList(3) : `<div class="menu-items">${byCat("acomp").map(menuItem).join("")}</div>`);
+  setHtml("catBebidas", loading ? skeletonList(3) : `<div class="menu-items">${byCat("bebidas").map(menuItem).join("")}</div>`);
+  setHtml("catSobremesas", loading ? skeletonList(3) : `<div class="menu-items">${byCat("sobremesas").map(menuItem).join("")}</div>`);
+}
+
+export function showCat(next) {
+  cat = next;
+  ["monte", "dia", "mbox", "acomp", "bebidas", "sobremesas"].forEach((c) =>
+    show($("#cat-" + c), c === next));
+  $$(".cat-btn").forEach((b) => b.classList.toggle("active", b.dataset.cat === next));
+}
+
+function addProduct(id) {
+  const p = store.get("products").find((x) => x.id === id);
+  if (!p) return;
+  store.cartAdd({ productId: p.id, name: p.name, icon: p.icon || "🍔", price: p.price, qty: 1, desc: "" });
+  toastInfo(p.icon || "🛒", `${p.name} adicionado à sacola`);
+}
+
+export function renderCardapio() { renderWizard(); renderCategories(); }
+
+export function initCardapio() {
+  onAction("cardapio-cat", (el) => showCat(el.dataset.cat));
+  onAction("build-step", (el) => { currentStep = +el.dataset.step; renderWizard(); });
+  onAction("build-toggle", (el) => toggleItem(el.dataset.step, +el.dataset.idx));
+  onAction("build-next", () => { if (currentStep < BUILD_STEPS.length - 1) { currentStep++; renderWizard(); } });
+  onAction("build-prev", () => { if (currentStep > 0) { currentStep--; renderWizard(); } });
+  onAction("build-add", () => buildAddToCart());
+  onAction("add-product", (el) => addProduct(el.dataset.id));
+  store.subscribe("products", renderCategories);
+}

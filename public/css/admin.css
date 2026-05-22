@@ -1,0 +1,92 @@
+/* ═══════════════════════════════════════════════════
+   ADMIN — painel de comando (desktop-first, identidade da Ordem)
+   ═══════════════════════════════════════════════════ */
+body.admin { max-width: none; margin: 0; }
+@media (min-width: 600px) { body.admin { box-shadow: none; border-radius: 0; margin: 0; min-height: 100vh; } }
+
+.admin-shell { display: flex; min-height: 100vh; }
+
+/* Sidebar */
+.admin-side {
+  width: 240px; flex-shrink: 0; padding: 24px 16px;
+  border-right: 1px solid var(--border); background: var(--bg-card);
+  display: flex; flex-direction: column; gap: 6px;
+  position: sticky; top: 0; height: 100vh;
+}
+.admin-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; padding: 0 8px; }
+.admin-brand-logo { font-size: 26px; filter: drop-shadow(0 0 12px rgba(201,168,76,0.4)); }
+.admin-brand-text { font-family: var(--f-display); font-weight: 900; letter-spacing: 4px; color: var(--gold); font-size: 16px; }
+.admin-brand-sub { font-size: 8px; letter-spacing: 2px; color: var(--text-dim); font-family: var(--f-mono); }
+.admin-navbtn {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border-radius: var(--radius-sm); border: 1px solid transparent;
+  background: transparent; color: var(--text-muted); font-size: 13px; font-weight: 600;
+  text-align: left; transition: all var(--transition); width: 100%;
+}
+.admin-navbtn:hover { background: var(--gold-glow); color: var(--text); }
+.admin-navbtn.active { background: var(--gold-glow); border-color: var(--gold-border); color: var(--gold); }
+.admin-navbtn-icon { font-size: 18px; width: 22px; text-align: center; }
+.admin-side-foot { margin-top: auto; }
+.admin-logout { width: 100%; padding: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(231,76,60,0.3); border-radius: var(--radius-sm); background: rgba(231,76,60,0.06); color: var(--danger); font-family: var(--f-mono); transition: all var(--transition); }
+.admin-logout:hover { background: var(--danger); color: #fff; }
+
+/* Main */
+.admin-main { flex: 1; padding: 28px 32px; max-width: 1100px; }
+.admin-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.admin-title { font-family: var(--f-display); font-size: 26px; font-weight: 700; color: var(--text); }
+.admin-title-sub { font-size: 11px; letter-spacing: 2px; color: var(--text-dim); font-family: var(--f-mono); margin-top: 2px; }
+.admin-section { display: none; }
+.admin-section.active { display: block; animation: pageIn 0.3s ease; }
+
+/* KPI cards */
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.kpi { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; }
+.kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--gold), transparent); }
+.kpi-icon { font-size: 22px; margin-bottom: 12px; }
+.kpi-val { font-size: 30px; font-weight: 900; color: var(--gold); font-family: var(--f-mono); line-height: 1; }
+.kpi-label { font-size: 11px; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.5px; }
+
+/* Botão primário */
+.admin-btn { padding: 10px 18px; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--gold); border-radius: var(--radius-sm); background: var(--gold-glow); color: var(--gold); font-family: var(--f-mono); transition: all var(--transition); }
+.admin-btn:hover { background: var(--gold); color: var(--bg); }
+.admin-btn.ghost { border-color: var(--border); background: transparent; color: var(--text-muted); }
+.admin-btn.ghost:hover { border-color: var(--gold-border); color: var(--text); }
+.admin-btn.sm { padding: 6px 12px; font-size: 11px; }
+.admin-btn.danger { border-color: var(--danger); background: rgba(231,76,60,0.08); color: var(--danger); }
+.admin-btn.danger:hover { background: var(--danger); color: #fff; }
+
+/* Linha de dados (card-row, não tabela bootstrap) */
+.data-row { display: flex; align-items: center; gap: 16px; padding: 14px 16px; margin-bottom: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); transition: all var(--transition); }
+.data-row:hover { border-color: var(--gold-border); }
+.data-row.inactive { opacity: 0.5; }
+.data-thumb { width: 44px; height: 44px; border-radius: 10px; background: var(--gold-glow); border: 1px solid var(--gold-border); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; background-size: cover; background-position: center; }
+.data-main { flex: 1; min-width: 0; }
+.data-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.data-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.data-price { font-size: 15px; font-weight: 800; color: var(--gold); font-family: var(--f-mono); }
+.data-actions { display: flex; gap: 8px; align-items: center; }
+
+/* Select de status */
+.status-select { padding: 8px 12px; font-size: 12px; font-weight: 700; border-radius: var(--radius-sm); border: 1px solid var(--gold-border); background: var(--bg-input); color: var(--gold); font-family: var(--f-mono); }
+
+/* Login admin */
+.admin-gate { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; align-items: center; justify-content: center; padding: 24px; }
+.admin-gate.hidden { display: none; }
+.admin-gate-card { width: 100%; max-width: 340px; text-align: center; }
+
+/* Toggle */
+.switch { position: relative; width: 44px; height: 24px; }
+.switch input { display: none; }
+.switch-slider { position: absolute; inset: 0; border-radius: 12px; background: var(--border); transition: all var(--transition); }
+.switch-slider::before { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--text-dim); transition: all var(--transition); }
+.switch input:checked + .switch-slider { background: var(--gold-glow); border: 1px solid var(--gold); }
+.switch input:checked + .switch-slider::before { left: 22px; background: var(--gold); }
+
+@media (max-width: 720px) {
+  .admin-shell { flex-direction: column; }
+  .admin-side { width: 100%; height: auto; position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+  .admin-brand { width: 100%; margin-bottom: 8px; }
+  .admin-navbtn { width: auto; }
+  .admin-side-foot { margin: 0; }
+  .admin-main { padding: 20px 16px; }
+}

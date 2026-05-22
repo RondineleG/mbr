@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>MrBur — A Ordem</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,300;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/auth.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+
+<!-- ═══ SPLASH ═══ -->
+<div class="splash" id="splash">
+  <div class="splash-scanline"></div>
+  <div class="splash-logo">🔥</div>
+  <div class="splash-title">MRBUR</div>
+  <div class="splash-sub">A&nbsp;&nbsp;O R D E M</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+  <div class="splash-status">VERIFICANDO IDENTIDADE...</div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div class="login-overlay hidden" id="loginOverlay">
+  <div class="login-card">
+    <div class="login-logo">🔥</div>
+    <div class="login-brand">MRBUR</div>
+    <div class="login-subtitle">ACESSO RESTRITO</div>
+
+    <div class="login-tabs">
+      <button class="login-tab active" id="loginTabAgent" data-action="login-tab" data-mode="agent">🔑 AGENTE</button>
+      <button class="login-tab" id="loginTabInvite" data-action="login-tab" data-mode="invite">🎫 CONVITE</button>
+    </div>
+
+    <div id="loginAgent">
+      <div class="login-field">
+        <label class="login-label">E-MAIL DO AGENTE</label>
+        <input class="login-input" id="loginEmail" type="email" placeholder="seu@email.com" autocomplete="email">
+      </div>
+      <div class="login-field">
+        <label class="login-label">SENHA SECRETA</label>
+        <input class="login-input" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div class="login-link" data-action="forgot-password">Esqueci minha senha</div>
+    </div>
+
+    <div id="loginInvite" style="display:none">
+      <div class="login-field">
+        <label class="login-label">CÓDIGO DO CONVITE</label>
+        <input class="login-input" id="loginCode" placeholder="MRBUR-XXXXX-XXXX" autocomplete="off" style="text-transform:uppercase;letter-spacing:2px">
+      </div>
+      <div class="login-hint">Demo: MRBUR-GENESIS-X7K9</div>
+    </div>
+
+    <div class="login-error" id="loginError"></div>
+    <button class="login-btn" id="loginBtn" data-action="do-login">ACESSAR A ORDEM</button>
+    <div class="login-footer">CAPÍTULO GÊNESIS — JOINVILLE</div>
+  </div>
+</div>
+
+<!-- ═══ ONBOARDING ═══ -->
+<div class="onboarding-overlay hidden" id="onboardingOverlay">
+  <div class="onboarding-card">
+    <div class="onb-progress">
+      <div class="onb-progress-step active" id="onbDot0"><span>1</span></div>
+      <div class="onb-progress-line"><div class="onb-progress-fill" id="onbLineFill0"></div></div>
+      <div class="onb-progress-step" id="onbDot1"><span>2</span></div>
+      <div class="onb-progress-line"><div class="onb-progress-fill" id="onbLineFill1"></div></div>
+      <div class="onb-progress-step" id="onbDot2"><span>3</span></div>
+    </div>
+
+    <!-- Step 1: Identidade -->
+    <div class="onb-step active">
+      <div class="onb-icon">🕵️</div>
+      <div class="onb-title">Identidade do Agente</div>
+      <div class="onb-subtitle">Seu convite foi validado! Complete seu dossiê para acessar a Ordem.</div>
+      <div class="onb-fields">
+        <div class="onb-field">
+          <label class="onb-label">CODINOME SECRETO</label>
+          <div class="onb-codename-box">
+            <span class="onb-codename-value" id="onbName">—</span>
+            <button class="onb-codename-btn" data-action="onb-gen-codename" type="button">🎲 GERAR</button>
+          </div>
+          <div class="onb-codename-hint">Seu codinome é permanente e não poderá ser alterado.</div>
+        </div>
+        <div class="onb-field"><label class="onb-label">NOME COMPLETO</label><input class="onb-input" id="onbRealName" placeholder="Seu nome real (só nós veremos)" autocomplete="name"></div>
+        <div class="onb-field"><label class="onb-label">E-MAIL</label><input class="onb-input" id="onbEmail" type="email" placeholder="seu@email.com" autocomplete="email"></div>
+        <div class="onb-field"><label class="onb-label">TELEFONE / WHATSAPP</label><input class="onb-input" id="onbPhone" type="tel" placeholder="(00) 00000-0000" autocomplete="tel"></div>
+      </div>
+    </div>
+
+    <!-- Step 2: Endereço -->
+    <div class="onb-step">
+      <div class="onb-icon">📍</div>
+      <div class="onb-title">Base de Operações</div>
+      <div class="onb-subtitle">Endereço para entrega dos pedidos. Entregamos das 18h às 22h.</div>
+      <div class="onb-fields">
+        <div class="onb-field"><label class="onb-label">CEP</label><input class="onb-input" id="onbCep" placeholder="00000-000" autocomplete="postal-code" maxlength="9"></div>
+        <div class="onb-field"><label class="onb-label">RUA / AVENIDA</label><input class="onb-input" id="onbStreet" placeholder="Nome da rua" autocomplete="street-address"></div>
+        <div class="onb-row">
+          <div class="onb-field" style="flex:0 0 100px"><label class="onb-label">NÚMERO</label><input class="onb-input" id="onbNumber" placeholder="Nº"></div>
+          <div class="onb-field" style="flex:1"><label class="onb-label">COMPLEMENTO</label><input class="onb-input" id="onbComp" placeholder="Apto, bloco... (opcional)"></div>
+        </div>
+        <div class="onb-field"><label class="onb-label">BAIRRO</label><input class="onb-input" id="onbNeighborhood" placeholder="Bairro"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Credenciais -->
+    <div class="onb-step">
+      <div class="onb-icon">🔐</div>
+      <div class="onb-title">Credenciais de Acesso</div>
+      <div class="onb-subtitle">Crie sua senha secreta para acessar a Ordem nas próximas vezes.</div>
+      <div class="onb-fields">
+        <div class="onb-field"><label class="onb-label">CRIAR SENHA</label><input class="onb-input" id="onbPass" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password"></div>
+        <div class="onb-field"><label class="onb-label">CONFIRMAR SENHA</label><input class="onb-input" id="onbPass2" type="password" placeholder="Repita a senha" autocomplete="new-password"></div>
+      </div>
+      <div class="onb-summary" id="onbSummary"></div>
+    </div>
+
+    <div class="onb-error" id="onbError"></div>
+    <div class="onb-buttons">
+      <button class="onb-btn-back" id="onbBackBtn" data-action="onb-prev" style="display:none">← Voltar</button>
+      <button class="onb-btn-next" id="onbNextBtn" data-action="onb-next">Próximo →</button>
+    </div>
+    <div class="onb-footer">Suas informações são protegidas pela Ordem. 🔒</div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app" style="display:none">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left" data-action="nav" data-page="perfil">
+      <div class="topbar-avatar" id="topbarAvatar">MB</div>
+      <div class="topbar-info">
+        <div class="topbar-name" id="agentName">agente</div>
+        <div class="topbar-rank" id="agentRank">EXPLORADOR - NÍVEL 1</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <button class="topbar-btn" data-action="toggle-theme" id="themeBtn">🌙</button>
+      <button class="topbar-btn" data-action="nav" data-page="sacola">🛒<span class="topbar-badge" id="topCartBadge" style="display:none">0</span></button>
+    </div>
+  </div>
+
+  <!-- ═══ HOME ═══ -->
+  <div class="page active" id="page-home">
+    <div class="home-status open">
+      <div class="home-status-dot">🟢</div>
+      <div>
+        <div class="home-status-text open">TRANSMISSÕES ABERTAS</div>
+        <div class="home-status-sub">Pedidos aceitos até 13h · Entrega 18h-22h</div>
+      </div>
+    </div>
+
+    <div class="section-title">Sua Patente</div>
+    <div class="rank-progress" id="homeRankProgress"></div>
+
+    <div style="padding:14px 16px 8px"><div class="section-title" style="padding:0">Acesso Rápido</div></div>
+    <div class="quick-grid">
+      <div class="quick-card" data-action="nav" data-page="clube"><div class="quick-card-icon">🏆</div><div class="quick-card-label">Missões</div><div class="quick-card-sub">Ganhe méritos</div></div>
+      <div class="quick-card highlight" data-action="nav" data-page="clube"><div class="quick-card-icon">🎁</div><div class="quick-card-label">Recompensas</div><div class="quick-card-sub">Resgatar pontos</div></div>
+      <div class="quick-card" data-action="nav" data-page="pedidos"><div class="quick-card-icon">📦</div><div class="quick-card-label">Pedidos</div><div class="quick-card-sub">Acompanhar</div></div>
+      <div class="quick-card" data-action="nav" data-page="cardapio"><div class="quick-card-icon">🍔</div><div class="quick-card-label">Cardápio</div><div class="quick-card-sub">Montar lanche</div></div>
+    </div>
+
+    <div class="section-title" style="margin-top:4px">Recompensas em Destaque</div>
+    <div class="rewards-scroll" id="homeRewardsScroll"></div>
+    <div class="divider"></div>
+  </div>
+
+  <!-- ═══ CARDÁPIO ═══ -->
+  <div class="page" id="page-cardapio">
+    <div class="cardapio-cats">
+      <button class="cat-btn active" data-action="cardapio-cat" data-cat="monte">🔧 Monte Seu Lanche</button>
+      <button class="cat-btn" data-action="cardapio-cat" data-cat="dia">📋 Lanche do Dia</button>
+      <button class="cat-btn" data-action="cardapio-cat" data-cat="mbox">📦 MBox</button>
+      <button class="cat-btn" data-action="cardapio-cat" data-cat="acomp">🍟 Acompanhamentos</button>
+      <button class="cat-btn" data-action="cardapio-cat" data-cat="bebidas">🥤 Bebidas</button>
+      <button class="cat-btn" data-action="cardapio-cat" data-cat="sobremesas">🍫 Sobremesas</button>
+    </div>
+
+    <div id="cat-monte">
+      <div class="menu-header"><div class="menu-header-text"><div class="menu-header-title">Monte Seu Lanche</div><div class="menu-header-sub">Escolha seus ingredientes favoritos</div></div></div>
+      <div class="step-tabs" id="stepTabs"></div>
+      <div id="stepContent"></div>
+      <div class="step-nav">
+        <div class="step-dots" id="stepDots"></div>
+        <div class="step-buttons">
+          <button class="step-btn-back hidden" id="stepBackBtn" data-action="build-prev">←</button>
+          <button class="step-btn" id="stepBtn" data-action="build-next">Próximo →</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="cat-dia" style="display:none"><div class="section-title">Lanche do Dia</div><div id="catDia"></div></div>
+    <div id="cat-mbox" style="display:none"><div class="section-title">MBox Sábado</div><div id="catMbox"></div></div>
+    <div id="cat-acomp" style="display:none"><div class="section-title">Acompanhamentos</div><div id="catAcomp"></div></div>
+    <div id="cat-bebidas" style="display:none"><div class="section-title">Bebidas</div><div id="catBebidas"></div></div>
+    <div id="cat-sobremesas" style="display:none"><div class="section-title">Sobremesas</div><div id="catSobremesas"></div></div>
+  </div>
+
+  <!-- ═══ CLUBE ═══ -->
+  <div class="page" id="page-clube">
+    <div class="section-title">Ações Rápidas</div>
+    <div class="clube-actions">
+      <div class="clube-action" data-action="clube-tab" data-tab="recompensas"><div class="clube-action-icon">🎁</div><div class="clube-action-label">Resgatar</div><div class="clube-action-sub">Usar pontos</div></div>
+      <div class="clube-action" data-action="clube-tab" data-tab="historico"><div class="clube-action-icon">📊</div><div class="clube-action-label">Extrato</div><div class="clube-action-sub">Méritos</div></div>
+      <div class="clube-action" data-action="clube-tab" data-tab="missoes"><div class="clube-action-icon">🏆</div><div class="clube-action-label">Missões</div><div class="clube-action-sub">Desafios</div></div>
+      <div class="clube-action" data-action="clube-tab" data-tab="ranking"><div class="clube-action-icon">👑</div><div class="clube-action-label">Ranking</div><div class="clube-action-sub">Top agentes</div></div>
+    </div>
+    <div id="clubeDynamic"></div>
+  </div>
+
+  <!-- ═══ BUSCA ═══ -->
+  <div class="page" id="page-busca">
+    <div class="search-box"><span class="search-icon">🔍</span><input class="search-input" placeholder="Buscar produtos, categorias..." id="searchInput"></div>
+    <div class="section-title">Populares</div>
+    <div class="search-tags">
+      <button class="search-tag" data-action="search-tag" data-term="combo">⭐ Combo</button>
+      <button class="search-tag" data-action="search-tag" data-term="burger">⭐ Burger</button>
+      <button class="search-tag" data-action="search-tag" data-term="batata">⭐ Batata</button>
+      <button class="search-tag" data-action="search-tag" data-term="milkshake">⭐ Milkshake</button>
+      <button class="search-tag" data-action="search-tag" data-term="sobremesa">⭐ Sobremesa</button>
+    </div>
+    <div class="section-title">Categorias</div>
+    <div class="search-cats">
+      <div class="search-cat" data-action="search-cat" data-cat="monte"><div class="search-cat-icon" style="background:rgba(231,76,60,0.1)">🍔</div><div class="search-cat-label">Burgers</div></div>
+      <div class="search-cat" data-action="search-cat" data-cat="dia"><div class="search-cat-icon" style="background:rgba(46,204,113,0.1)">📋</div><div class="search-cat-label">Lanches</div></div>
+      <div class="search-cat" data-action="search-cat" data-cat="acomp"><div class="search-cat-icon" style="background:rgba(230,126,34,0.1)">🍟</div><div class="search-cat-label">Acompanh.</div></div>
+      <div class="search-cat" data-action="search-cat" data-cat="bebidas"><div class="search-cat-icon" style="background:rgba(52,152,219,0.1)">🥤</div><div class="search-cat-label">Bebidas</div></div>
+      <div class="search-cat" data-action="search-cat" data-cat="sobremesas"><div class="search-cat-icon" style="background:rgba(232,78,136,0.1)">🎂</div><div class="search-cat-label">Sobremesas</div></div>
+      <div class="search-cat" data-action="search-cat" data-cat="mbox"><div class="search-cat-icon" style="background:rgba(163,85,247,0.1)">📦</div><div class="search-cat-label">MBox</div></div>
+    </div>
+    <div id="searchResults" style="padding:0 16px;margin-top:12px"></div>
+  </div>
+
+  <!-- ═══ PEDIDOS ═══ -->
+  <div class="page" id="page-pedidos">
+    <div class="section-title">Suas Operações <span class="section-subtitle">TEMPO REAL</span></div>
+    <div id="pedidosContent"></div>
+  </div>
+
+  <!-- ═══ PERFIL ═══ -->
+  <div class="page" id="page-perfil">
+    <div class="profile-header">
+      <div class="profile-avatar" id="profileAvatar">🕵️</div>
+      <div class="profile-codename" id="profileCodename">—<span class="profile-codename-lock">🔒</span></div>
+      <div class="profile-rank" id="profileRank">EXPLORADOR - NÍVEL 1</div>
+      <div class="profile-stats">
+        <div class="profile-stat"><div class="profile-stat-val" id="profStatPoints">0</div><div class="profile-stat-label">MÉRITOS</div></div>
+        <div class="profile-stat"><div class="profile-stat-val" id="profStatLevel">1</div><div class="profile-stat-label">NÍVEL</div></div>
+        <div class="profile-stat"><div class="profile-stat-val" id="profStatOrders">0</div><div class="profile-stat-label">PEDIDOS</div></div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">DADOS PESSOAIS</div>
+      <div class="profile-card">
+        <div class="profile-row" data-action="edit-field" data-field="email"><div class="profile-row-left"><span class="profile-row-icon">📧</span><div class="profile-row-info"><div class="profile-row-label">E-mail</div><div class="profile-row-value" id="profEmail">—</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row" data-action="edit-field" data-field="phone"><div class="profile-row-left"><span class="profile-row-icon">📱</span><div class="profile-row-info"><div class="profile-row-label">Telefone / WhatsApp</div><div class="profile-row-value" id="profPhone">—</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row"><div class="profile-row-left"><span class="profile-row-icon">👤</span><div class="profile-row-info"><div class="profile-row-label">Nome Completo</div><div class="profile-row-value" id="profRealName">—</div></div></div></div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">BASE DE OPERAÇÕES</div>
+      <div class="profile-card">
+        <div class="profile-row" data-action="edit-field" data-field="street"><div class="profile-row-left"><span class="profile-row-icon">📍</span><div class="profile-row-info"><div class="profile-row-label">Endereço de Entrega</div><div class="profile-row-value" id="profAddress">—</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row" data-action="edit-field" data-field="neighborhood"><div class="profile-row-left"><span class="profile-row-icon">🏘️</span><div class="profile-row-info"><div class="profile-row-label">Bairro</div><div class="profile-row-value" id="profNeighborhood">—</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row" data-action="edit-field" data-field="cep"><div class="profile-row-left"><span class="profile-row-icon">📮</span><div class="profile-row-info"><div class="profile-row-label">CEP</div><div class="profile-row-value" id="profCep">—</div></div></div><span class="profile-row-arrow">›</span></div>
+      </div>
+    </div>
+
+    <div class="profile-section">
+      <div class="profile-section-title">CONFIGURAÇÕES</div>
+      <div class="profile-card">
+        <div class="profile-row" data-action="toggle-theme"><div class="profile-row-left"><span class="profile-row-icon" id="profThemeIcon">🌙</span><div class="profile-row-info"><div class="profile-row-label" id="profThemeLabel">Modo Escuro</div><div class="profile-row-value">Alternar tema da interface</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row"><div class="profile-row-left"><span class="profile-row-icon">🎫</span><div class="profile-row-info"><div class="profile-row-label">Meus Convites</div><div class="profile-row-value" id="profInvites">0 disponíveis</div></div></div><span class="profile-row-arrow">›</span></div>
+      </div>
+    </div>
+
+    <button class="profile-logout" data-action="logout">🚪 ENCERRAR SESSÃO</button>
+    <div class="text-center" style="padding:8px 0 16px;opacity:0.3"><div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);font-family:var(--f-mono)">MRBUR — CAPÍTULO GÊNESIS — v1.0</div></div>
+  </div>
+
+  <!-- ═══ SACOLA ═══ -->
+  <div class="page" id="page-sacola">
+    <div class="section-title">Sua Sacola</div>
+    <div id="sacolaContent"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottomnav">
+    <button class="nav-item" id="nav-cardapio" data-action="nav" data-page="cardapio"><span class="nav-icon">📋</span><span class="nav-label">CARDÁPIO</span></button>
+    <button class="nav-item" id="nav-clube" data-action="nav" data-page="clube"><span class="nav-icon">✨</span><span class="nav-label">CLUBE</span></button>
+    <button class="nav-item nav-home active" id="nav-home" data-action="nav" data-page="home"><span class="nav-icon">🏠</span><span class="nav-label">HOME</span></button>
+    <button class="nav-item" id="nav-busca" data-action="nav" data-page="busca"><span class="nav-icon">🔍</span><span class="nav-label">BUSCA</span></button>
+    <button class="nav-item" id="nav-sacola" data-action="nav" data-page="sacola"><span class="nav-icon">🛒</span><span class="nav-label">SACOLA</span><span class="nav-cart-badge" id="navCartBadge" style="display:none">0</span></button>
+  </div>
+</div>
+
+<script type="module" src="js/app/main.js"></script>
+</body>
+</html>
