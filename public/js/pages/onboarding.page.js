@@ -1,13 +1,14 @@
 /* ═══════════════════════════════════════════════════════════════
    ONBOARDING PAGE — cadastro por convite (3 steps)
    Step 1 identidade · Step 2 endereço · Step 3 credenciais.
-   Ao finalizar: signUp → consumeInvite → createProfile → enterApp.
+   Ao finalizar: signUp → consumeInvite → createProfile → enterApp → complete signup mission.
    ═══════════════════════════════════════════════════════════════ */
 import { $, $$, onAction, show, escapeHtml } from "../utils/dom.js";
 import { randomCodename, maskPhone, maskCep } from "../utils/format.js";
 import * as auth from "../firebase/auth.service.js";
-import { consumeInvite } from "../services/invite.service.js";
-import { createProfile } from "../services/user.service.js";
+import { checkInvite, consumeInvite } from "../services/invite.service.js";
+import { createProfile, getProfile } from "../services/user.service.js";
+import { updateMissionProgress } from "../services/mission.service.js";
 import { enterApp } from "../app/session.js";
 import { toastSuccess } from "../components/toast.js";
 
@@ -43,11 +44,15 @@ function setError(msg) {
   else el.classList.remove("show");
 }
 const mark = (id) => $("#" + id)?.classList.add("error");
-const val = (id) => $("#" + id)?.value.trim() || "";
+const val = (id) => ($("#" + id)?.value || "").trim();
 
 function validate() {
   if (step === 0) {
-    if (!val("onbName") || val("onbName") === "—") return setError("Clique em GERAR para criar seu codinome"), false;
+    const codename = val("onbName");
+    // Aceitar qualquer codinome válido (não vazio, não placeholder, mínimo 3 caracteres)
+    if (!codename || codename === "—" || codename.length < 3) {
+      return setError("Clique em GERAR para criar seu codinome"), false;
+    }
     if (!val("onbRealName")) return mark("onbRealName"), setError("Preencha seu nome completo"), false;
     if (!val("onbEmail").includes("@")) return mark("onbEmail"), setError("Informe um e-mail válido"), false;
     if (val("onbPhone").replace(/\D/g, "").length < 10) return mark("onbPhone"), setError("Informe um telefone válido"), false;
@@ -87,8 +92,36 @@ async function finish() {
 
   $("#onbNextBtn").disabled = true;
   try {
+    // Primeiro validar o convite antes de criar o usuário
+    const inviteCheck = await checkInvite(inviteCode);
+    if (!inviteCheck.ok) {
+      const messages = {
+        "ALREADY_USED": "Convite já utilizado",
+        "NOT_FOUND": "Convite não reconhecido",
+        "EXPIRED": "Convite expirado (validade de 7 dias)"
+      };
+      setError(messages[inviteCheck.reason] || "Convite inválido");
+      return;
+    }
+
     const user = await auth.signUp(email, password);
-    await consumeInvite(inviteCode, user.uid);
+    const invite = await consumeInvite(inviteCode, user.uid);
+    
+    // Buscar perfil do criador do convite para obter role e ID
+    let invitedByRole = null;
+    let invitedById = null;
+    if (invite?.createdBy) {
+      try {
+        const creatorProfile = await getProfile(invite.createdBy);
+        if (creatorProfile) {
+          invitedByRole = creatorProfile.role;
+          invitedById = creatorProfile.uid;
+        }
+      } catch (err) {
+        console.error('Erro ao buscar perfil do criador:', err);
+      }
+    }
+    
     const profile = await createProfile(user.uid, {
       name: val("onbRealName"),
       codename,
@@ -98,13 +131,41 @@ async function finish() {
         cep: val("onbCep"), street: val("onbStreet"), number: val("onbNumber"),
         comp: val("onbComp"), neighborhood: val("onbNeighborhood"),
       },
-      invitedBy: null,
+      invitedBy: invite?.createdBy || null,
+      invitedByRole: invitedByRole,
+      invitedById: invitedById,
+      inviteId: inviteCode,
+      role: invitedByRole === "admin" ? "agent" : "client", // Admins criam agentes, agentes criam clientes
     });
+    
+    // Complete signup mission
+    try {
+      await updateMissionProgress(user.uid, {
+        signupCompleted: true,
+        ordersCount: 0,
+        points: 0,
+        invitesUsed: 0,
+        weekDays: 0,
+        mboxCount: 0
+      });
+    } catch (missionError) {
+      console.error('Erro ao completar missão de cadastro:', missionError);
+      // Não bloquear o cadastro se a missão falhar
+    }
+    
     await enterApp(profile);
     toastSuccess("Bem-vindo à Ordem, " + codename + "!");
   } catch (err) {
-    if (String(err.message).includes("INVITE")) setError("Convite inválido ou já utilizado");
-    else setError(auth.authErrorMessage(err));
+    if (String(err.message).includes("INVITE")) {
+      const messages = {
+        "INVITE_NOT_FOUND": "Convite não encontrado",
+        "INVITE_ALREADY_USED": "Convite já utilizado",
+        "INVITE_EXPIRED": "Convite expirado (validade de 7 dias)"
+      };
+      setError(messages[err.message] || "Convite inválido");
+    } else {
+      setError(auth.authErrorMessage(err));
+    }
   } finally {
     $("#onbNextBtn").disabled = false;
   }

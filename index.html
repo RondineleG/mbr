@@ -4,7 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>MrBur — A Ordem</title>
+<meta name="description" content="MrBur — A Ordem. App de pedidos com sistema de missões, recompensas e clube exclusivo.">
+<meta name="theme-color" content="#C9A84C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MrBur">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="apple-touch-icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js')
+    .then(() => console.log('Service Worker registrado'))
+    .catch((err) => console.log('Service Worker falhou:', err));
+}
+</script>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,300;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -1333,10 +1348,10 @@ button { cursor: pointer; }
         <div class="clube-action-label">Histórico</div>
         <div class="clube-action-sub">Ver extrato</div>
       </div>
-      <div class="clube-action" onclick="showClubeTab('missoes')">
-        <div class="clube-action-icon">🏆</div>
+      <div class="clube-action" onclick="navigate('missoes')">
+        <div class="clube-action-icon">🎯</div>
         <div class="clube-action-label">Missões</div>
-        <div class="clube-action-sub">3 ativas</div>
+        <div class="clube-action-sub">Ganhe pontos</div>
       </div>
       <div class="clube-action" onclick="showClubeTab('convidar')">
         <div class="clube-action-icon">🤝</div>
@@ -1542,7 +1557,7 @@ button { cursor: pointer; }
           </div>
           <span class="profile-row-arrow">›</span>
         </div>
-        <div class="profile-row">
+        <div class="profile-row" onclick="showMyInvites()">
           <div class="profile-row-left">
             <span class="profile-row-icon">🎫</span>
             <div class="profile-row-info">
@@ -1566,6 +1581,11 @@ button { cursor: pointer; }
   <div class="page" id="page-sacola">
     <div class="section-title">Sua Sacola</div>
     <div id="sacolaContent"></div>
+  </div>
+
+  <!-- ═══ MISSÕES ═══ -->
+  <div class="page" id="page-missoes">
+    <div id="missionsContent"></div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -1995,7 +2015,7 @@ function renderProfile() {
   document.getElementById('profAddress').textContent = addr || '—';
   document.getElementById('profNeighborhood').textContent = userProfile.neighborhood || '—';
   document.getElementById('profCep').textContent = userProfile.cep || '—';
-  document.getElementById('profInvites').textContent = userProfile.invites + ' disponíveis';
+  document.getElementById('profInvites').textContent = (userProfile.invitesAvailable || 0) + ' disponíveis';
   document.getElementById('profThemeIcon').textContent = isDark ? '🌙' : '☀️';
   document.getElementById('profThemeLabel').textContent = isDark ? 'Modo Escuro' : 'Modo Claro';
   // Avatar initials
@@ -2030,6 +2050,47 @@ function doLogout() {
   currentPage = 'home';
   cart = [];
   navigate('home');
+}
+
+function showMyInvites() {
+  const invites = userProfile.invites || 0;
+  if (invites === 0) {
+    showToast('info', '🎫', 'Você não tem convites disponíveis no momento. Conquiste mais missões para ganhar convites!');
+    return;
+  }
+  
+  // Criar modal simples para mostrar convites
+  const modalHtml = `
+    <div class="modal-overlay" onclick="closeInviteModal()" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
+      <div class="modal-card" onclick="event.stopPropagation()" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+          <h3 style="font-family:var(--f-display);font-size:18px;font-weight:700;color:var(--text)">🎫 Meus Convites</h3>
+          <button onclick="closeInviteModal()" style="background:none;border:none;font-size:24px;color:var(--text-dim);cursor:pointer">×</button>
+        </div>
+        <div style="text-align:center;padding:20px 0">
+          <div style="font-size:48px;margin-bottom:12px">🎫</div>
+          <div style="font-size:32px;font-weight:700;color:var(--gold);font-family:var(--f-mono)">${invites}</div>
+          <div style="font-size:12px;color:var(--text-muted);letter-spacing:2px;margin-top:4px">CONVITES DISPONÍVEIS</div>
+        </div>
+        <div style="background:var(--bg-elevated);border-radius:var(--radius-sm);padding:16px;margin-top:16px">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-family:var(--f-mono)">COMO USAR</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.6">
+            1. Compartilhe seu código de convite com amigos<br>
+            2. Quando eles se cadastrarem, você ganha pontos<br>
+            3. Complete missões para ganhar mais convites
+          </div>
+        </div>
+        <button onclick="closeInviteModal()" style="width:100%;padding:14px;margin-top:20px;background:var(--gold-glow);border:1px solid var(--gold);border-radius:var(--radius-sm);color:var(--gold);font-weight:700;letter-spacing:2px;cursor:pointer;font-family:var(--f-mono)">FECHAR</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeInviteModal() {
+  const modal = document.querySelector('.modal-overlay');
+  if (modal) modal.remove();
 }
 
 /* ═══════════════════════════════════════════════════

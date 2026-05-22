@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════
-   FIREBASE CONFIG — MrBur "A Ordem" · projeto: projetohowx
+   FIREBASE CONFIG — MrBur "A Ordem" · projeto: trabalhohowx
    ───────────────────────────────────────────────────────────────
    A apiKey Web do Firebase é pública por natureza — a segurança real
    vem das Security Rules (firestore.rules / storage.rules).
@@ -9,13 +9,13 @@
    ═══════════════════════════════════════════════════════════════ */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC3ksjEPoHlSrOchpXXSjGOiQQvkrVg4W4",
-  authDomain: "projetohowx.firebaseapp.com",
-  projectId: "projetohowx",
-  storageBucket: "projetohowx.firebasestorage.app",
-  messagingSenderId: "996149288551",
-  appId: "1:996149288551:web:7b55107b844a608a18fec2",
-  measurementId: "G-W4SJS3EVMQ",
+  apiKey: "AIzaSyAv2yUIqoL6LzC4TrQR7_-ct6CsjaelduM",
+  authDomain: "trabalhohowx.firebaseapp.com",
+  projectId: "trabalhohowx",
+  storageBucket: "trabalhohowx.firebasestorage.app",
+  messagingSenderId: "179600535902",
+  appId: "1:179600535902:web:1fd75d14fa3689c4d45fcf",
+  measurementId: "G-ZNN7F8YQYX"
 };
 
 /** true enquanto as credenciais forem placeholders (modo demo offline). */

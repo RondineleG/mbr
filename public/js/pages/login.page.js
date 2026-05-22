@@ -46,7 +46,13 @@ async function doLogin(btn) {
     try {
       const res = await checkInvite(code);
       if (!res.ok) {
-        setError(res.reason === "ALREADY_USED" ? "Convite já utilizado" : "Convite não reconhecido");
+        const messages = {
+          "ALREADY_USED": "Convite já utilizado",
+          "NOT_FOUND": "Convite não reconhecido",
+          "EXPIRED": "Convite expirado (validade de 7 dias)",
+          "CANCELLED": "Convite cancelado pelo criador"
+        };
+        setError(messages[res.reason] || "Convite inválido");
         return;
       }
       setInviteContext(code);

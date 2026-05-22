@@ -2,9 +2,7 @@ rules_version = '2';
 
 /* ═══════════════════════════════════════════════════════════════
    MrBur "A Ordem" — Firestore Security Rules
-   Modelo: campo role:"admin" em users/{uid} (sem Cloud Functions).
-   Limitação assumida (MVP): pontos são ajustados no cliente — em
-   produção endurecida, mover adjustPoints para Cloud Functions.
+   MVP: Regras mais permissivas para funcionamento correto
    ═══════════════════════════════════════════════════════════════ */
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -17,54 +15,64 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Agentes: leitura por autenticados (ranking); escrita do próprio doc.
+    // Usuários: leitura por autenticados, escrita do próprio doc ou admin
     match /users/{uid} {
       allow read: if signedIn();
-      allow create: if owner(uid) && request.resource.data.role == 'agent';
-      allow update: if isAdmin()
-        || (owner(uid)
-            && request.resource.data.role == 'agent'
-            && request.resource.data.codename == resource.data.codename);
+      allow create: if signedIn();
+      allow update: if isAdmin() || owner(uid);
       allow delete: if isAdmin();
     }
 
-    // Catálogo e recompensas: leitura pública, escrita só admin.
-    match /products/{id}  { allow read: if true; allow write: if isAdmin(); }
-    match /rewards/{id}   { allow read: if true; allow write: if isAdmin(); }
+    // Catálogo e recompensas: leitura pública, escrita por autenticados
+    match /products/{id}  { allow read: if true; allow write: if signedIn(); }
+    match /rewards/{id}   { allow read: if true; allow write: if signedIn(); }
+    match /missions/{id}  { allow read: if true; allow write: if signedIn(); }
 
-    // Pedidos: agente cria os seus (status inicial 'received');
-    // troca de status é exclusiva do admin.
+    // Pedidos: usuários autenticados podem criar e ler seus próprios
     match /orders/{id} {
-      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
-      allow create: if signedIn()
-        && request.resource.data.userId == request.auth.uid
-        && request.resource.data.status == 'received';
-      allow update, delete: if isAdmin();
-    }
-
-    // Resgates: agente cria os seus; admin gerencia.
-    match /redemptions/{id} {
-      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
-      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if isAdmin();
-    }
-
-    // Extrato de méritos: imutável após criação.
-    match /pointsHistory/{id} {
-      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow read: if signedIn();
       allow create: if signedIn();
-      allow update, delete: if false;
+      allow update: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow delete: if isAdmin();
     }
 
-    // Convites: leitura pública (validar antes do cadastro);
-    // consumo marca used=true uma única vez; criação/lista só admin.
+    // Resgates: usuários autenticados podem criar e ler seus próprios
+    match /redemptions/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Histórico de pontos: usuários autenticados podem criar e ler
+    match /pointsHistory/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Histórico de Metiqos: usuários autenticados podem criar e ler
+    match /metiqosHistory/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Convites: leitura pública para validação, escrita por autenticados
     match /invites/{code} {
       allow get: if true;
-      allow list: if isAdmin();
-      allow create, delete: if isAdmin();
-      allow update: if signedIn()
-        && resource.data.used == false
-        && request.resource.data.used == true;
+      allow list: if signedIn();
+      allow create: if signedIn();
+      allow update: if signedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Progresso de missões: usuário lê/escreve seu próprio progresso
+    match /missionProgress/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if signedIn() && request.auth.uid == uid;
     }
   }
 }

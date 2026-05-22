@@ -1,6 +1,8 @@
 /* ═══════════════════════════════════════════════════════════════
-   POINTS SERVICE — méritos, extrato e progressão de rank
-   collection pointsHistory: { userId, delta, reason, orderId, createdAt }
+   POINTS SERVICE — méritos, metiqos, extrato e progressão de rank
+   collections: 
+   - pointsHistory: { userId, delta, reason, orderId, type, createdAt }
+   - metiqosHistory: { userId, delta, reason, type, createdAt }
    ═══════════════════════════════════════════════════════════════ */
 import { updateDoc, addDoc, getCollection, inc, tsNow } from "../firebase/db.service.js";
 import { rankFromPoints } from "../utils/format.js";
@@ -26,13 +28,41 @@ export async function adjustPoints(uid, delta, reason, orderId = null) {
     delta,
     reason,
     orderId,
+    type: "meritos",
     createdAt: tsNow(),
   });
   return next;
 }
 
+/**
+ * Credita/debita Metiqos (moeda virtual) do agente.
+ */
+export async function adjustMetiqos(uid, delta, reason) {
+  await updateDoc(`users/${uid}`, {
+    metiqos: inc(delta)
+  });
+  await addDoc("metiqosHistory", {
+    userId: uid,
+    delta,
+    reason,
+    type: "metiqos",
+    createdAt: tsNow(),
+  });
+  
+  const users = await getCollection("users", { where: [["uid", "==", uid]] });
+  return users[0]?.metiqos || 0;
+}
+
 export function getHistory(uid) {
   return getCollection("pointsHistory", {
+    where: [["userId", "==", uid]],
+    orderBy: ["createdAt", "desc"],
+    limit: 50,
+  });
+}
+
+export function getMetiqosHistory(uid) {
+  return getCollection("metiqosHistory", {
     where: [["userId", "==", uid]],
     orderBy: ["createdAt", "desc"],
     limit: 50,

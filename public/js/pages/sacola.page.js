@@ -11,54 +11,139 @@ import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
 
+let currentTab = 'cart'; // 'cart' ou 'orders'
+
 export function renderSacola() {
   const cart = store.get("cart");
+  const orders = store.get("orders") || [];
   renderCartBadges();
-  if (!cart.length) {
-    setHtml("sacolaContent", `
-      <div class="sacola-empty">
-        <div class="sacola-empty-icon">🛒</div>
-        <div class="sacola-empty-title">Sacola vazia</div>
-        <div class="sacola-empty-sub">Adicione itens do cardápio para montar seu pedido</div>
-      </div>`);
-    return;
-  }
-  const subtotal = store.cartSubtotal();
-  const total = subtotal + DELIVERY_FEE;
-  const merits = Math.round(total * POINTS_PER_BRL);
-
-  setHtml("sacolaContent",
-    cart.map((it) => `
-      <div class="sacola-item">
-        <span class="sacola-item-icon">${it.icon}</span>
-        <div class="sacola-item-info">
-          <div class="sacola-item-name">${escapeHtml(it.name)}</div>
-          ${it.desc ? `<div class="sacola-item-desc">${escapeHtml(it.desc)}</div>` : ""}
-          <div class="qty" style="margin-top:6px">
-            <button class="qty-btn" data-action="qty" data-key="${it.key}" data-delta="-1">−</button>
-            <span class="qty-val">${it.qty}</span>
-            <button class="qty-btn" data-action="qty" data-key="${it.key}" data-delta="1">+</button>
-          </div>
-        </div>
-        <span class="sacola-item-price">${money(it.price * it.qty)}</span>
-        <button class="sacola-item-remove" data-action="cart-remove" data-key="${it.key}">✕</button>
-      </div>`).join("") +
-    `<div class="sacola-total">
-      <div class="sacola-total-row"><span class="sacola-total-label">Subtotal</span><span class="sacola-total-val">${money(subtotal)}</span></div>
-      <div class="sacola-total-row"><span class="sacola-total-label">Frete</span><span class="sacola-total-val">${money(DELIVERY_FEE)}</span></div>
-      <div class="sacola-total-row final"><span class="sacola-total-label">Total</span><span class="sacola-total-val">${money(total)}</span></div>
+  
+  // Renderizar abas
+  const tabsHtml = `
+    <div class="sacola-tabs">
+      <button class="sacola-tab ${currentTab === 'cart' ? 'active' : ''}" data-action="sacola-tab" data-tab="cart">
+        🛒 Carrinho ${cart.length > 0 ? `(${cart.length})` : ''}
+      </button>
+      <button class="sacola-tab ${currentTab === 'orders' ? 'active' : ''}" data-action="sacola-tab" data-tab="orders">
+        📋 Pedidos ${orders.length > 0 ? `(${orders.length})` : ''}
+      </button>
     </div>
-    <div class="sacola-merits-info">+${merits}⚡ méritos ao receber este pedido</div>
-    <div class="sacola-actions">
-      <button class="sacola-clear" data-action="cart-clear">🗑 LIMPAR</button>
-      <button class="sacola-checkout" id="checkoutBtn" data-action="checkout">CONFIRMAR PEDIDO →</button>
-    </div>`);
+  `;
+  
+  let contentHtml = '';
+  
+  if (currentTab === 'cart') {
+    if (!cart.length) {
+      contentHtml = `
+        <div class="sacola-empty">
+          <div class="sacola-empty-icon">🛒</div>
+          <div class="sacola-empty-title">Sacola vazia</div>
+          <div class="sacola-empty-sub">Adicione itens do cardápio para montar seu pedido</div>
+        </div>`;
+    } else {
+      const subtotal = store.cartSubtotal();
+      const total = subtotal + DELIVERY_FEE;
+      const merits = Math.round(total * POINTS_PER_BRL);
+
+      contentHtml = cart.map((it) => `
+        <div class="sacola-item">
+          <span class="sacola-item-icon">${it.icon}</span>
+          <div class="sacola-item-info">
+            <div class="sacola-item-name">${escapeHtml(it.name)}</div>
+            ${it.desc ? `<div class="sacola-item-desc">${escapeHtml(it.desc)}</div>` : ""}
+            <div class="qty" style="margin-top:6px">
+              <button class="qty-btn" data-action="qty" data-key="${it.key}" data-delta="-1">−</button>
+              <span class="qty-val">${it.qty}</span>
+              <button class="qty-btn" data-action="qty" data-key="${it.key}" data-delta="1">+</button>
+            </div>
+          </div>
+          <span class="sacola-item-price">${money(it.price * it.qty)}</span>
+          <button class="sacola-item-remove" data-action="cart-remove" data-key="${it.key}">✕</button>
+        </div>`).join("") +
+        `<div class="sacola-total">
+          <div class="sacola-total-row"><span class="sacola-total-label">Subtotal</span><span class="sacola-total-val">${money(subtotal)}</span></div>
+          <div class="sacola-total-row"><span class="sacola-total-label">Frete</span><span class="sacola-total-val">${money(DELIVERY_FEE)}</span></div>
+          <div class="sacola-total-row final"><span class="sacola-total-label">Total</span><span class="sacola-total-val">${money(total)}</span></div>
+        </div>
+        <div class="sacola-merits-info">+${merits}⚡ méritos ao receber este pedido</div>
+        <div class="sacola-actions">
+          <button class="sacola-clear" data-action="cart-clear">🗑 LIMPAR</button>
+          <button class="sacola-checkout" id="checkoutBtn" data-action="checkout">CONFIRMAR PEDIDO →</button>
+        </div>`;
+    }
+  } else {
+    // Tab de pedidos
+    const openOrders = orders.filter(o => o.status !== 'cancelado' && o.status !== 'entregue');
+    
+    if (!orders.length) {
+      contentHtml = `
+        <div class="sacola-empty">
+          <div class="sacola-empty-icon">📦</div>
+          <div class="sacola-empty-title">Nenhum pedido</div>
+          <div class="sacola-empty-sub">Seus pedidos aparecerão aqui</div>
+        </div>`;
+    } else {
+      contentHtml = openOrders.length > 0 ? `
+        <div class="sacola-orders-section">
+          <div class="sacola-section-title">Pedidos em Aberto (${openOrders.length})</div>
+          ${openOrders.map(o => `
+            <div class="sacola-order-item">
+              <div class="sacola-order-info">
+                <div class="sacola-order-id">${o.numeroPedido || "#" + (o.id || "").slice(-6).toUpperCase()}</div>
+                <div class="sacola-order-status">${getStatusBadge(o.status)}</div>
+              </div>
+              <div class="sacola-order-items">${(o.items || []).map((it) => `${it.qty || 1}× ${it.name}`).join(" · ")}</div>
+              <div class="sacola-order-total">${money(o.total)}</div>
+            </div>
+          `).join('')}
+        </div>
+      ` : '';
+      
+      contentHtml += `
+        <div class="sacola-orders-section">
+          <div class="sacola-section-title">Histórico Completo</div>
+          ${orders.map(o => `
+            <div class="sacola-order-item ${o.status === 'cancelado' ? 'cancelled' : ''}">
+              <div class="sacola-order-info">
+                <div class="sacola-order-id">${o.numeroPedido || "#" + (o.id || "").slice(-6).toUpperCase()}</div>
+                <div class="sacola-order-status">${getStatusBadge(o.status)}</div>
+              </div>
+              <div class="sacola-order-items">${(o.items || []).map((it) => `${it.qty || 1}× ${it.name}`).join(" · ")}</div>
+              <div class="sacola-order-total">${money(o.total)}</div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+  }
+  
+  setHtml("sacolaContent", tabsHtml + contentHtml);
+}
+
+function getStatusBadge(status) {
+  const badges = {
+    recebido: '<span class="badge badge-info">Recebido</span>',
+    analisando: '<span class="badge badge-warning">Analisando</span>',
+    aprovado: '<span class="badge badge-success">Aprovado</span>',
+    producao: '<span class="badge badge-info">Em Produção</span>',
+    enviado: '<span class="badge badge-info">Enviado</span>',
+    entregue: '<span class="badge badge-success">Entregue</span>',
+    cancelado: '<span class="badge badge-danger">Cancelado</span>'
+  };
+  return badges[status] || status;
 }
 
 async function checkout(btn) {
   const profile = store.get("profile");
   const cart = store.get("cart");
   if (!profile || !cart.length) return;
+
+  // Validar se há itens exclusivos de pontos no carrinho
+  const hasPointsOnlyItems = cart.some(item => item.pointsRequired && item.pointsRequired > 0);
+  if (hasPointsOnlyItems) {
+    toastError("Este carrinho contém itens exclusivos de méritos. Compre-os na seção de recompensas.");
+    return;
+  }
 
   const ok = await modalConfirm({
     title: "Confirmar pedido",
@@ -78,8 +163,19 @@ async function checkout(btn) {
     store.cartClear();
     toast("success", "🎉", `Pedido enviado! ${money(order.total)} · +${order.pointsEarned}⚡ ao receber`);
     navigate("pedidos");
-  } catch {
-    toastError("Não foi possível enviar o pedido — tente novamente");
+  } catch (err) {
+    console.error("Erro no checkout:", err);
+    const errorMsg = err?.message || err?.code || "";
+    
+    if (errorMsg.includes("permission") || errorMsg.includes("PERMISSION")) {
+      toastError("Erro de permissão. Verifique as regras do Firestore.");
+    } else if (errorMsg.includes("network") || errorMsg.includes("NETWORK")) {
+      toastError("Erro de conexão. Verifique sua internet.");
+    } else if (errorMsg.includes("auth") || errorMsg.includes("AUTH")) {
+      toastError("Erro de autenticação. Faça login novamente.");
+    } else {
+      toastError("Não foi possível enviar o pedido — tente novamente");
+    }
   } finally {
     btn.disabled = false;
   }
@@ -94,5 +190,10 @@ export function initSacola() {
   });
   onAction("cart-clear", () => { store.cartClear(); toastInfo("🗑", "Sacola limpa"); });
   onAction("checkout", (el) => checkout(el));
+  onAction("sacola-tab", (el) => {
+    currentTab = el.dataset.tab;
+    renderSacola();
+  });
   store.subscribe("cart", renderSacola);
+  store.subscribe("orders", renderSacola);
 }

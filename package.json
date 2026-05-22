@@ -1,0 +1,16 @@
+{
+  "name": "mrbur-seed",
+  "version": "1.0.0",
+  "description": "Seed script for MrBur Firebase production",
+  "main": "seed.js",
+  "scripts": {
+    "seed": "node seed.js",
+    "seed:admin": "node seed.js",
+    "seed:rest": "node seed-rest.js",
+    "create-users": "node create-users.js"
+  },
+  "dependencies": {
+    "firebase": "^12.13.0",
+    "firebase-admin": "^12.0.0"
+  }
+}

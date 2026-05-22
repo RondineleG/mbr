@@ -12,6 +12,7 @@ node_modules/
 .env
 .env.*
 public/firebase-config.local.js
+service-account.json
 
 # OS
 .DS_Store

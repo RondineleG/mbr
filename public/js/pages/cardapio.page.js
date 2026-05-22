@@ -109,6 +109,19 @@ function prontoCard(p) {
 }
 
 function menuItem(p) {
+  // Se for item exclusivo de pontos, mostrar preço em méritos
+  if (p.exclusiveToPoints && p.pointsRequired > 0) {
+    return `<div class="menu-item points-item" data-action="buy-points" data-id="${p.id}">
+      <span class="menu-item-icon">${p.icon || "🍔"}</span>
+      <div class="menu-item-info">
+        <div class="menu-item-name">${escapeHtml(p.name)}</div>
+        <div class="menu-item-desc">${escapeHtml(p.description || "")}</div>
+        <div class="menu-item-points-badge">⚡ ${p.pointsRequired} méritos</div>
+      </div>
+      <button class="menu-item-points-btn">COMPRAR</button>
+    </div>`;
+  }
+  
   return `<div class="menu-item" data-action="add-product" data-id="${p.id}">
     <span class="menu-item-icon">${p.icon || "🍔"}</span>
     <div class="menu-item-info"><div class="menu-item-name">${escapeHtml(p.name)}</div><div class="menu-item-desc">${escapeHtml(p.description || "")}</div></div>
@@ -118,6 +131,9 @@ function menuItem(p) {
 
 function renderCategories() {
   const products = store.get("products");
+  const profile = store.get("profile");
+  const missionProgress = store.get("missionProgress") || { completed: [], claimed: [] };
+  
   const byCat = (c) => products.filter((p) => p.category === c && p.active !== false);
   const loading = products.length === 0;
 
@@ -126,11 +142,27 @@ function renderCategories() {
   setHtml("catAcomp", loading ? skeletonList(3) : `<div class="menu-items">${byCat("acomp").map(menuItem).join("")}</div>`);
   setHtml("catBebidas", loading ? skeletonList(3) : `<div class="menu-items">${byCat("bebidas").map(menuItem).join("")}</div>`);
   setHtml("catSobremesas", loading ? skeletonList(3) : `<div class="menu-items">${byCat("sobremesas").map(menuItem).join("")}</div>`);
+  
+  // Exclusive items - check if user has required missions/points
+  const exclusiveItems = byCat("exclusivos");
+  const unlockedExclusive = exclusiveItems.filter(p => {
+    if (p.requiresMission && !missionProgress.completed.includes(p.requiresMission)) {
+      return false;
+    }
+    if (p.requiresPoints && (profile?.points || 0) < p.requiresPoints) {
+      return false;
+    }
+    return true;
+  });
+  
+  setHtml("catExclusivos", loading ? skeletonList(3) : 
+    (unlockedExclusive.length ? unlockedExclusive.map(menuItem).join("") : 
+    '<div class="empty-state">🔒 Complete missões para desbloquear itens exclusivos</div>'));
 }
 
 export function showCat(next) {
   cat = next;
-  ["monte", "dia", "mbox", "acomp", "bebidas", "sobremesas"].forEach((c) =>
+  ["monte", "dia", "mbox", "acomp", "bebidas", "sobremesas", "exclusivos"].forEach((c) =>
     show($("#cat-" + c), c === next));
   $$(".cat-btn").forEach((b) => b.classList.toggle("active", b.dataset.cat === next));
 }
@@ -138,8 +170,58 @@ export function showCat(next) {
 function addProduct(id) {
   const p = store.get("products").find((x) => x.id === id);
   if (!p) return;
+  
+  // Não permitir adicionar itens exclusivos de pontos ao carrinho normal
+  if (p.exclusiveToPoints && p.pointsRequired > 0) {
+    toastError("Este item só pode ser comprado com méritos");
+    return;
+  }
+  
   store.cartAdd({ productId: p.id, name: p.name, icon: p.icon || "🍔", price: p.price, qty: 1, desc: "" });
   toastInfo(p.icon || "🛒", `${p.name} adicionado à sacola`);
+}
+
+async function buyWithPoints(id) {
+  const profile = store.get("profile");
+  const p = store.get("products").find((x) => x.id === id);
+  
+  if (!p) return;
+  if (!profile) {
+    toastError("Faça login para comprar com méritos");
+    return;
+  }
+  
+  if (!p.exclusiveToPoints || p.pointsRequired <= 0) {
+    toastError("Este item não está disponível para compra com méritos");
+    return;
+  }
+  
+  const userPoints = profile.points || 0;
+  if (userPoints < p.pointsRequired) {
+    toastError(`Você precisa de ${p.pointsRequired} méritos. Tem ${userPoints}.`);
+    return;
+  }
+  
+  try {
+    const { buyWithPoints: buyProduct } = await import("../services/product.service.js");
+    await buyProduct(profile.uid, p);
+    toast("success", "🎉", `${p.name} comprado com ${p.pointsRequired} méritos!`);
+    
+    // Atualizar perfil localmente
+    profile.points = userPoints - p.pointsRequired;
+    store.set("profile", profile);
+  } catch (err) {
+    console.error("Erro ao comprar com pontos:", err);
+    const errorMsg = err?.message || "";
+    
+    if (errorMsg.includes("INSUFFICIENT_POINTS")) {
+      toastError("Saldo insuficiente de méritos");
+    } else if (errorMsg.includes("OUT_OF_STOCK")) {
+      toastError("Item fora de estoque");
+    } else {
+      toastError("Não foi possível completar a compra");
+    }
+  }
 }
 
 export function renderCardapio() { renderWizard(); renderCategories(); }
@@ -152,5 +234,9 @@ export function initCardapio() {
   onAction("build-prev", () => { if (currentStep > 0) { currentStep--; renderWizard(); } });
   onAction("build-add", () => buildAddToCart());
   onAction("add-product", (el) => addProduct(el.dataset.id));
+  onAction("buy-points", (el) => buyWithPoints(el.dataset.id));
   store.subscribe("products", renderCategories);
+  store.subscribe("missionProgress", () => {
+    if (store.get("page") === "cardapio") renderCategories();
+  });
 }

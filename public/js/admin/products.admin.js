@@ -64,7 +64,12 @@ function form(p = {}) {
     if (!data.name) return toastError("Informe o nome do produto");
     const file = m.el.querySelector("#f-img").files[0];
     try {
-      if (file) data.image = p.id ? await uploadImage(file, `products/${p.id}`) : await fileToDataUrl(file);
+      if (file) {
+        // Upload é opcional: se o Storage não estiver disponível (plano grátis),
+        // salva o produto mesmo assim, só sem imagem.
+        try { data.image = p.id ? await uploadImage(file, `products/${p.id}`) : await fileToDataUrl(file); }
+        catch { toastError("Imagem ignorada (Storage indisponível) — produto salvo sem foto"); }
+      }
       if (p.id) await updateProduct(p.id, data);
       else await createProduct({ ...data, active: true });
       m.close();

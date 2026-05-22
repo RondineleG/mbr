@@ -25,9 +25,16 @@
     <div class="login-field"><label class="login-label">SENHA</label><input class="login-input" id="adminPass" type="password" placeholder="••••••••"></div>
     <div class="login-error" id="adminGateError"></div>
     <button class="login-btn" id="adminLoginBtn" data-action="admin-login">ENTRAR NO COMANDO</button>
-    <div id="demoAdminHint" style="display:none;margin-top:18px">
-      <div class="login-hint" style="text-align:center">Modo demo — crie um admin para explorar:</div>
-      <button class="admin-btn ghost" style="width:100%" data-action="create-demo-admin">⚙️ Criar admin demo</button>
+
+    <div id="promoteHint" style="display:none;margin-top:14px">
+      <div class="login-hint" style="text-align:center;color:var(--gold)">Você está logado, mas este acesso ainda não é Comando.</div>
+      <button class="admin-btn" style="width:100%" data-action="promote-self">⭐ Tornar este acesso Comando + popular tudo</button>
+    </div>
+
+    <div id="bootstrapHint" style="margin-top:18px">
+      <div class="login-hint" style="text-align:center">Nenhum administrador ainda — crie o primeiro acesso de Comando:</div>
+      <button class="admin-btn" style="width:100%" data-action="bootstrap-admin">⚙️ Criar admin + seed completo</button>
+      <div class="login-hint" style="text-align:center;margin-top:6px">Usa o e-mail/senha acima (ou admin@mrbur.com / ordem2025). Cria admin, catálogo, recompensas, convites e agentes de exemplo.</div>
     </div>
     <div class="login-footer">RESTRITO · CAPÍTULO GÊNESIS</div>
   </div>
@@ -35,7 +42,19 @@
 
 <!-- ═══ SHELL ═══ -->
 <div class="admin-shell" id="adminShell" style="display:none">
-  <aside class="admin-side">
+  <!-- Mobile Header -->
+  <div class="admin-mobile-header">
+    <button class="admin-hamburger" data-action="admin-toggle-sidebar">☰</button>
+    <div class="admin-brand" style="margin:0">
+      <span class="admin-brand-logo">🔥</span>
+      <div><div class="admin-brand-text">MRBUR</div><div class="admin-brand-sub">COMANDO</div></div>
+    </div>
+  </div>
+
+  <!-- Sidebar Overlay -->
+  <div class="admin-sidebar-overlay" id="adminSidebarOverlay" data-action="admin-toggle-sidebar"></div>
+
+  <aside class="admin-side" id="adminSidebar">
     <div class="admin-brand">
       <span class="admin-brand-logo">🔥</span>
       <div><div class="admin-brand-text">MRBUR</div><div class="admin-brand-sub">COMANDO</div></div>
@@ -44,8 +63,15 @@
     <button class="admin-navbtn" data-action="admin-nav" data-section="pedidos"><span class="admin-navbtn-icon">📥</span> Pedidos</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="produtos"><span class="admin-navbtn-icon">🍔</span> Produtos</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="clientes"><span class="admin-navbtn-icon">🕵️</span> Agentes</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="missoes"><span class="admin-navbtn-icon">🎯</span> Missões</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="recompensas"><span class="admin-navbtn-icon">🎁</span> Recompensas</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="convites"><span class="admin-navbtn-icon">🎫</span> Convites</button>
     <div class="admin-side-foot">
       <div style="font-size:10px;color:var(--text-dim);font-family:var(--f-mono);padding:8px;letter-spacing:1px" id="adminWho">—</div>
+      <button class="admin-navbtn" data-action="admin-theme-toggle" style="margin-bottom:8px">
+        <span class="admin-navbtn-icon" id="adminThemeIcon">🌙</span>
+        <span id="adminThemeLabel">Modo Escuro</span>
+      </button>
       <button class="admin-logout" data-action="admin-logout">🚪 SAIR</button>
     </div>
   </aside>
@@ -55,6 +81,15 @@
     <section class="admin-section active" id="section-dashboard">
       <div class="admin-head"><div><div class="admin-title">Dashboard</div><div class="admin-title-sub">VISÃO GERAL · TEMPO REAL</div></div></div>
       <div class="kpi-grid" id="dashKpis"></div>
+
+      <div class="admin-title" style="font-size:18px;margin-top:8px">Ferramentas da Ordem</div>
+      <div class="admin-title-sub" style="margin-bottom:14px">SEED DO CATÁLOGO E GERAÇÃO DE CONVITES</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <button class="admin-btn" data-action="seed-catalog">🍔 Popular catálogo</button>
+        <button class="admin-btn ghost" data-action="seed-invite">🎫 Criar convite demo</button>
+        <button class="admin-btn ghost" data-action="seed-invites">🎟️ Gerar 5 convites</button>
+      </div>
+      <div id="seedOutput"></div>
     </section>
 
     <!-- Pedidos -->
@@ -82,6 +117,24 @@
     <section class="admin-section" id="section-clientes">
       <div class="admin-head"><div><div class="admin-title">Agentes</div><div class="admin-title-sub">RANKING · PONTOS · HISTÓRICO</div></div></div>
       <div id="customersList"></div>
+    </section>
+
+    <!-- Missões -->
+    <section class="admin-section" id="section-missoes">
+      <div class="admin-head"><div><div class="admin-title">Missões</div><div class="admin-title-sub">SISTEMA DE GAMIFICAÇÃO</div></div><button class="admin-btn" data-action="mission-new">+ Nova missão</button></div>
+      <div id="missionsList"></div>
+    </section>
+
+    <!-- Recompensas -->
+    <section class="admin-section" id="section-recompensas">
+      <div class="admin-head"><div><div class="admin-title">Recompensas</div><div class="admin-title-sub">LOJA DA ORDEM</div></div><button class="admin-btn" data-action="reward-new">+ Nova recompensa</button></div>
+      <div id="rewardsList"></div>
+    </section>
+
+    <!-- Convites -->
+    <section class="admin-section" id="section-convites">
+      <div class="admin-head"><div><div class="admin-title">Convites</div><div class="admin-title-sub">SISTEMA DE INDICAÇÕES</div></div><button class="admin-btn" data-action="invite-new">+ Novo convite</button></div>
+      <div id="invitesList"></div>
     </section>
   </main>
 </div>

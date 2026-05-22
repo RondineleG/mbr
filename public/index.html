@@ -12,6 +12,13 @@
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/auth.css">
 <link rel="stylesheet" href="css/app.css">
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#C9A84C">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MrBur">
+<link rel="apple-touch-icon" href="/icon-192.png">
 </head>
 <body>
 
@@ -136,8 +143,9 @@
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-left" data-action="nav" data-page="perfil">
-      <div class="topbar-avatar" id="topbarAvatar">MB</div>
+    <div class="topbar-left">
+      <button class="topbar-btn" data-action="toggle-sidemenu">☰</button>
+      <div class="topbar-avatar" id="topbarAvatar" data-action="nav" data-page="perfil">MB</div>
       <div class="topbar-info">
         <div class="topbar-name" id="agentName">agente</div>
         <div class="topbar-rank" id="agentRank">EXPLORADOR - NÍVEL 1</div>
@@ -184,6 +192,7 @@
       <button class="cat-btn" data-action="cardapio-cat" data-cat="acomp">🍟 Acompanhamentos</button>
       <button class="cat-btn" data-action="cardapio-cat" data-cat="bebidas">🥤 Bebidas</button>
       <button class="cat-btn" data-action="cardapio-cat" data-cat="sobremesas">🍫 Sobremesas</button>
+      <button class="cat-btn" data-action="cardapio-cat" data-cat="exclusivos">🔒 Exclusivos</button>
     </div>
 
     <div id="cat-monte">
@@ -204,6 +213,7 @@
     <div id="cat-acomp" style="display:none"><div class="section-title">Acompanhamentos</div><div id="catAcomp"></div></div>
     <div id="cat-bebidas" style="display:none"><div class="section-title">Bebidas</div><div id="catBebidas"></div></div>
     <div id="cat-sobremesas" style="display:none"><div class="section-title">Sobremesas</div><div id="catSobremesas"></div></div>
+    <div id="cat-exclusivos" style="display:none"><div class="section-title">🔒 Exclusivos</div><div id="catExclusivos"></div></div>
   </div>
 
   <!-- ═══ CLUBE ═══ -->
@@ -212,6 +222,7 @@
     <div class="clube-actions">
       <div class="clube-action" data-action="clube-tab" data-tab="recompensas"><div class="clube-action-icon">🎁</div><div class="clube-action-label">Resgatar</div><div class="clube-action-sub">Usar pontos</div></div>
       <div class="clube-action" data-action="clube-tab" data-tab="historico"><div class="clube-action-icon">📊</div><div class="clube-action-label">Extrato</div><div class="clube-action-sub">Méritos</div></div>
+      <div class="clube-action" data-action="clube-tab" data-tab="metiqos"><div class="clube-action-icon">💰</div><div class="clube-action-label">Metiqos</div><div class="clube-action-sub">Moeda virtual</div></div>
       <div class="clube-action" data-action="clube-tab" data-tab="missoes"><div class="clube-action-icon">🏆</div><div class="clube-action-label">Missões</div><div class="clube-action-sub">Desafios</div></div>
       <div class="clube-action" data-action="clube-tab" data-tab="ranking"><div class="clube-action-icon">👑</div><div class="clube-action-label">Ranking</div><div class="clube-action-sub">Top agentes</div></div>
     </div>
@@ -282,7 +293,7 @@
       <div class="profile-section-title">CONFIGURAÇÕES</div>
       <div class="profile-card">
         <div class="profile-row" data-action="toggle-theme"><div class="profile-row-left"><span class="profile-row-icon" id="profThemeIcon">🌙</span><div class="profile-row-info"><div class="profile-row-label" id="profThemeLabel">Modo Escuro</div><div class="profile-row-value">Alternar tema da interface</div></div></div><span class="profile-row-arrow">›</span></div>
-        <div class="profile-row"><div class="profile-row-left"><span class="profile-row-icon">🎫</span><div class="profile-row-info"><div class="profile-row-label">Meus Convites</div><div class="profile-row-value" id="profInvites">0 disponíveis</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row" data-action="show-my-invites"><div class="profile-row-left"><span class="profile-row-icon">🎫</span><div class="profile-row-info"><div class="profile-row-label">Meus Convites</div><div class="profile-row-value" id="profInvites">0 disponíveis</div></div></div><span class="profile-row-arrow">›</span></div>
       </div>
     </div>
 
@@ -290,10 +301,136 @@
     <div class="text-center" style="padding:8px 0 16px;opacity:0.3"><div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);font-family:var(--f-mono)">MRBUR — CAPÍTULO GÊNESIS — v1.0</div></div>
   </div>
 
+  <!-- ═══ CONVITES ═══ -->
+  <div class="page" id="page-convites">
+    <div class="section-title">Gestão de Convites</div>
+    
+    <!-- Stats Dashboard -->
+    <div class="convites-stats">
+      <div class="convite-stat-card">
+        <div class="convite-stat-value" id="convitesStatsTotal">0</div>
+        <div class="convite-stat-label">Enviados</div>
+      </div>
+      <div class="convite-stat-card">
+        <div class="convite-stat-value" id="convitesStatsUsados">0</div>
+        <div class="convite-stat-label">Usados</div>
+      </div>
+      <div class="convite-stat-card">
+        <div class="convite-stat-value" id="convitesStatsExpirados">0</div>
+        <div class="convite-stat-label">Expirados</div>
+      </div>
+      <div class="convite-stat-card">
+        <div class="convite-stat-value" id="convitesStatsAtivos">0</div>
+        <div class="convite-stat-label">Ativos</div>
+      </div>
+      <div class="convite-stat-card">
+        <div class="convite-stat-value" id="convitesStatsConversao">0%</div>
+        <div class="convite-stat-label">Conversão</div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="convites-filters">
+      <button class="convite-filter-btn active" data-action="convite-filter" data-filter="todos">Todos</button>
+      <button class="convite-filter-btn" data-action="convite-filter" data-filter="ativos">Ativos</button>
+      <button class="convite-filter-btn" data-action="convite-filter" data-filter="usados">Usados</button>
+      <button class="convite-filter-btn" data-action="convite-filter" data-filter="expirados">Expirados</button>
+      <button class="convite-filter-btn" data-action="convite-filter" data-filter="cancelados">Cancelados</button>
+    </div>
+
+    <!-- Create Button -->
+    <button class="btn btn-primary" style="width:100%;margin:16px 0" data-action="create-invite">
+      + Criar Novo Convite
+    </button>
+
+    <!-- Invite List -->
+    <div id="convitesList"></div>
+  </div>
+
   <!-- ═══ SACOLA ═══ -->
   <div class="page" id="page-sacola">
     <div class="section-title">Sua Sacola</div>
     <div id="sacolaContent"></div>
+  </div>
+
+  <!-- SIDE MENU -->
+  <div class="sidemenu-overlay" id="sidemenuOverlay" data-action="toggle-sidemenu"></div>
+  <div class="sidemenu" id="sidemenu">
+    <div class="sidemenu-header">
+      <div class="sidemenu-brand">MRBUR</div>
+      <button class="sidemenu-close" data-action="toggle-sidemenu">✕</button>
+    </div>
+    
+    <!-- User Profile Section -->
+    <div class="sidemenu-user" id="sidemenuUser">
+      <div class="sidemenu-avatar" id="sidemenuAvatar">🕵️</div>
+      <div class="sidemenu-user-info">
+        <div class="sidemenu-user-name" id="sidemenuUserName">—</div>
+        <div class="sidemenu-user-role" id="sidemenuUserRole">—</div>
+      </div>
+    </div>
+    
+    <div class="sidemenu-nav">
+      <div class="sidemenu-section">
+        <div class="sidemenu-section-title">PRINCIPAL</div>
+        <button class="sidemenu-item" data-action="nav" data-page="home" data-tooltip="Home">
+          <span class="sidemenu-item-icon">🏠</span>
+          <span class="sidemenu-item-label">Home</span>
+        </button>
+        <button class="sidemenu-item" data-action="nav" data-page="cardapio" data-tooltip="Cardápio">
+          <span class="sidemenu-item-icon">📋</span>
+          <span class="sidemenu-item-label">Cardápio</span>
+        </button>
+        <button class="sidemenu-item" data-action="nav" data-page="sacola" data-tooltip="Sacola">
+          <span class="sidemenu-item-icon">🛒</span>
+          <span class="sidemenu-item-label">Sacola</span>
+          <span class="sidemenu-item-badge" id="sidemenuCartBadge" style="display:none">0</span>
+        </button>
+      </div>
+      
+      <div class="sidemenu-section">
+        <div class="sidemenu-section-title">MINHAS OPERAÇÕES</div>
+        <button class="sidemenu-item" data-action="nav" data-page="pedidos" data-tooltip="Meus Pedidos">
+          <span class="sidemenu-item-icon">📦</span>
+          <span class="sidemenu-item-label">Meus Pedidos</span>
+        </button>
+        <button class="sidemenu-item" data-action="nav" data-page="convites" data-tooltip="Convites">
+          <span class="sidemenu-item-icon">🎫</span>
+          <span class="sidemenu-item-label">Convites</span>
+        </button>
+      </div>
+      
+      <div class="sidemenu-section">
+        <div class="sidemenu-section-title">CLUBE</div>
+        <button class="sidemenu-item" data-action="nav" data-page="clube" data-tooltip="Clube">
+          <span class="sidemenu-item-icon">✨</span>
+          <span class="sidemenu-item-label">Clube</span>
+        </button>
+        <button class="sidemenu-item" data-action="nav" data-page="missoes" data-tooltip="Missões">
+          <span class="sidemenu-item-icon">🎯</span>
+          <span class="sidemenu-item-label">Missões</span>
+        </button>
+      </div>
+      
+      <div class="sidemenu-section">
+        <div class="sidemenu-section-title">CONTA</div>
+        <button class="sidemenu-item" data-action="nav" data-page="perfil" data-tooltip="Perfil">
+          <span class="sidemenu-item-icon">👤</span>
+          <span class="sidemenu-item-label">Perfil</span>
+        </button>
+        <button class="sidemenu-item admin-only" id="sidemenuAdminBtn" data-action="nav-admin" data-tooltip="Admin" style="display:none">
+          <span class="sidemenu-item-icon">⚙️</span>
+          <span class="sidemenu-item-label">Admin</span>
+        </button>
+      </div>
+    </div>
+    
+    <div class="sidemenu-footer">
+      <button class="sidemenu-logout" data-action="logout" data-tooltip="Encerrar Sessão">
+        <span class="sidemenu-item-icon">🚪</span>
+        <span class="sidemenu-item-label">Encerrar Sessão</span>
+      </button>
+    </div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -307,5 +444,19 @@
 </div>
 
 <script type="module" src="js/app/main.js"></script>
+<!-- Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then(registration => {
+        console.log('Service Worker registrado:', registration);
+      })
+      .catch(error => {
+        console.log('Service Worker falhou:', error);
+      });
+  });
+}
+</script>
 </body>
 </html>

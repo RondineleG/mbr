@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Offline - MrBur</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #060503;
+    color: #e8e4d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+  }
+  .offline-container {
+    padding: 24px;
+    max-width: 400px;
+  }
+  .offline-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+  }
+  .offline-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #C9A84C;
+    margin-bottom: 8px;
+  }
+  .offline-message {
+    font-size: 14px;
+    color: #888;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+  .offline-button {
+    background: #C9A84C;
+    color: #060503;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .offline-button:hover {
+    background: #d4b860;
+  }
+</style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="offline-icon">📡</div>
+    <div class="offline-title">Você está offline</div>
+    <div class="offline-message">
+      Verifique sua conexão com a internet para acessar o MrBur.
+    </div>
+    <button class="offline-button" onclick="window.location.reload()">
+      Tentar novamente
+    </button>
+  </div>
+</body>
+</html>

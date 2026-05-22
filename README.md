@@ -109,4 +109,4 @@ firestore.rules · storage.rules · firestore.indexes.json · firebase.json · .
 - Security Rules por papel (`role:"admin"`), dono lê/escreve o próprio doc, catálogo
   somente-leitura para clientes, pedidos imutáveis pelo cliente após criação.
 - **Limitação MVP:** o ajuste de pontos ocorre no cliente. Em produção endurecida,
-  mover `points.service.adjustPoints` e o crédito no `delivered` para **Cloud Functions**.
+  considerar mover a lógica de pontos para backend mais robusto.

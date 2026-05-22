@@ -19,6 +19,7 @@ const state = {
   products: [],         // cardápio (Firestore)
   rewards: [],          // recompensas
   orders: [],           // pedidos do agente (realtime)
+  missionProgress: null, // progresso de missões do usuário
 };
 
 /* ─── pub/sub por chave ─── */
