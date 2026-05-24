@@ -20,10 +20,11 @@ export async function loadMissions() {
   }
 
   try {
+    // Só `where` (sem orderBy) p/ não exigir índice composto; ordena no cliente por `order`.
     const missions = await getCollection('missions', {
-      where: [['active', '==', true]],
-      orderBy: ['order', 'asc']
+      where: [['active', '==', true]]
     });
+    missions.sort((a, b) => (a.order || 0) - (b.order || 0));
 
     // Converter array para objeto por ID
     const missionsMap = {};

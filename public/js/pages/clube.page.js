@@ -299,7 +299,12 @@ async function doClaimMission(missionId) {
 }
 
 export function initClube() {
-  onAction("clube-tab", (el) => { tab = el.dataset.tab; renderClube(); });
+  onAction("clube-tab", (el) => {
+    tab = el.dataset.tab;
+    renderClube();
+    // Carrega missões sob demanda (no init o profile ainda pode não existir).
+    if ((tab === "missoes" || tab === "recompensas") && !missions.length) loadMissions();
+  });
   onAction("redeem", (el) => doRedeem(el.dataset.id));
   onAction("claim-mission", (el) => doClaimMission(el.dataset.id));
   onAction("filter-category", (el) => { category = el.dataset.category; renderClube(); });
