@@ -15,7 +15,7 @@ export const BUILD_STEPS = [
   ]},
   { id: "carnes", icon: "🥩", label: "Carnes", max: 2, items: [
     { name: "Smash 90g", desc: "Carne prensada na chapa, crocante", price: 0, icon: "🥩" },
-    { name: "Blend 180g", desc: "Mistura premium costela + fraldinha", price: 0, icon: "🥩" },
+    { name: "Blend 180g", desc: "Mistura premium costela + fraldinha", price: 6.0, icon: "🥩" },
     { name: "Duplo Smash", desc: "2x 90g empilhados", price: 5.0, icon: "🥩" },
     { name: "Plant-Based 150g", desc: "Burger vegetal artesanal", price: 3.0, icon: "🌱" },
   ]},
@@ -28,11 +28,11 @@ export const BUILD_STEPS = [
     { name: "Cebola Caramelizada", desc: "Agridoce na manteiga", price: 2.0, icon: "🧅" },
   ]},
   { id: "salada", icon: "🥗", label: "Salada", max: 4, items: [
-    { name: "Alface Americana", desc: "Crocante e fresca", price: 0, icon: "🥬" },
-    { name: "Tomate", desc: "Fatias finas", price: 0, icon: "🍅" },
-    { name: "Cebola Roxa", desc: "Anéis finos", price: 0, icon: "🧅" },
-    { name: "Rúcula", desc: "Sabor intenso", price: 0, icon: "🌿" },
-    { name: "Pickles", desc: "Agridoce artesanal", price: 0, icon: "🥒" },
+    { name: "Alface Americana", desc: "Crocante e fresca", price: 1.5, icon: "🥬" },
+    { name: "Tomate", desc: "Fatias finas", price: 1.5, icon: "🍅" },
+    { name: "Cebola Roxa", desc: "Anéis finos", price: 1.5, icon: "🧅" },
+    { name: "Rúcula", desc: "Sabor intenso", price: 1.5, icon: "🌿" },
+    { name: "Pickles", desc: "Agridoce artesanal", price: 1.5, icon: "🥒" },
   ]},
   { id: "molhos", icon: "🫙", label: "Molhos", max: 2, items: [
     { name: "Molho Secreto", desc: "Receita exclusiva MrBur", price: 0, icon: "🫙" },
@@ -81,3 +81,6 @@ export const POINTS_PER_BRL = 1;
 
 /** Taxa de entrega padrão (BRL). */
 export const DELIVERY_FEE = 8.0;
+
+/** Janela (ms) em que o cliente pode cancelar e o admin precisa esperar p/ aceitar. */
+export const CANCEL_WINDOW_MS = 120000;

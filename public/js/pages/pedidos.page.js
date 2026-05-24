@@ -6,10 +6,19 @@ import { setHtml, escapeHtml } from "../utils/dom.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
 import * as store from "../app/state.js";
 import { money, dateShort } from "../utils/format.js";
-import { ORDER_STATUS_LABELS } from "../services/order.service.js";
+import { ORDER_STATUS_LABELS, cancelOrder } from "../services/order.service.js";
 import { getOrderStats } from "../services/order.service.js";
 import { emptyState, withEmpty } from "../utils/loading.js";
 import { navigate } from "../app/router.js";
+import { modalConfirm } from "../components/modal.js";
+import { CANCEL_WINDOW_MS } from "../utils/constants.js";
+
+// criadoEm pode ser número (Date.now) ou Timestamp do Firestore.
+const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
+const cancelRemaining = (o) => {
+  const created = toMillis(o.criadoEm || o.createdAt);
+  return created ? Math.max(0, created + CANCEL_WINDOW_MS - Date.now()) : 0;
+};
 
 function formatDate(timestamp) {
   if (!timestamp) return "—";
@@ -75,7 +84,19 @@ function orderCard(o) {
   const itemsLine = (o.items || []).map((it) => `${it.qty || 1}× ${it.name}`).join(" · ");
   const showTimeline = o.status !== "cancelado";
   const canRepeat = o.status !== "cancelado" && o.items && o.items.length > 0;
-  
+
+  // Janela de cancelamento: só enquanto "recebido" e dentro de CANCEL_WINDOW_MS.
+  const remaining = o.status === "recebido" ? cancelRemaining(o) : 0;
+  const canCancel = remaining > 0;
+  const secs = Math.ceil(remaining / 1000);
+
+  const cancelBlock = canCancel ? `
+    <div class="order-cancel">
+      <button class="order-cancel-btn" data-action="cancel-order" data-order-id="${o.id}">✕ Cancelar pedido</button>
+      <span class="order-cancel-timer">Cancelável por mais <b id="canceltimer-${o.id}">${secs}s</b></span>
+    </div>` : (o.status === "recebido" ? `
+    <div class="order-cancel"><span class="order-cancel-locked">🔒 Prazo de cancelamento encerrado · pedido em análise</span></div>` : "");
+
   return `<div class="order-card">
     <div class="order-card-head">
       <div>
@@ -88,6 +109,7 @@ function orderCard(o) {
       </div>
     </div>
     <div class="order-items-line">${escapeHtml(itemsLine)}</div>
+    ${cancelBlock}
     ${showTimeline ? timeline(o) : ""}
     ${canRepeat ? `
       <div class="order-actions">
@@ -165,4 +187,33 @@ export function initPedidos() {
       }
     }
   });
+
+  // Cancelar pedido (somente dentro da janela de 120s).
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-action="cancel-order"]');
+    if (!btn) return;
+    const orderId = btn.dataset.orderId;
+    const order = (store.get("orders") || []).find((o) => o.id === orderId);
+    if (!order || cancelRemaining(order) <= 0) { toastError("Prazo de cancelamento encerrado"); renderPedidos(); return; }
+    const ok = await modalConfirm({ title: "Cancelar pedido", message: "Tem certeza? Esta ação não pode ser desfeita.", confirmText: "Cancelar pedido", danger: true });
+    if (!ok) return;
+    btn.disabled = true;
+    try { await cancelOrder(orderId); toast("success", "✓", "Pedido cancelado"); }
+    catch (err) { console.error("Erro ao cancelar:", err); toastError("Não foi possível cancelar"); btn.disabled = false; }
+  });
+
+  // Timer ao vivo: atualiza a contagem e re-renderiza quando a janela expira.
+  setInterval(() => {
+    const orders = store.get("orders") || [];
+    let expired = false;
+    orders.forEach((o) => {
+      if (o.status !== "recebido") return;
+      const span = document.getElementById(`canceltimer-${o.id}`);
+      if (!span) return;
+      const rem = Math.ceil(cancelRemaining(o) / 1000);
+      if (rem > 0) span.textContent = rem + "s";
+      else expired = true;
+    });
+    if (expired) renderPedidos();
+  }, 1000);
 }

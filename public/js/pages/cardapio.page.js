@@ -9,13 +9,15 @@ import { skeletonList } from "../components/skeleton.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
 
 let currentStep = 0;
-// Pão e Carne já vêm pré-selecionados (itens obrigatórios do lanche).
+// Itens inclusos já vêm pré-selecionados: Pão (Brioche), Carne (Smash 90g),
+// Extra (Cheddar) e Molho (Molho Secreto). Salada é toda adicional (não vem marcada).
 function defaultSelections() {
   const sel = {};
-  const pao = BUILD_STEPS.find((s) => s.id === "pao");
-  const carnes = BUILD_STEPS.find((s) => s.id === "carnes");
-  if (pao?.items?.[0]) sel.pao = [pao.items[0]];
-  if (carnes?.items?.[0]) sel.carnes = [carnes.items[0]];
+  const first = (id) => BUILD_STEPS.find((s) => s.id === id)?.items?.[0];
+  for (const id of ["pao", "carnes", "queijos", "molhos"]) {
+    const it = first(id);
+    if (it) sel[id] = [it];
+  }
   return sel;
 }
 let selections = defaultSelections(); // stepId -> [items]
@@ -52,7 +54,9 @@ function renderStepContent() {
       return `<div class="menu-item ${on ? "selected" : ""}" data-action="build-toggle" data-step="${step.id}" data-idx="${i}">
         <span class="menu-item-icon">${item.icon}</span>
         <div class="menu-item-info"><div class="menu-item-name">${escapeHtml(item.name)}</div><div class="menu-item-desc">${escapeHtml(item.desc)}</div></div>
-        ${item.price > 0 ? `<span class="menu-item-price">+ ${money(item.price)}</span>` : ""}
+        ${item.price > 0
+          ? `<span class="menu-item-price">+ ${money(item.price)}</span>`
+          : `<span class="menu-item-price included">incluído</span>`}
         <div class="menu-item-check">${on ? "✓" : ""}</div>
       </div>`;
     }).join("")}</div>`);
@@ -86,8 +90,11 @@ function toggleItem(stepId, idx) {
   selections[stepId] ||= [];
   const sel = selections[stepId];
   const i = sel.findIndex((s) => s.name === item.name);
-  if (i >= 0) sel.splice(i, 1);
-  else { if (sel.length >= step.max) sel.shift(); sel.push(item); }
+  if (i >= 0) {
+    // Carne é obrigatória: não deixa remover a última.
+    if (stepId === "carnes" && sel.length === 1) { toastInfo("Selecione ao menos 1 carne"); return; }
+    sel.splice(i, 1);
+  } else { if (sel.length >= step.max) sel.shift(); sel.push(item); }
   renderStepContent();
 }
 

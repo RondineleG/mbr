@@ -20,7 +20,7 @@ body {
 }
 ::-webkit-scrollbar { width: 0; }
 input, button, select, textarea { font-family: inherit; }
-button { cursor: pointer; }
+button { cursor: pointer; color: inherit; }
 
 /* Section title */
 .section-title {

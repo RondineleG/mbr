@@ -7,7 +7,16 @@ import { getOrders, subscribeOrders, startOrdersWatch } from "./admin-store.js";
 import { updateStatus, ORDER_STATUS, ORDER_STATUS_LABELS } from "../services/order.service.js";
 import { money, dateShort, toDate } from "../utils/format.js";
 import { modalCustom } from "../components/modal.js";
-import { toastSuccess, toastError } from "../components/toast.js";
+import { toastSuccess, toastError, toastInfo } from "../components/toast.js";
+import { CANCEL_WINDOW_MS } from "../utils/constants.js";
+
+const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
+// ms restantes em que o admin AINDA não pode aceitar (só vale p/ "recebido").
+function lockRemaining(o) {
+  if (o.status !== "recebido") return 0;
+  const created = toMillis(o.criadoEm);
+  return created ? Math.max(0, created + CANCEL_WINDOW_MS - Date.now()) : 0;
+}
 
 export { startOrdersWatch };
 
@@ -30,6 +39,11 @@ function row(o) {
   const opts = [...ORDER_FLOW, "cancelado"].map((s) =>
     `<option value="${s}" ${o.status === s ? "selected" : ""}>${ORDER_STATUS_LABELS[s] || s}</option>`).join("");
   const qty = (o.items || []).reduce((a, i) => a + (i.qty || 1), 0);
+  // Durante a janela de 120s o admin não pode aceitar: mostra cadeado + contagem.
+  const lock = lockRemaining(o);
+  const action = lock > 0
+    ? `<span class="status-lock" id="adminlock-${o.id}">🔒 aceitar em ${Math.ceil(lock / 1000)}s</span>`
+    : `<select class="status-select" data-action="order-status" data-id="${o.id}" style="border-color:${color}66;color:${color}">${opts}</select>`;
   return `<div class="data-row">
     <div class="data-thumb" style="background:${color}1f;border-color:${color}55;color:${color};font-size:20px">${icon}</div>
     <div class="data-main">
@@ -38,7 +52,7 @@ function row(o) {
     </div>
     <div class="data-actions">
       <button class="admin-btn sm ghost" data-action="order-view" data-id="${o.id}">Detalhes</button>
-      <select class="status-select" data-action="order-status" data-id="${o.id}" style="border-color:${color}66;color:${color}">${opts}</select>
+      ${action}
     </div>
   </div>`;
 }
@@ -110,7 +124,28 @@ export function initOrders() {
   });
   onAction("order-view", (el) => viewOrder(el.dataset.id));
   onChange("order-status", async (el) => {
+    // Defesa: não permite aceitar antes da janela de 120s.
+    const o = getOrders().find((x) => x.id === el.dataset.id);
+    if (o && lockRemaining(o) > 0) {
+      toastInfo(`Aguarde ${Math.ceil(lockRemaining(o) / 1000)}s para aceitar este pedido`);
+      renderOrders();
+      return;
+    }
     try { await updateStatus(el.dataset.id, el.value); toastSuccess("Status atualizado → " + (ORDER_STATUS_LABELS[el.value] || el.value)); }
     catch { toastError("Falha ao atualizar status"); }
   });
+
+  // Timer ao vivo: atualiza a contagem dos cadeados e re-renderiza ao liberar.
+  setInterval(() => {
+    if (!document.getElementById("section-pedidos")?.classList.contains("active")) return;
+    let released = false;
+    getOrders().forEach((o) => {
+      const el = document.getElementById(`adminlock-${o.id}`);
+      if (!el) return;
+      const rem = lockRemaining(o);
+      if (rem > 0) el.textContent = `🔒 aceitar em ${Math.ceil(rem / 1000)}s`;
+      else released = true;
+    });
+    if (released) renderOrders();
+  }, 1000);
 }

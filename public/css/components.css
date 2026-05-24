@@ -33,6 +33,7 @@
 .menu-item-name { font-size: 14px; font-weight: 700; color: var(--tx); margin-bottom: 2px; }
 .menu-item-desc { font-size: 11px; color: var(--t2); line-height: 1.4; }
 .menu-item-price { font-size: 14px; font-weight: 800; color: var(--G); font-family: 'Share Tech Mono', monospace; flex-shrink: 0; }
+.menu-item-price.included { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--ok); }
 .menu-item-tag { position: absolute; top: 8px; right: 8px; font-size: 8px; font-weight: 700; letter-spacing: 1px; padding: 2px 6px; border-radius: 3px; background: var(--gw); color: var(--G); border: 1px solid var(--G); }
 .menu-item-check { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--bd); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 12px; transition: all var(--dur) var(--ease); }
 .menu-item.selected .menu-item-check { border-color: var(--G); background: var(--G); color: var(--bg); }
@@ -70,6 +71,13 @@
 .order-actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bd); }
 .order-repeat-btn { width: 100%; padding: 10px; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--G); border-radius: 8px; background: var(--gw); color: var(--G); transition: all var(--dur) var(--ease); font-family: 'Share Tech Mono', monospace; }
 .order-repeat-btn:hover { background: var(--G); color: var(--bg); }
+.order-cancel { margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.order-cancel-btn { padding: 9px 14px; font-size: 12px; font-weight: 700; letter-spacing: .5px; border: 1px solid var(--er); border-radius: 8px; background: rgba(140,46,46,.1); color: var(--er); font-family: 'Share Tech Mono', monospace; cursor: pointer; transition: all var(--dur) var(--ease); }
+.order-cancel-btn:hover { background: var(--er); color: #fff; }
+.order-cancel-btn:disabled { opacity: .5; cursor: default; }
+.order-cancel-timer { font-size: 11px; color: var(--t2); font-family: 'Share Tech Mono', monospace; }
+.order-cancel-timer b { color: var(--er); }
+.order-cancel-locked { font-size: 11px; color: var(--t3); font-family: 'Share Tech Mono', monospace; }
 
 /* ── Order timeline ── */
 .order-timeline { margin-top: 12px; padding: 12px; background: var(--bg3); border-radius: 8px; }
