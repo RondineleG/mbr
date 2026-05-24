@@ -509,36 +509,68 @@
 </div>
 
 <script type="module" src="js/app/main.js"></script>
-<!-- Service Worker Registration + auto-update (PWA sempre atualizado) -->
+<!-- Service Worker Registration + auto-update com fallback de aviso -->
+<style>
+#pwaUpdate{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(140%);
+  z-index:99999;display:flex;align-items:center;gap:12px;max-width:92vw;
+  background:rgba(8,6,2,.97);border:1px solid rgba(201,168,76,.35);border-radius:12px;
+  padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,.55);
+  font-family:'Share Tech Mono',monospace;font-size:12px;color:#EDE0C4;
+  transition:transform .4s cubic-bezier(.22,1,.36,1);}
+#pwaUpdate.show{transform:translateX(-50%) translateY(0);}
+#pwaUpdate button{background:#C9A84C;color:#0a0804;border:none;border-radius:8px;
+  padding:8px 14px;font-weight:700;letter-spacing:.5px;cursor:pointer;white-space:nowrap;font-family:inherit;}
+#pwaUpdate button:hover{filter:brightness(1.08);}
+</style>
 <script>
 if ('serviceWorker' in navigator) {
   let refreshing = false;
-  // Quando um SW novo assume o controle, recarrega uma vez para pegar a versão nova.
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    window.location.reload();
-  });
+
+  function reloadOnce() { if (refreshing) return; refreshing = true; window.location.reload(); }
+
+  // Quando um SW novo assume o controle → recarrega (caminho AUTOMÁTICO).
+  navigator.serviceWorker.addEventListener('controllerchange', reloadOnce);
+
+  // Aviso (FALLBACK) se a atualização automática não acontecer.
+  function showUpdateNotice() {
+    if (refreshing || document.getElementById('pwaUpdate')) return;
+    const el = document.createElement('div');
+    el.id = 'pwaUpdate';
+    el.innerHTML = '<span>✦ Nova versão disponível</span><button type="button">Atualizar</button>';
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add('show'));
+    el.querySelector('button').onclick = async () => {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      // Se em 1s o controllerchange não recarregar, força o reload.
+      setTimeout(reloadOnce, 1000);
+    };
+  }
+
+  // Quando um SW novo termina de instalar (e já há um controlando = é update):
+  // tenta ativar automaticamente; se em 6s não recarregou, mostra o aviso.
+  function onInstalled() {
+    if (!navigator.serviceWorker.controller) return; // 1ª instalação: não faz nada
+    navigator.serviceWorker.getRegistration().then((reg) => {
+      if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    });
+    setTimeout(() => { if (!refreshing) showUpdateNotice(); }, 6000);
+  }
 
   window.addEventListener('load', async () => {
     try {
       const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
 
-      // Se já existe um SW aguardando, ativa imediatamente.
-      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      if (reg.waiting && navigator.serviceWorker.controller) onInstalled();
 
-      // Ao encontrar atualização, ativa assim que terminar de instalar.
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if (!nw) return;
         nw.addEventListener('statechange', () => {
-          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
-            nw.postMessage({ type: 'SKIP_WAITING' });
-          }
+          if (nw.state === 'installed') onInstalled();
         });
       });
 
-      // Checa atualização a cada abertura e periodicamente (PWA aberto por muito tempo).
       reg.update();
       setInterval(() => reg.update(), 60 * 1000);
     } catch (error) {
