@@ -212,22 +212,24 @@ export function renderClube() {
 }
 
 async function loadMissions() {
+  const me = store.get("profile");
+  if (!me) { isLoadingMissions = false; return; }
   isLoadingMissions = true;
-  if (tab === "missoes" || tab === "recompensas") {
-    renderClube();
-  }
-  
+  if (tab === "missoes" || tab === "recompensas") renderClube();
+
+  // 1) Carrega e RENDERIZA as missões imediatamente (não depende de escrita).
   try {
-    const me = store.get("profile");
-    if (!me) {
-      isLoadingMissions = false;
-      return;
-    }
-    
-    // Carregar missões com progresso do usuário
     missions = await getMissionsWithProgress(me.uid);
-    
-    // Atualizar progresso automaticamente
+  } catch (err) {
+    console.error("Erro ao carregar missões:", err);
+  } finally {
+    isLoadingMissions = false;
+    if (tab === "missoes" || tab === "recompensas") renderClube();
+  }
+
+  // 2) Atualiza o progresso em segundo plano (best-effort): se a escrita travar
+  //    ou for bloqueada, a lista já está na tela e não fica presa.
+  try {
     const userStats = await calculateUserStats(me.uid);
     await updateMissionProgress(me.uid, {
       signupCompleted: me.signupCompleted || false,
@@ -237,20 +239,10 @@ async function loadMissions() {
       weekDays: userStats.weekDays,
       mboxCount: userStats.mboxCount
     });
-    
-    // Recarregar missões com progresso atualizado
     missions = await getMissionsWithProgress(me.uid);
-    
-    isLoadingMissions = false;
-    if (tab === "missoes" || tab === "recompensas") {
-      renderClube();
-    }
+    if (tab === "missoes" || tab === "recompensas") renderClube();
   } catch (err) {
-    console.error("Erro ao carregar missões:", err);
-    isLoadingMissions = false;
-    if (tab === "missoes" || tab === "recompensas") {
-      renderClube();
-    }
+    console.warn("Progresso de missões não atualizado (best-effort):", err?.message || err);
   }
 }
 
