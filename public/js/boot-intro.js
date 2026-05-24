@@ -72,38 +72,37 @@
     [-51.2,4.0],[-60.0,5.2],
   ];
 
-  /* Santa Catarina — outline simplificado */
-  const SC=[
-    [-53.8,-26.3],[-53.0,-25.5],[-50.5,-25.4],
-    [-48.84,-26.3],[-48.6,-27.0],[-48.6,-28.2],
-    [-49.2,-29.4],[-50.5,-30.2],[-52.0,-30.5],
-    [-53.5,-33.5],[-57.5,-34.5],[-57.8,-31.0],
-    [-57.5,-24.5],[-54.5,-20.5],[-53.8,-26.3],
+  /* São Paulo — outline simplificado */
+  const SP=[
+    [-53.1,-22.6],[-50.4,-22.7],[-48.9,-21.0],[-47.9,-20.0],
+    [-47.0,-19.9],[-46.3,-20.3],[-44.9,-20.2],[-44.2,-22.9],
+    [-45.9,-23.8],[-47.9,-24.9],[-48.5,-25.3],[-49.6,-24.4],
+    [-50.3,-24.3],[-53.1,-22.6],
   ];
 
-  /* Joinville */
-  const JV_LON=-48.84, JV_LAT=-26.30;
+  /* Americana — SP */
+  const JV_LON=-47.33, JV_LAT=-22.74;
 
-  /* Saguaçu — centro */
-  const SAG_LON=-48.845, SAG_LAT=-26.295;
+  /* Bairro alvo — centro */
+  const SAG_LON=-47.335, SAG_LAT=-22.735;
 
-  /* Motoboys — 6 pontos ao redor do Saguaçu */
+  /* Motoboys — 6 pontos ao redor do bairro */
   const MOTOS=[
-    {lon:-48.854,lat:-26.290,id:'M-01'},
-    {lon:-48.848,lat:-26.299,id:'M-02'},/* ALVO */
-    {lon:-48.839,lat:-26.293,id:'M-03'},
-    {lon:-48.861,lat:-26.285,id:'M-04'},
-    {lon:-48.832,lat:-26.304,id:'M-05'},
-    {lon:-48.858,lat:-26.308,id:'M-06'},
+    {lon:-47.344,lat:-22.730,id:'M-01'},
+    {lon:-47.338,lat:-22.739,id:'M-02'},/* ALVO */
+    {lon:-47.329,lat:-22.733,id:'M-03'},
+    {lon:-47.351,lat:-22.725,id:'M-04'},
+    {lon:-47.322,lat:-22.744,id:'M-05'},
+    {lon:-47.348,lat:-22.748,id:'M-06'},
   ];
 
   /* Agentes receptores — 5 pontos */
   const AGTS=[
-    {lon:-48.844,lat:-26.292,id:'A-01'},/* ALVO */
-    {lon:-48.850,lat:-26.286,id:'A-02'},
-    {lon:-48.836,lat:-26.298,id:'A-03'},
-    {lon:-48.862,lat:-26.296,id:'A-04'},
-    {lon:-48.828,lat:-26.290,id:'A-05'},
+    {lon:-47.334,lat:-22.732,id:'A-01'},/* ALVO */
+    {lon:-47.340,lat:-22.726,id:'A-02'},
+    {lon:-47.326,lat:-22.738,id:'A-03'},
+    {lon:-47.352,lat:-22.736,id:'A-04'},
+    {lon:-47.318,lat:-22.730,id:'A-05'},
   ];
 
   /* ══════════════════════════════════════════
@@ -178,25 +177,25 @@
     ctx.fillStyle='rgba(15,34,17,1)';ctx.fill();
     ctx.strokeStyle=G+`${al*.5})`;ctx.lineWidth=1.2;ctx.stroke();
 
-    /* SC destacado quando zoom chega */
+    /* SP destacado quando zoom chega */
     const scScale=CAM.jvApprox.scale;
     const scAl=cl((camScale-CAM.brasil.scale*2)/(scScale-CAM.brasil.scale*2),0,1);
     if(scAl>0.05){
       ctx.beginPath();
-      SC.forEach(([lon,lat],i)=>{const[x,y]=geo(lon,lat);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+      SP.forEach(([lon,lat],i)=>{const[x,y]=geo(lon,lat);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
       ctx.closePath();
       ctx.fillStyle=`rgba(24,55,28,${scAl})`;ctx.fill();
       ctx.strokeStyle=G+`${scAl*.7})`;ctx.lineWidth=1.5;ctx.stroke();
 
-      /* label SC */
+      /* label SP */
       if(scAl>0.4){
-        const[sx,sy]=geo(-52.5,-27.5);
+        const[sx,sy]=geo(-49.5,-22.0);
         ctx.font=`${cl(scAl*11,8,13)}px ${MONO}`;ctx.textAlign='center';
-        ctx.fillStyle=G+`${scAl*.6})`;ctx.fillText('SANTA CATARINA',sx,sy);
+        ctx.fillStyle=G+`${scAl*.6})`;ctx.fillText('SÃO PAULO',sx,sy);
       }
     }
 
-    /* ponto Joinville pulsando */
+    /* ponto Americana pulsando */
     const jvAl=cl((camScale-CAM.brasil.scale*3)/(CAM.jvApprox.scale/10),0,1);
     if(jvAl>0.05){
       const[jx,jy]=geo(JV_LON,JV_LAT);
@@ -208,7 +207,7 @@
         ctx.font=`${cl(jvAl*10,7,11)}px ${MONO}`;
         ctx.textAlign='left';ctx.fillStyle=G+`${jvAl*.85})`;
         const[jx2,jy2]=geo(JV_LON,JV_LAT);
-        ctx.fillText(' JOINVILLE · SC',jx2+5,jy2);
+        ctx.fillText(' AMERICANA · SP',jx2+5,jy2);
       }
     }
 
@@ -351,7 +350,7 @@
       ctx.fillStyle='rgba(120,215,255,.65)';ctx.fillText('AGENTE RECEPTOR',lx+24,ly+36);
 
       ctx.fillStyle=G+'.45)';
-      ctx.fillText(`${MOTOS.length+AGTS.length} AGENTES ATIVOS · SAGUAÇU`,lx+13,ly+55);
+      ctx.fillText(`${MOTOS.length+AGTS.length} AGENTES ATIVOS · AMERICANA`,lx+13,ly+55);
     }
 
     ctx.restore();
@@ -590,14 +589,14 @@
   function updHud(){
     let msg, step;
     if(t<PH.zoomJV){ msg='Posicionando satélite MBR sobre o território…'; step='ÓRBITA · MBR-SAT'; }
-    else if(t<PH.sagFull){ msg='Triangulando coordenadas de Joinville…'; step='ZOOM · BRASIL→SC→SAGUAÇU'; }
-    else if(t<PH.streetFull){ msg='Localizando agentes de campo no Saguaçu…'; step='RASTREANDO AGENTES'; }
+    else if(t<PH.sagFull){ msg='Triangulando coordenadas de Americana…'; step='ZOOM · BRASIL→SP→AMERICANA'; }
+    else if(t<PH.streetFull){ msg='Localizando agentes de campo em Americana…'; step='RASTREANDO AGENTES'; }
     else if(t<STP_t(STP.transfer)){ msg='Encontro confirmado · transferência em andamento…'; step='ENTREGA EM MÃOS · M-02→A-01'; }
     else { msg='Operação concluída · liberando acesso.'; step='ACESSO LIBERADO'; }
     if(hudSt && hudSt.dataset.m!==msg){ hudSt.textContent=msg; hudSt.dataset.m=msg; }
     if(hudPct){ const p=Math.round(cl(t/PH.titleS,0,1)*100); hudBar.style.width=p+'%'; hudPct.textContent=pad(p,2)+'%'; }
     const stepEl=document.getElementById('bootStep'); if(stepEl) stepEl.textContent=step;
-    if(hudCo){ hudCo.textContent="26°"+pad(18+Math.sin(t*1.3),2)+"'S · 48°"+pad(50+Math.cos(t*1.1),2)+"'W · SAGUAÇU"; }
+    if(hudCo){ hudCo.textContent="22°"+pad(44+Math.sin(t*1.3),2)+"'S · 47°"+pad(20+Math.cos(t*1.1),2)+"'W · AMERICANA"; }
   }
   function STP_t(x){ return PH.streetFull + x; }
 

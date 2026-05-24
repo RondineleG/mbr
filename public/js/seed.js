@@ -187,7 +187,7 @@ export async function seedSampleOrders() {
       total,
       pointsEarned: Math.round(total),
       pointsAwarded: o.status === "entregue",
-      address: { street: "Rua Secreta, 00", neighborhood: "Saguaçu", city: "Joinville" },
+      address: { street: "Rua Secreta, 00", neighborhood: "Centro", city: "Americana" },
       pagamento: { metodo: "pix", status: o.status === "entregue" ? "pago" : "pendente", valor: total },
       observacoes: "",
       anexos: [],
