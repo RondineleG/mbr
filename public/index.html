@@ -557,6 +557,14 @@ if ('serviceWorker' in navigator) {
     setTimeout(() => { if (!refreshing) showUpdateNotice(); }, 6000);
   }
 
+  // Expostos para o version-check (controle de versão via banco).
+  window.MBshowUpdateNotice = showUpdateNotice;
+  window.MBforceUpdate = async () => {
+    const reg = await navigator.serviceWorker.getRegistration();
+    if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    setTimeout(reloadOnce, 1000);
+  };
+
   window.addEventListener('load', async () => {
     try {
       const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });

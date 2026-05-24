@@ -23,6 +23,9 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Config do app (ex.: versão oficial p/ forçar atualização): leitura pública, escrita admin.
+    match /config/{doc} { allow read: if true; allow write: if isAdmin(); }
+
     // Catálogo e recompensas: leitura pública, escrita por autenticados
     match /products/{id}  { allow read: if true; allow write: if signedIn(); }
     match /rewards/{id}   { allow read: if true; allow write: if signedIn(); }

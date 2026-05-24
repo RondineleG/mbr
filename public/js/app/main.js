@@ -8,6 +8,7 @@ import * as store from "./state.js";
 import { initRouter, onRoute } from "./router.js";
 import { startSessionObserver, applyTheme } from "./session.js";
 import { ensureSeed } from "../seed.js";
+import { checkAppVersion } from "./version-check.js";
 import { renderCartBadges } from "../components/topbar.js";
 import { info, debug } from "../utils/logger.js";
 
@@ -100,7 +101,10 @@ async function boot() {
   // Observa login/logout e entra no app quando houver sessão.
   info('MAIN', 'Starting session observer');
   startSessionObserver();
-  
+
+  // Valida a versão instalada contra a versão oficial no banco (config/app).
+  checkAppVersion();
+
   info('MAIN', 'Application boot completed successfully');
 }
 
