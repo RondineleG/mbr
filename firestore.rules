@@ -52,8 +52,8 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Histórico de Metiqos: usuários autenticados podem criar e ler
-    match /metiqosHistory/{id} {
+    // Transações de pontos: usuários autenticados podem criar e ler
+    match /pointTransactions/{id} {
       allow read: if signedIn();
       allow create: if signedIn();
       allow update: if false;

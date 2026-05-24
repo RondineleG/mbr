@@ -3,6 +3,7 @@
    Gerencia missões, progresso do usuário e recompensas
    ═══════════════════════════════════════════════════════════════ */
 import { getDoc, getCollection, setDoc, updateDoc, addDoc, watchDoc, watchCollection, runTransaction, tsNow } from "../firebase/db.service.js";
+import { toDate } from "../utils/format.js";
 
 // Cache de missões carregadas do banco
 let missionsCache = null;
@@ -198,6 +199,9 @@ export async function updateMissionProgress(uid, userData) {
         } else if (missionId === 'mbox_1' && userData.mboxCount >= 1) {
           isComplete = true;
           progress = 100;
+        } else if (missionId === 'pwa_install' && userData.pwaInstalled) {
+          isComplete = true;
+          progress = 100;
         }
         break;
 
@@ -281,8 +285,8 @@ async function addPointsReward(uid, points, completedMissions) {
     await runTransaction(async (tx) => {
       const userDoc = await tx.get(`users/${uid}`);
       if (!userDoc) throw new Error('User not found');
-      
-      const currentPoints = userDoc.data().points || 0;
+
+      const currentPoints = userDoc.points || 0;
       const newPoints = currentPoints + points;
       
       tx.update(`users/${uid}`, {
@@ -358,8 +362,8 @@ export async function calculateUserStats(uid) {
   const orderDays = new Set();
   orders.forEach(order => {
     if (order.criadoEm) {
-      const date = new Date(order.criadoEm);
-      orderDays.add(date.getDay()); // 0-6 (Domingo-Sábado)
+      const date = toDate(order.criadoEm);
+      if (date) orderDays.add(date.getDay()); // 0-6 (Domingo-Sábado)
     }
   });
 
@@ -405,9 +409,9 @@ export async function claimMissionReward(uid, missionId) {
     await runTransaction(async (tx) => {
       const userDoc = await tx.get(`users/${uid}`);
       if (!userDoc) throw new Error('User not found');
-      
-      const currentPoints = userDoc.data().points || 0;
-      const newPoints = currentPoints + mission.reward;
+
+      const currentPoints = userDoc.points || 0;
+      const newPoints = currentPoints + points;
       
       tx.update(`users/${uid}`, {
         points: newPoints

@@ -19,17 +19,78 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MrBur">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<!-- Animação de boot consolidada (satélite → agentes → entrega) -->
+<style>
+.boot { position: fixed; inset: 0; z-index: 9999; background: #030201; overflow: hidden; opacity: 1; transition: opacity 0.65s ease; }
+.boot.boot-hide { opacity: 0; pointer-events: none; }
+#bootCv { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.boot-vgn { position: absolute; inset: 0; z-index: 10; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 12%, rgba(3,2,1,0.35) 60%, rgba(3,2,1,0.9) 100%); }
+.boot-corners { position: absolute; inset: 20px; z-index: 20; pointer-events: none; }
+.boot-corners span { position: absolute; width: 36px; height: 36px; border-color: rgba(201,168,76,0.3); border-style: solid; }
+.boot-corners span:nth-child(1){ top:0; left:0; border-width:1px 0 0 1px; }
+.boot-corners span:nth-child(2){ top:0; right:0; border-width:1px 1px 0 0; }
+.boot-corners span:nth-child(3){ bottom:0; left:0; border-width:0 0 1px 1px; }
+.boot-corners span:nth-child(4){ bottom:0; right:0; border-width:0 1px 1px 0; }
+#bootHud { position: absolute; inset: 0; z-index: 30; pointer-events: none;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+  padding: clamp(26px,4.5vh,46px) 18px; transition: opacity 0.5s ease; }
+.boot-top { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+.boot-emblem { width: 72px; height: 72px; position: relative; display: flex; align-items: center; justify-content: center; }
+.boot-ring { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(201,168,76,0.45); animation: bootPulse 3.5s ease-in-out infinite alternate; }
+.boot-ring:nth-child(2){ inset: 10px; border-color: rgba(201,168,76,0.22); border-style: dashed; animation: bootRot 12s linear infinite; }
+.boot-radar { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; }
+.boot-radar::after { content:''; position:absolute; inset:0; border-radius:50%;
+  background: conic-gradient(from 0deg, rgba(201,168,76,0) 0%, rgba(201,168,76,0.38) 18%, rgba(201,168,76,0) 22%); animation: bootRot 2.2s linear infinite; }
+.boot-emblem-icon { font-size: 22px; z-index:1; filter: drop-shadow(0 0 14px rgba(201,168,76,0.55)); }
+.boot-title { font-family:'Cinzel',serif; font-weight:600; font-size: clamp(30px,7.5vw,52px); letter-spacing:0.2em; color:#EDE0C4;
+  text-shadow: 0 0 60px rgba(201,168,76,0.4), 0 0 16px rgba(201,168,76,0.15); }
+.boot-tag { font-family:'Share Tech Mono',monospace; font-size: clamp(7px,2vw,9px); letter-spacing:0.5em; color: rgba(201,168,76,0.34); margin-top:6px; }
+.boot-bottom { display:flex; flex-direction:column; align-items:center; gap:11px; width:100%; }
+.boot-status { font-family:'Cormorant Garamond',serif; font-style:italic; font-size: clamp(14px,4vw,18px); color: rgba(237,210,160,0.8); min-height:1.4em; text-align:center; }
+.boot-bar-wrap { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.boot-meta { display:flex; justify-content:space-between; width: clamp(210px,64vw,300px); font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.3em; color: rgba(201,168,76,0.55); }
+.boot-track { width: clamp(210px,64vw,300px); height:1px; background: rgba(201,168,76,0.12); position:relative; overflow:visible; }
+.boot-fill { position:absolute; top:0; left:0; height:100%; width:0%; background: linear-gradient(90deg,#4a1e04,#C9A84C,#F4D080); box-shadow:0 0 10px rgba(201,168,76,0.5); transition: width 0.25s linear; }
+.boot-fill::after { content:''; position:absolute; right:-4px; top:-4px; width:8px; height:8px; border-radius:50%; background: radial-gradient(circle,#fffacc,#f0c84c); box-shadow:0 0 12px rgba(244,200,76,0.85); }
+.boot-coords { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.26em; color: rgba(201,168,76,0.28); text-align:center; }
+#bootSkip { position:absolute; bottom:20px; right:20px; z-index:40; pointer-events:auto; background:transparent; border:none;
+  border-bottom:1px solid rgba(201,168,76,0.12); font-family:'Cinzel',serif; font-size:9px; letter-spacing:0.42em;
+  color: rgba(201,168,76,0.32); padding:6px 0; transition: color 0.3s, border-color 0.3s; cursor:pointer; }
+#bootSkip:hover { color:#C9A84C; border-bottom-color: rgba(201,168,76,0.5); }
+@keyframes bootPulse { from { box-shadow:0 0 10px rgba(201,168,76,0.18); transform:scale(1);} to { box-shadow:0 0 38px rgba(201,168,76,0.5); transform:scale(1.04);} }
+@keyframes bootRot { to { transform: rotate(360deg); } }
+</style>
+<script defer src="js/boot-intro.js"></script>
 </head>
 <body>
 
-<!-- ═══ SPLASH ═══ -->
-<div class="splash" id="splash">
-  <div class="splash-scanline"></div>
-  <div class="splash-logo">🔥</div>
-  <div class="splash-title">MRBUR</div>
-  <div class="splash-sub">A&nbsp;&nbsp;O R D E M</div>
-  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
-  <div class="splash-status">VERIFICANDO IDENTIDADE...</div>
+<!-- ═══ BOOT — cena consolidada (satélite → agentes → entrega) → login ═══ -->
+<div class="boot" id="boot">
+  <canvas id="bootCv"></canvas>
+  <div class="boot-vgn"></div>
+  <div class="boot-corners"><span></span><span></span><span></span><span></span></div>
+  <div id="bootHud">
+    <div class="boot-top">
+      <div class="boot-emblem">
+        <div class="boot-ring"></div><div class="boot-ring"></div>
+        <div class="boot-radar"></div><div class="boot-emblem-icon">📡</div>
+      </div>
+      <div>
+        <div class="boot-title">MRBUR</div>
+        <div class="boot-tag">A&nbsp;ORDEM&nbsp;·&nbsp;OPERAÇÃO&nbsp;ENTREGA&nbsp;SECRETA</div>
+      </div>
+    </div>
+    <div class="boot-bottom">
+      <div class="boot-status" id="bootStatus">Inicializando satélite MBR…</div>
+      <div class="boot-bar-wrap">
+        <div class="boot-meta"><span id="bootStep">ÓRBITA · MBR-SAT</span><span id="bootPct">00%</span></div>
+        <div class="boot-track"><div class="boot-fill" id="bootBar"></div></div>
+      </div>
+      <div class="boot-coords" id="bootCoords">26°18'S · 48°50'W · SAGUAÇU · JOINVILLE</div>
+    </div>
+  </div>
+  <button id="bootSkip" onclick="window.MBskipBoot&&window.MBskipBoot()">PULAR</button>
 </div>
 
 <!-- ═══ LOGIN ═══ -->
@@ -222,7 +283,6 @@
     <div class="clube-actions">
       <div class="clube-action" data-action="clube-tab" data-tab="recompensas"><div class="clube-action-icon">🎁</div><div class="clube-action-label">Resgatar</div><div class="clube-action-sub">Usar pontos</div></div>
       <div class="clube-action" data-action="clube-tab" data-tab="historico"><div class="clube-action-icon">📊</div><div class="clube-action-label">Extrato</div><div class="clube-action-sub">Méritos</div></div>
-      <div class="clube-action" data-action="clube-tab" data-tab="metiqos"><div class="clube-action-icon">💰</div><div class="clube-action-label">Metiqos</div><div class="clube-action-sub">Moeda virtual</div></div>
       <div class="clube-action" data-action="clube-tab" data-tab="missoes"><div class="clube-action-icon">🏆</div><div class="clube-action-label">Missões</div><div class="clube-action-sub">Desafios</div></div>
       <div class="clube-action" data-action="clube-tab" data-tab="ranking"><div class="clube-action-icon">👑</div><div class="clube-action-label">Ranking</div><div class="clube-action-sub">Top agentes</div></div>
     </div>

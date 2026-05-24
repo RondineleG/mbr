@@ -6,10 +6,19 @@ import * as store from "../app/state.js";
 import { BUILD_STEPS, BUILD_BASE_PRICE } from "../utils/constants.js";
 import { money } from "../utils/format.js";
 import { skeletonList } from "../components/skeleton.js";
-import { toast, toastInfo } from "../components/toast.js";
+import { toast, toastInfo, toastError } from "../components/toast.js";
 
 let currentStep = 0;
-let selections = {}; // stepId -> [items]
+// Pão e Carne já vêm pré-selecionados (itens obrigatórios do lanche).
+function defaultSelections() {
+  const sel = {};
+  const pao = BUILD_STEPS.find((s) => s.id === "pao");
+  const carnes = BUILD_STEPS.find((s) => s.id === "carnes");
+  if (pao?.items?.[0]) sel.pao = [pao.items[0]];
+  if (carnes?.items?.[0]) sel.carnes = [carnes.items[0]];
+  return sel;
+}
+let selections = defaultSelections(); // stepId -> [items]
 let cat = "monte";
 
 /* ─── Wizard ─── */
@@ -88,7 +97,7 @@ function buildAddToCart() {
   BUILD_STEPS.forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
   store.cartAdd({ custom: true, name: "Monte Seu Lanche", icon: "🔧", price: total, qty: 1, desc: parts.join(", ") });
   toast("success", "🔧", `Lanche personalizado adicionado! ${money(total)}`);
-  selections = {}; currentStep = 0; renderWizard();
+  selections = defaultSelections(); currentStep = 0; renderWizard();
   import("../app/router.js").then((m) => m.navigate("sacola"));
 }
 

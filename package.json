@@ -7,10 +7,15 @@
     "seed": "node seed.js",
     "seed:admin": "node seed.js",
     "seed:rest": "node seed-rest.js",
-    "create-users": "node create-users.js"
+    "create-users": "node create-users.js",
+    "test:e2e": "playwright test",
+    "test:e2e:prod": "E2E_BASE=https://trabalhohowx.web.app playwright test"
   },
   "dependencies": {
     "firebase": "^12.13.0",
     "firebase-admin": "^12.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0"
   }
 }

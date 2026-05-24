@@ -60,7 +60,7 @@ function generateInviteCode() {
 }
 
 // Cria convites para um usuário
-async function createInvitesForUser(uid, count) {
+async function createInvitesForUser(uid, role, count) {
   const inviteCodes = [];
   
   for (let i = 0; i < count; i++) {
@@ -71,7 +71,7 @@ async function createInvitesForUser(uid, count) {
       id: code,
       token: code,
       criadoPor: uid,
-      roleCriador: null,
+      roleCriador: role,
       emailDestino: null,
       status: "ativo",
       dataCriacao: admin.firestore.FieldValue.serverTimestamp(),
@@ -144,7 +144,7 @@ async function createUser(email, password, userData) {
     // Criar convites se o usuário tiver invitesAvailable
     let inviteCodes = [];
     if (userData.invitesAvailable > 0) {
-      inviteCodes = await createInvitesForUser(userRecord.uid, userData.invitesAvailable);
+      inviteCodes = await createInvitesForUser(userRecord.uid, userData.role || "agent", userData.invitesAvailable);
       console.log(`🎫 Convites criados: ${inviteCodes.join(', ')}`);
     }
 
@@ -190,7 +190,7 @@ async function createUser(email, password, userData) {
       // Criar convites se o usuário tiver invitesAvailable
       let inviteCodes = [];
       if (userData.invitesAvailable > 0) {
-        inviteCodes = await createInvitesForUser(userRecord.uid, userData.invitesAvailable);
+        inviteCodes = await createInvitesForUser(userRecord.uid, userData.role || "agent", userData.invitesAvailable);
         console.log(`🎫 Convites criados: ${inviteCodes.join(', ')}`);
       }
       

@@ -131,7 +131,7 @@ export async function consumeInvite(code, uid) {
 export async function createInvite(data) {
   const code = norm(data.code) || ("MRBUR-" + Math.random().toString(36).slice(2, 7).toUpperCase());
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 dias
-  
+
   const invite = {
     id: code,
     token: code,
@@ -140,13 +140,13 @@ export async function createInvite(data) {
     emailDestino: data.emailDestino || null,
     status: "ativo",
     dataCriacao: tsNow(),
-    dataExpiracao: tsNow(expiresAt),
+    dataExpiracao: expiresAt, // Salvar como objeto Date (Firestore converte para Timestamp)
     dataUso: null,
     usadoPor: null,
     limiteUso: data.limiteUso || 1,
     totalUsos: 0
   };
-  
+
   await addDoc("invites", invite);
   return code;
 }

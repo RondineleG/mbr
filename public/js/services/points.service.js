@@ -1,8 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
-   POINTS SERVICE — méritos, metiqos, extrato e progressão de rank
+   POINTS SERVICE — méritos, extrato e progressão de rank
    collections: 
    - pointsHistory: { userId, delta, reason, orderId, type, createdAt }
-   - metiqosHistory: { userId, delta, reason, type, createdAt }
    ═══════════════════════════════════════════════════════════════ */
 import { updateDoc, addDoc, getCollection, inc, tsNow } from "../firebase/db.service.js";
 import { rankFromPoints } from "../utils/format.js";
@@ -34,37 +33,12 @@ export async function adjustPoints(uid, delta, reason, orderId = null) {
   return next;
 }
 
-/**
- * Credita/debita Metiqos (moeda virtual) do agente.
- */
-export async function adjustMetiqos(uid, delta, reason) {
-  await updateDoc(`users/${uid}`, {
-    metiqos: inc(delta)
-  });
-  await addDoc("metiqosHistory", {
-    userId: uid,
-    delta,
-    reason,
-    type: "metiqos",
-    createdAt: tsNow(),
-  });
-  
-  const users = await getCollection("users", { where: [["uid", "==", uid]] });
-  return users[0]?.metiqos || 0;
-}
+// Converte createdAt (Timestamp do Firestore | number | Date) em ms para ordenar.
+const toMillis = (v) =>
+  v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
 
-export function getHistory(uid) {
-  return getCollection("pointsHistory", {
-    where: [["userId", "==", uid]],
-    orderBy: ["createdAt", "desc"],
-    limit: 50,
-  });
-}
-
-export function getMetiqosHistory(uid) {
-  return getCollection("metiqosHistory", {
-    where: [["userId", "==", uid]],
-    orderBy: ["createdAt", "desc"],
-    limit: 50,
-  });
+export async function getHistory(uid) {
+  // Só `where` (sem orderBy) p/ não exigir índice composto; ordena no cliente.
+  const rows = await getCollection("pointsHistory", { where: [["userId", "==", uid]] });
+  return rows.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt)).slice(0, 50);
 }

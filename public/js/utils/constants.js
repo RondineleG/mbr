@@ -76,17 +76,6 @@ export const RANKS = [
   { level: 6, name: "LENDA DA ORDEM", min: 6000 },
 ];
 
-/** Status do pedido → rótulo de UI + ícone. Ordem é o fluxo oficial. */
-export const ORDER_STATUS = {
-  received:        { label: "Recebido",            icon: "📥", step: 0 },
-  preparing:       { label: "Em Preparo",          icon: "👨‍🍳", step: 1 },
-  out_for_delivery:{ label: "Saiu para Entrega",   icon: "🛵", step: 2 },
-  delivered:       { label: "Entregue",            icon: "✅", step: 3 },
-  cancelled:       { label: "Cancelado",           icon: "✕", step: -1 },
-};
-
-export const ORDER_FLOW = ["received", "preparing", "out_for_delivery", "delivered"];
-
 /** Pontos ganhos por real gasto no pedido. */
 export const POINTS_PER_BRL = 1;
 

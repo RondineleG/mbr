@@ -1,68 +1,53 @@
-/* ═══════════════════════════════════════════════════
-   TOKENS — MrBur Design System v1.0
+/* ═══════════════════════════════════════════
+   DESIGN TOKENS — MrBur Premium v14
    Dark: paleta carvão + dourado clube
    Light: pergaminho marfim com tinta sépia
    CSS variables → troca de tema instantânea.
-   ═══════════════════════════════════════════════════ */
-:root {
-  /* Surfaces — coal */
-  --bg: #060503;
-  --bg-card: #0e0b06;
-  --bg-elevated: #181309;
-  --bg-input: #0a0805;
-  /* Ink — bone */
-  --text: #EDE0C4;
-  --text-muted: rgba(237,224,196,0.55);
-  --text-dim: rgba(237,224,196,0.32);
-  /* Gold */
-  --gold: #C9A84C;
-  --gold-l: #F0D880;
-  --gold-d: #7A5C1E;
-  --gold-dim: #8A7333;
-  --gold-glow: rgba(201,168,76,0.12);
-  --gold-border: rgba(201,168,76,0.28);
-  /* Lines */
-  --border: rgba(201,168,76,0.18);
-  --border-light: rgba(237,224,196,0.08);
-  /* Signals */
-  --danger: #C84B3A;
-  --success: #6B8E3D;
-  --info: #4A6B8A;
-  /* Chrome */
-  --nav-bg: rgba(6,5,3,0.94);
-  --radius: 12px;
-  --radius-sm: 8px;
-  --radius-xs: 6px;
-  --shadow: 0 4px 28px rgba(0,0,0,0.55), 0 0 1px rgba(201,168,76,0.08);
-  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
-  /* Type */
-  --f-display: 'Cinzel', 'Times New Roman', serif;
-  --f-script: 'Cormorant Garamond', 'Georgia', serif;
-  --f-mono: 'Share Tech Mono', 'Courier New', monospace;
-  --f-body: 'Segoe UI', system-ui, -apple-system, sans-serif;
+═══════════════════════════════════════════ */
+:root{
+  --dur:.52s;
+  --ease:cubic-bezier(.76,0,.24,1);
+  --ease-out:cubic-bezier(.22,1,.36,1);
 }
-[data-theme="light"] {
-  /* Surfaces — parchment */
-  --bg: #FBF5E6;
-  --bg-card: #FFFDF6;
-  --bg-elevated: #FFFFFF;
-  --bg-input: #F4ECD6;
-  /* Ink — espresso */
-  --text: #1A0F00;
-  --text-muted: rgba(26,15,0,0.62);
-  --text-dim: rgba(26,15,0,0.38);
-  /* Gold — sepia for contrast on cream */
-  --gold: #8A5500;
-  --gold-l: #C9A84C;
-  --gold-d: #5A3200;
-  --gold-dim: #A87A1C;
-  --gold-glow: rgba(138,85,0,0.07);
-  --gold-border: rgba(138,85,0,0.22);
-  --border: rgba(138,85,0,0.18);
-  --border-light: rgba(26,15,0,0.06);
-  --danger: #A2351E;
-  --success: #4F6B1F;
-  --info: #2E4F70;
-  --nav-bg: rgba(251,245,230,0.96);
-  --shadow: 0 4px 24px rgba(60,40,0,0.08), 0 0 1px rgba(138,85,0,0.06);
+[data-theme=dark]{
+  --bg:#060503;--bg2:#0e0b06;--bg3:#181309;
+  --card:rgba(10,8,4,.92);
+  --G:#C9A84C;--GL:#F0D880;--GD:#7A5C1E;
+  --gw:rgba(201,168,76,.22);--glow:rgba(201,168,76,.5);
+  --bd:rgba(201,168,76,.12);--bd2:rgba(201,168,76,.22);
+  --sf:rgba(255,255,255,.025);
+  --tx:#EDE0C4;--t2:rgba(237,224,196,.38);--t3:rgba(237,224,196,.14);
+  --ok:#3D7034;--er:#8C2E2E;
+  --card-shadow:0 40px 100px rgba(0,0,0,.7),0 8px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(201,168,76,.08);
+  /* aliases admin.css (design system antigo) */
+  --gold:var(--G);--gold-glow:var(--gw);--gold-border:var(--bd2);--border:var(--bd);
+  --text:var(--tx);--text-muted:var(--t2);--text-dim:var(--t3);
+  --bg-card:var(--card);--bg-elevated:var(--bg2);--bg-input:var(--bg3);
+  --danger:var(--er);--success:var(--ok);
+  --nav-bg:rgba(14,11,6,.82);
+}
+[data-theme=light]{
+  --bg:#EFE7D3;--bg2:#E4D9C0;--bg3:#CEBE9C;
+  --card:rgba(252,247,238,.97);
+  --G:#8A5500;--GL:#C9A84C;--GD:#5A3200;
+  --gw:rgba(138,85,0,.14);--glow:rgba(138,85,0,.4);
+  --bd:rgba(138,85,0,.16);--bd2:rgba(138,85,0,.28);
+  --sf:rgba(138,85,0,.035);
+  --tx:#160900;--t2:rgba(22,9,0,.45);--t3:rgba(22,9,0,.16);
+  --ok:#295E28;--er:#882020;
+  --card-shadow:0 20px 60px rgba(80,40,0,.14),0 4px 16px rgba(80,40,0,.08),inset 0 1px 0 rgba(255,255,255,.7);
+  /* aliases admin.css (design system antigo) */
+  --gold:var(--G);--gold-glow:var(--gw);--gold-border:var(--bd2);--border:var(--bd);
+  --text:var(--tx);--text-muted:var(--t2);--text-dim:var(--t3);
+  --bg-card:var(--card);--bg-elevated:var(--bg2);--bg-input:var(--bg3);
+  --danger:var(--er);--success:var(--ok);
+  --nav-bg:rgba(252,247,238,.86);
+}
+
+/* ─── Constantes independentes de tema (aliases do design system antigo) ─── */
+:root{
+  --radius:14px;--radius-sm:10px;--radius-xs:7px;
+  --f-mono:'Share Tech Mono',monospace;
+  --f-display:'Cinzel',serif;
+  --transition:.24s var(--ease-out);
 }

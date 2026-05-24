@@ -3,13 +3,13 @@
    Alimentado por store.orders (watchUserOrders em session.js).
    ═══════════════════════════════════════════════════════════════ */
 import { setHtml, escapeHtml } from "../utils/dom.js";
+import { toast, toastSuccess, toastError } from "../components/toast.js";
 import * as store from "../app/state.js";
 import { money, dateShort } from "../utils/format.js";
 import { ORDER_STATUS_LABELS } from "../services/order.service.js";
 import { getOrderStats } from "../services/order.service.js";
 import { emptyState, withEmpty } from "../utils/loading.js";
 import { navigate } from "../app/router.js";
-import { toast, toastSuccess, toastError } from "../components/toast.js";
 
 function formatDate(timestamp) {
   if (!timestamp) return "—";
@@ -160,7 +160,7 @@ export function initPedidos() {
           });
         });
         
-        toastSuccess("🛒", "Itens adicionados à sacola");
+        toast("success", "🛒", "Itens adicionados à sacola");
         navigate("sacola");
       }
     }

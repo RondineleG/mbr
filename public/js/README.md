@@ -70,7 +70,7 @@ Serviços de negócio e lógica de domínio.
 - `invite.service.js` - Sistema de convites
 - `mission.service.js` - Sistema de gamificação/missões
 - `reward.service.js` - Sistema de recompensas
-- `points.service.js` - Gestão de pontos (Méritos e Metiqos)
+- `points.service.js` - Gestão de pontos (Méritos)
 
 ### `/utils/`
 Funções utilitárias e helpers.

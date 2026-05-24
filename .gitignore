@@ -21,3 +21,8 @@ Thumbs.db
 # Editor
 .vscode/
 .idea/
+
+# E2E / Playwright artifacts
+test-results/
+playwright-report/
+.playwright/

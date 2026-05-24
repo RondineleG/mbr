@@ -2,7 +2,7 @@
    SESSION — orquestra overlays (splash/login/onboarding/app),
    o perfil corrente e os listeners realtime do agente.
    ═══════════════════════════════════════════════════════════════ */
-import { $, show } from "../utils/dom.js";
+import { $, show, onAction } from "../utils/dom.js";
 import * as store from "./state.js";
 import { navigate } from "./router.js";
 import * as auth from "../firebase/auth.service.js";
@@ -12,11 +12,110 @@ import { listProducts } from "../services/product.service.js";
 import { listRewards } from "../services/reward.service.js";
 import { renderTopbar } from "../components/topbar.js";
 import * as missionService from "../services/mission.service.js";
+import { modalPrompt } from "../components/modal.js";
+import { toastSuccess } from "../components/toast.js";
 
 let unsubProfile = null;
 let unsubOrders = null;
 let unsubMissions = null;
 let entered = false;
+let deferredPrompt = null;
+
+// Captura o evento de instalação do PWA
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Impede que o mini-infobar apareça no mobile
+  e.preventDefault();
+  // Guarda o evento para disparar depois
+  deferredPrompt = e;
+  
+  console.log('PWA: Evento beforeinstallprompt capturado');
+
+  // Mostrar botão de instalação no sidebar
+  const installBtn = $("#sidemenuInstallBtn");
+  if (installBtn) {
+    installBtn.style.display = "flex";
+  }
+
+  // Se o usuário já estiver logado e no app, mostra o modal
+  if (entered) {
+    checkPwaInstallPrompt();
+  }
+});
+
+/** Verifica se o app está rodando como PWA instalado */
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+
+window.addEventListener('appinstalled', (evt) => {
+  console.log('MrBur PWA instalado com sucesso!');
+  deferredPrompt = null;
+  // Esconder botão de instalação
+  const installBtn = $("#sidemenuInstallBtn");
+  if (installBtn) installBtn.style.display = "none";
+  // Premiar o usuário
+  rewardPwaInstall();
+});
+
+async function rewardPwaInstall() {
+  const profile = store.get("profile");
+  if (!profile) return;
+  
+  try {
+    const stats = await missionService.calculateUserStats(profile.uid);
+    await missionService.updateMissionProgress(profile.uid, {
+      ...stats,
+      pwaInstalled: true
+    });
+    toastSuccess("Missão 'Instalador de Elite' completada! 📱");
+  } catch (err) {
+    console.error("Erro ao premiar instalação PWA:", err);
+  }
+}
+
+async function triggerPwaInstall() {
+  if (!deferredPrompt) return;
+  
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') {
+    console.log('PWA: Usuário aceitou a instalação');
+  } else {
+    console.log('PWA: Usuário recusou a instalação');
+  }
+  deferredPrompt = null;
+  const installBtn = $("#sidemenuInstallBtn");
+  if (installBtn) installBtn.style.display = "none";
+}
+
+async function checkPwaInstallPrompt() {
+  // Se não temos o prompt ou já instalou, ignora
+  if (!deferredPrompt) return;
+  
+  // Verifica se já ganhou a recompensa para não incomodar
+  const progress = store.get("missionProgress");
+  if (progress?.completed?.includes('pwa_install')) return;
+
+  // Se o botão lateral já estiver visível, talvez não precise do modal agressivo
+  // Mas vamos manter o modal como incentivo inicial
+
+  // Pequeno delay para não aparecer de cara no login
+  setTimeout(async () => {
+    // Re-checar deferredPrompt pois pode ter sido usado/limpo no intervalo
+    if (!deferredPrompt || !entered) return;
+
+    const confirmed = await modalPrompt({
+      title: "📱 App da Ordem",
+      message: "Instale o app do MrBur para acesso rápido, notificações e ganhe **100 pontos de mérito**!",
+      confirmText: "INSTALAR AGORA",
+      cancelText: "MAIS TARDE"
+    });
+
+    if (confirmed) {
+      triggerPwaInstall();
+    }
+  }, 2000);
+}
 
 function stopWatchers() {
   unsubProfile?.(); unsubProfile = null;
@@ -27,7 +126,7 @@ function stopWatchers() {
 /** Aplica o tema salvo ao <body>. */
 export function applyTheme() {
   const theme = store.get("theme");
-  document.body.setAttribute("data-theme", theme === "light" ? "light" : "");
+  document.body.setAttribute("data-theme", theme === "light" ? "light" : "dark");
 }
 
 export function showLogin() {
@@ -53,13 +152,7 @@ export async function enterApp(profile) {
   $("#onboardingOverlay")?.classList.add("hidden");
   show($("#app"), true);
 
-  // Mostrar botão admin se for admin
-  if (profile.role === "admin") {
-    $("#sidemenuAdminBtn")?.style.removeProperty("display");
-    $("#sidemenuAdminBtn")?.classList.add("visible");
-  }
-
-  // Atualizar informações do usuário no sidebar
+  // Atualizar informações do usuário no sidebar (inclui visibilidade do link Admin)
   updateSidemenuUser(profile);
 
   // Restaurar estado do sidebar (collapsed/expanded)
@@ -76,7 +169,11 @@ export async function enterApp(profile) {
     }
   });
   unsubOrders = watchUserOrders(profile.uid, (orders) => store.set("orders", orders));
-  unsubMissions = missionService.watchMissionProgress(profile.uid, (progress) => store.set("missionProgress", progress));
+  unsubMissions = missionService.watchMissionProgress(profile.uid, (progress) => {
+    store.set("missionProgress", progress);
+    // Após carregar missões, verifica se deve mostrar o prompt de instalação
+    checkPwaInstallPrompt();
+  });
 
   // Catálogo + recompensas (uma vez).
   listProducts({ activeOnly: true }).then((p) => store.set("products", p)).catch(() => {});
@@ -105,6 +202,14 @@ function updateSidemenuUser(profile) {
     };
     roleEl.textContent = roleLabels[profile.role] || profile.role || "—";
   }
+
+  // Link Admin: visível somente para role admin (esconde explicitamente os demais).
+  const adminBtn = $("#sidemenuAdminBtn");
+  if (adminBtn) {
+    const isAdmin = profile.role === "admin";
+    adminBtn.classList.toggle("visible", isAdmin);
+    adminBtn.style.display = isAdmin ? "" : "none";
+  }
 }
 
 export async function logout() {
@@ -120,6 +225,10 @@ export async function logout() {
  */
 export function startSessionObserver() {
   applyTheme();
+  
+  // Registrar ação de instalação
+  onAction("pwa-install", () => triggerPwaInstall());
+
   auth.onAuthChanged(async (user) => {
     store.set("authUser", user);
     if (!user) { showLogin(); return; }

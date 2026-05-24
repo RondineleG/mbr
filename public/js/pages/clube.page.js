@@ -5,7 +5,7 @@
 import { $, onAction, setHtml, escapeHtml } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { redeem, listRewards } from "../services/reward.service.js";
-import { getHistory, getMetiqosHistory } from "../services/points.service.js";
+import { getHistory } from "../services/points.service.js";
 import { listAgents } from "../services/user.service.js";
 import { getMissionsWithProgress, claimMissionReward, updateMissionProgress, calculateUserStats } from "../services/mission.service.js";
 import { codenameInitials, rankLabel, dateShort } from "../utils/format.js";
@@ -38,32 +38,17 @@ export function renderRewardCards(rewards, userPoints) {
       ? `<div class="reward-stock">📦 ${r.stock} disponíveis</div>` 
       : '';
     
-    // Category badge
-    const categoryBadge = `<div class="reward-category">${getCategoryLabel(r.category)}</div>`;
-    
     return `<div class="reward-card">
       <div class="reward-card-icon">${r.icon || "🎁"}</div>
       <div class="reward-card-name">${escapeHtml(r.name)}</div>
       <div class="reward-card-desc">${escapeHtml(r.description || "")}</div>
       ${stockIndicator}
       <div class="reward-card-footer">
-        <div class="reward-card-cost">Ⓜ ${r.pointsRequired}</div>
+        <div class="reward-card-cost">⚡ ${r.pointsRequired}</div>
         ${btn}
       </div>
-      ${categoryBadge}
     </div>`;
   }).join("");
-}
-
-function getCategoryLabel(category) {
-  const labels = {
-    benefits: '🎁 Benefício',
-    physical: '📦 Produto',
-    experiences: '⭐ Experiência',
-    status: '👑 Status',
-    general: '🎯 Geral'
-  };
-  return labels[category] || '🎯 Geral';
 }
 
 function renderMissions() {
@@ -171,33 +156,10 @@ async function renderHistory() {
   setHtml("clubeDynamic", `<div class="section-title">Extrato de Méritos</div>${content}`);
 }
 
-async function renderMetiqosHistory() {
-  setHtml("clubeDynamic", loadingState("Carregando extrato de Metiqos..."));
-  const me = store.get("profile");
-  const items = await getMetiqosHistory(me.uid);
-  
-  const content = withEmpty(
-    items.map((h) => `
-      <div class="history-row">
-        <div><div class="history-reason">${escapeHtml(h.reason)}</div><div class="history-date">${dateShort(h.createdAt)}</div></div>
-        <div class="history-delta ${h.delta >= 0 ? "pos" : "neg"}">${h.delta >= 0 ? "+" : ""}${h.delta} 💰</div>
-      </div>`).join(""),
-    !items || items.length === 0,
-    {
-      icon: "💰",
-      title: "Nenhuma transação",
-      description: "Seu extrato aparecerá aqui quando você ganhar ou gastar Metiqos"
-    }
-  );
-  
-  setHtml("clubeDynamic", `<div class="section-title">Extrato de Metiqos</div>${content}`);
-}
-
 function renderRewardsTab() {
   const rewards = store.get("rewards");
   const profile = store.get("profile");
   const pts = profile?.points || 0;
-  const metiqos = profile?.metiqos || 0;
   
   // Filtrar por categoria
   const filteredRewards = category === "all" 
@@ -234,13 +196,6 @@ function renderRewardsTab() {
           <div class="balance-value">${pts}</div>
         </div>
       </div>
-      <div class="balance-card">
-        <div class="balance-icon">💰</div>
-        <div class="balance-info">
-          <div class="balance-label">Metiqos</div>
-          <div class="balance-value">${metiqos}</div>
-        </div>
-      </div>
     </div>
     <div class="section-title">Loja da Ordem</div>
     ${categoryFilters}
@@ -254,7 +209,6 @@ export function renderClube() {
   else if (tab === "missoes") setHtml("clubeDynamic", `<div class="section-title">Missões Ativas</div>${renderMissions()}`);
   else if (tab === "ranking") renderRanking();
   else if (tab === "historico") renderHistory();
-  else if (tab === "metiqos") renderMetiqosHistory();
 }
 
 async function loadMissions() {

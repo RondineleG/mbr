@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seed Runner - MrBur</title>
+</head>
+<body>
+  <h1>Seed Runner</h1>
+  <p>Abra o console do navegador (F12) para ver o progresso.</p>
+  <script type="module">
+    import { seedEverything, seedAll, seedCatalog, seedMissions, seedInvite, seedRandomInvites } from './js/seed.js';
+
+    console.log('=== SEED RUNNER ===');
+    console.log('Funções disponíveis:');
+    console.log('- seedEverything() - Seed completo (catálogo + missões + convites + agentes + admin)');
+    console.log('- seedAll() - Catálogo + missões + convite demo');
+    console.log('- seedCatalog() - Apenas catálogo (products + rewards)');
+    console.log('- seedMissions() - Apenas missões');
+    console.log('- seedInvite(code) - Criar convite específico');
+    console.log('- seedRandomInvites(n) - Gerar N convites aleatórios');
+    console.log('');
+    console.log('Exemplo: await seedEverything()');
+
+    // Tornar funções disponíveis globalmente
+    window.seedEverything = seedEverything;
+    window.seedAll = seedAll;
+    window.seedCatalog = seedCatalog;
+    window.seedMissions = seedMissions;
+    window.seedInvite = seedInvite;
+    window.seedRandomInvites = seedRandomInvites;
+
+    console.log('Funções carregadas! Execute no console.');
+  </script>
+</body>
+</html>

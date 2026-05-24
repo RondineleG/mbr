@@ -35,17 +35,18 @@ const PRODUCTS = [
   { id: "p-so-1", name: "Brownie Black Ops", description: "Com calda de chocolate e sorvete", price: 16.9, category: "sobremesas", icon: "🍫", active: true },
   { id: "p-so-2", name: "Cookie Encrypted", description: "Artesanal com gotas de chocolate", price: 9.9, category: "sobremesas", icon: "🍪", active: true },
   { id: "p-so-3", name: "Petit Gateau Covert", description: "Centro derretido + sorvete", price: 22.9, category: "sobremesas", icon: "🎂", active: true },
-  // category: exclusivos (só com missões)
-  { id: "p-ex-1", name: "Burger Classificado Secreto", description: "Hambúrguer exclusivo só para agentes de elite. Requer missão 'Agente Recrutado' completada.", price: 0, category: "exclusivos", icon: "🔒", tag: "EXCLUSIVO", requiresMission: "signup", requiresPoints: 0, active: true },
-  { id: "p-ex-2", name: "Batata Dourada da Ordem", description: "Batata especial com tempero secreto dourado. Requer missão 'Primeira Mordida' completada.", price: 0, category: "exclusivos", icon: "👑", tag: "EXCLUSIVO", requiresMission: "first_order", requiresPoints: 0, active: true },
-  { id: "p-ex-3", name: "Combo Elite", description: "Burger exclusivo + batata dourada + bebida premium. Requer 500 pontos de missões.", price: 0, category: "exclusivos", icon: "⭐", tag: "EXCLUSIVO", requiresPoints: 500, active: true },
+  // category: exclusivos (só com méritos)
+  { id: "p-ex-1", name: "Burger Classificado Secreto", description: "Hambúrguer exclusivo só para agentes de elite. Requer méritos para desbloquear.", price: 0, pointsRequired: 1000, category: "exclusivos", icon: "🔒", tag: "EXCLUSIVO", exclusiveToPoints: true, active: true },
+  { id: "p-ex-2", name: "Batata Dourada da Ordem", description: "Batata especial com tempero secreto dourado. Requer méritos.", price: 0, pointsRequired: 500, category: "exclusivos", icon: "👑", tag: "EXCLUSIVO", exclusiveToPoints: true, active: true },
+  { id: "p-ex-3", name: "Combo Elite", description: "Burger exclusivo + batata dourada + bebida premium. Requer 1500 méritos.", price: 0, pointsRequired: 1500, category: "exclusivos", icon: "⭐", tag: "EXCLUSIVO", exclusiveToPoints: true, active: true },
+  { id: "p-ex-4", name: "MBox Phantom Edition", description: "Versão ultra-limitada da MBox com itens exclusivos.", price: 0, pointsRequired: 5000, category: "exclusivos", icon: "📦", tag: "ULTRA RARO", exclusiveToPoints: true, active: true },
 ];
 
 const REWARDS = [
-  { id: "r-1", name: "Frete Grátis", description: "Em qualquer pedido", pointsRequired: 500, icon: "🚚", active: true },
-  { id: "r-2", name: "Burger Grátis", description: "Smash burger clássico", pointsRequired: 1500, icon: "🍔", active: true },
-  { id: "r-3", name: "Combo VIP", description: "Burger + Batata + Bebida", pointsRequired: 3000, icon: "📦", active: true },
-  { id: "r-4", name: "MBox Surpresa", description: "Uma MBox mistério por nossa conta", pointsRequired: 5000, icon: "🎁", active: true },
+  { id: "r-1", name: "Frete Grátis", description: "Em qualquer pedido", pointsRequired: 500, icon: "🚚", active: true, category: "benefits", type: "digital" },
+  { id: "r-2", name: "Burger Grátis", description: "Smash burger clássico", pointsRequired: 1500, icon: "🍔", active: true, category: "physical", type: "physical" },
+  { id: "r-3", name: "Combo VIP", description: "Burger + Batata + Bebida", pointsRequired: 3000, icon: "📦", active: true, category: "physical", type: "physical" },
+  { id: "r-4", name: "MBox Surpresa", description: "Uma MBox mistério por nossa conta", pointsRequired: 5000, icon: "🎁", active: true, category: "experiences", type: "physical" },
 ];
 
 // Criar convite demo
@@ -53,15 +54,15 @@ const DEMO_INVITE = "MRBUR-GENESIS-X7K9";
 const demoInviteData = {
   id: DEMO_INVITE,
   token: DEMO_INVITE,
-  criadoPor: null, // Convite do sistema
-  roleCriador: null,
+  criadoPor: "admin-seed", // Convite do sistema (simula admin)
+  roleCriador: "admin",
   emailDestino: null,
   status: "ativo",
   dataCriacao: admin.firestore.FieldValue.serverTimestamp(),
-  dataExpiracao: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 dias
+  dataExpiracao: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
   dataUso: null,
   usadoPor: null,
-  limiteUso: 1,
+  limiteUso: 100, // Demo permite muitos usos
   totalUsos: 0
 };
 
@@ -101,13 +102,6 @@ async function seedCatalog() {
   
   await batch.commit();
   console.log('✅ Catálogo criado com sucesso!');
-}
-
-async function seedMetiqosCollection() {
-  console.log('💰 Criando coleção metiqosHistory...');
-  // A coleção será criada automaticamente quando o primeiro registro for adicionado
-  // Não precisamos criar documentos iniciais
-  console.log('✅ Coleção metiqosHistory pronta para uso!');
 }
 
 async function seedInvite(code = DEMO_INVITE) {
@@ -177,7 +171,6 @@ async function seedSampleAgents() {
       phone: "",
       address: {},
       points: a.points,
-      metiqos: 0,
       level: r.level,
       rank: r.name,
       role: "agent",
@@ -206,7 +199,6 @@ async function seedAdminProfile(adminUid, email = "") {
     phone: existing.phone || "",
     address: existing.address || {},
     points: existing.points || 0,
-    metiqos: existing.metiqos || 0,
     level: existing.level || 1,
     rank: existing.rank || "MESTRE",
     invitesAvailable: 99,
@@ -228,7 +220,6 @@ async function seedEverything(adminUid = null, adminEmail = "") {
     console.log('🚀 Iniciando seed completo...\n');
     
     await seedCatalog();
-    await seedMetiqosCollection();
     await seedSampleAgents();
     await seedInvite(DEMO_INVITE);
     await seedRandomInvites(4);
@@ -259,7 +250,8 @@ async function seedMissions() {
     { id: 'invite_1', name: 'Recrutador', description: 'Convide 1 amigo para a Ordem', icon: '🤝', reward: 200, type: 'cumulative', target: 1, condition: 'invites_used >= 1' },
     { id: 'invite_3', name: 'Líder de Esquadrão', description: 'Convide 3 amigos para a Ordem', icon: '👥', reward: 500, type: 'cumulative', target: 3, condition: 'invites_used >= 3' },
     { id: 'week_streak', name: 'Fidelidade Inabalável', description: 'Faça pedidos em 3 dias diferentes da semana', icon: '🔥', reward: 300, type: 'streak', target: 3, condition: 'week_days >= 3' },
-    { id: 'mbox_1', name: 'Explorador MBox', description: 'Peça sua primeira MBox', icon: '📦', reward: 200, type: 'single', condition: 'mbox_count >= 1' }
+    { id: 'mbox_1', name: 'Explorador MBox', description: 'Peça sua primeira MBox', icon: '📦', reward: 200, type: 'single', condition: 'mbox_count >= 1' },
+    { id: 'pwa_install', name: 'Instalador de Elite', description: 'Instale o app MrBur em seu dispositivo', icon: '📱', reward: 100, type: 'single', condition: 'pwa_installed' }
   ];
 
   for (const mission of MISSIONS) {

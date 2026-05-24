@@ -15,7 +15,7 @@ const ROUTE_CONFIG = {
   public: ["home"],
   
   // Rotas que requerem autenticação
-  auth: ["cardapio", "clube", "sacola", "pedidos", "perfil", "missoes", "busca"],
+  auth: ["cardapio", "clube", "sacola", "pedidos", "perfil", "missoes", "busca", "convites"],
   
   // Rotas exclusivas para admin
   admin: [],

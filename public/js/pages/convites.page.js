@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    CONVITES PAGE — painel completo de gestão de convites
    ═══════════════════════════════════════════════════════════════ */
-import { $, onAction, show } from "../utils/dom.js";
+import { $, $$, onAction, show } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { createInvite, cancelInvite, listInvites, getInviteStats } from "../services/invite.service.js";
 import { getProfile } from "../services/user.service.js";
@@ -40,12 +40,12 @@ function getStatusBadge(status) {
 
 function renderStats() {
   if (!stats) return;
-  
-  $("#convitesStatsTotal")?.textContent || (stats.totalEnviados || 0);
-  $("#convitesStatsUsados")?.textContent || (stats.totalUsados || 0);
-  $("#convitesStatsExpirados")?.textContent || (stats.totalExpirados || 0);
-  $("#convitesStatsAtivos")?.textContent || (stats.totalAtivos || 0);
-  $("#convitesStatsConversao")?.textContent || (stats.taxaConversao || 0) + "%";
+
+  const t = $("#convitesStatsTotal"); if (t) t.textContent = stats.totalEnviados || 0;
+  const u = $("#convitesStatsUsados"); if (u) u.textContent = stats.totalUsados || 0;
+  const e = $("#convitesStatsExpirados"); if (e) e.textContent = stats.totalExpirados || 0;
+  const a = $("#convitesStatsAtivos"); if (a) a.textContent = stats.totalAtivos || 0;
+  const c = $("#convitesStatsConversao"); if (c) c.textContent = (stats.taxaConversao || 0) + "%";
 }
 
 function renderInviteList() {

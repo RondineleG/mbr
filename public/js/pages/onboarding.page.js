@@ -44,11 +44,20 @@ function setError(msg) {
   else el.classList.remove("show");
 }
 const mark = (id) => $("#" + id)?.classList.add("error");
-const val = (id) => ($("#" + id)?.value || "").trim();
+const val = (id) => {
+  const el = $("#" + id);
+  if (!el) return "";
+  // Se for input/select/textarea, usa .value. Caso contrário (span/div), usa .textContent
+  const isInput = ["INPUT", "SELECT", "TEXTAREA"].includes(el.tagName);
+  const value = isInput ? el.value : el.textContent;
+  return (value || "").trim();
+};
 
 function validate() {
   if (step === 0) {
-    const codename = val("onbName");
+    const codenameEl = document.getElementById("onbName");
+    const codename = (codenameEl?.textContent || "").trim();
+    
     // Aceitar qualquer codinome válido (não vazio, não placeholder, mínimo 3 caracteres)
     if (!codename || codename === "—" || codename.length < 3) {
       return setError("Clique em GERAR para criar seu codinome"), false;
@@ -108,20 +117,21 @@ async function finish() {
     const invite = await consumeInvite(inviteCode, user.uid);
     
     // Buscar perfil do criador do convite para obter role e ID
-    let invitedByRole = null;
-    let invitedById = null;
-    if (invite?.createdBy) {
+    let invitedByRole = invite?.roleCreator || null;
+    let invitedById = invite?.createdBy || null;
+    
+    if (invitedById && invitedById !== "seed") {
       try {
-        const creatorProfile = await getProfile(invite.createdBy);
+        const creatorProfile = await getProfile(invitedById);
         if (creatorProfile) {
           invitedByRole = creatorProfile.role;
-          invitedById = creatorProfile.uid;
         }
       } catch (err) {
         console.error('Erro ao buscar perfil do criador:', err);
       }
     }
     
+    const isNewAgent = invitedByRole === "admin";
     const profile = await createProfile(user.uid, {
       name: val("onbRealName"),
       codename,
@@ -135,7 +145,8 @@ async function finish() {
       invitedByRole: invitedByRole,
       invitedById: invitedById,
       inviteId: inviteCode,
-      role: invitedByRole === "admin" ? "agent" : "client", // Admins criam agentes, agentes criam clientes
+      role: isNewAgent ? "agent" : "client", // Admins criam agentes, agentes criam clientes
+      invitesAvailable: isNewAgent ? 3 : 0,  // Agentes novos ganham 3 convites iniciais
     });
     
     // Complete signup mission
@@ -177,6 +188,48 @@ function next() {
 }
 function prev() { if (step > 0) { step--; updateUI(); } }
 
+async function handleCepLookup(e) {
+  const cep = e.target.value.replace(/\D/g, "");
+  if (cep.length !== 8) return;
+
+  const streetEl = $("#onbStreet");
+  const neighborhoodEl = $("#onbNeighborhood");
+  
+  try {
+    // Feedback visual de carregamento
+    [streetEl, neighborhoodEl].forEach(el => {
+      if (el) {
+        el.disabled = true;
+        el.placeholder = "Buscando...";
+      }
+    });
+
+    const resp = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+    const data = await resp.json();
+
+    if (data.erro) {
+      setError("CEP não encontrado. Preencha o endereço manualmente.");
+    } else {
+      if (streetEl) streetEl.value = data.logradouro || "";
+      if (neighborhoodEl) neighborhoodEl.value = data.bairro || "";
+      setError(""); // Limpa erro anterior se houver
+      
+      // Focar no número para agilizar a UX
+      $("#onbNumber")?.focus();
+    }
+  } catch (err) {
+    console.error("Erro na busca de CEP:", err);
+    setError("Erro ao buscar CEP. Preencha manualmente.");
+  } finally {
+    [streetEl, neighborhoodEl].forEach(el => {
+      if (el) {
+        el.disabled = false;
+        el.placeholder = el.id === "onbStreet" ? "Nome da rua" : "Bairro";
+      }
+    });
+  }
+}
+
 export function initOnboarding() {
   onAction("onb-gen-codename", () => {
     const el = $("#onbName");
@@ -187,5 +240,8 @@ export function initOnboarding() {
   onAction("onb-next", () => next());
   onAction("onb-prev", () => prev());
   $("#onbPhone")?.addEventListener("input", (e) => maskPhone(e.target));
-  $("#onbCep")?.addEventListener("input", (e) => maskCep(e.target));
+  $("#onbCep")?.addEventListener("input", (e) => {
+    maskCep(e.target);
+    handleCepLookup(e);
+  });
 }

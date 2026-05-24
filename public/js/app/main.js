@@ -6,7 +6,7 @@ import { $ } from "../utils/dom.js";
 import { onAction } from "../utils/dom.js";
 import * as store from "./state.js";
 import { initRouter, onRoute } from "./router.js";
-import { startSessionObserver } from "./session.js";
+import { startSessionObserver, applyTheme } from "./session.js";
 import { ensureSeed } from "../seed.js";
 import { renderCartBadges } from "../components/topbar.js";
 import { info, debug } from "../utils/logger.js";
@@ -59,7 +59,10 @@ onAction("nav-admin", () => {
 
 async function boot() {
   info('MAIN', 'Starting MrBur MVP application');
-  
+
+  // Aplicar tema salvo
+  applyTheme();
+
   // Semeia o catálogo no modo demo (no-op se já existir / produção).
   debug('MAIN', 'Ensuring seed data');
   await ensureSeed();

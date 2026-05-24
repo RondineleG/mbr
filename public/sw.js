@@ -3,66 +3,66 @@
    Cache de recursos estáticos para funcionar offline
    Estratégia: Cache First para estáticos, Network First para dinâmicos
    ═══════════════════════════════════════════════════════════════ */
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `mrbur-${CACHE_VERSION}`;
 
 // Cache de recursos estáticos (app shell)
 const STATIC_CACHE = [
-  '/',
-  '/index.html',
-  '/offline.html',
-  '/firebase-config.js',
-  '/manifest.json',
-  '/icon.svg',
-  '/icon-72.png',
-  '/icon-96.png',
-  '/icon-128.png',
-  '/icon-144.png',
-  '/icon-152.png',
-  '/icon-192.png',
-  '/icon-384.png',
-  '/icon-512.png'
+  './',
+  'index.html',
+  'offline.html',
+  'firebase-config.js',
+  'manifest.json',
+  'favicon.svg',
+  'icon-72.png',
+  'icon-96.png',
+  'icon-128.png',
+  'icon-144.png',
+  'icon-152.png',
+  'icon-192.png',
+  'icon-384.png',
+  'icon-512.png'
 ];
 
 // Cache de recursos CSS/JS
 const ASSETS_CACHE = [
-  '/css/tokens.css',
-  '/css/base.css',
-  '/css/components.css',
-  '/css/auth.css',
-  '/css/app.css',
-  '/js/utils/dom.js',
-  '/js/utils/format.js',
-  '/js/utils/loading.js',
-  '/js/utils/constants.js',
-  '/js/firebase/db.service.js',
-  '/js/firebase/auth.service.js',
-  '/js/firebase/auth-real.js',
-  '/js/app/state.js',
-  '/js/app/router.js',
-  '/js/app/session.js',
-  '/js/app/main.js',
-  '/js/components/toast.js',
-  '/js/components/modal.js',
-  '/js/components/topbar.js',
-  '/js/services/user.service.js',
-  '/js/services/invite.service.js',
-  '/js/services/order.service.js',
-  '/js/services/points.service.js',
-  '/js/services/mission.service.js',
-  '/js/services/product.service.js',
-  '/js/services/reward.service.js',
-  '/js/pages/login.page.js',
-  '/js/pages/onboarding.page.js',
-  '/js/pages/home.page.js',
-  '/js/pages/cardapio.page.js',
-  '/js/pages/clube.page.js',
-  '/js/pages/busca.page.js',
-  '/js/pages/sacola.page.js',
-  '/js/pages/pedidos.page.js',
-  '/js/pages/perfil.page.js',
-  '/js/pages/mission.page.js',
-  '/js/pages/convites.page.js'
+  'css/tokens.css',
+  'css/base.css',
+  'css/components.css',
+  'css/auth.css',
+  'css/app.css',
+  'js/utils/dom.js',
+  'js/utils/format.js',
+  'js/utils/loading.js',
+  'js/utils/constants.js',
+  'js/firebase/db.service.js',
+  'js/firebase/auth.service.js',
+  'js/firebase/auth-real.js',
+  'js/app/state.js',
+  'js/app/router.js',
+  'js/app/session.js',
+  'js/app/main.js',
+  'js/components/toast.js',
+  'js/components/modal.js',
+  'js/components/topbar.js',
+  'js/services/user.service.js',
+  'js/services/invite.service.js',
+  'js/services/order.service.js',
+  'js/services/points.service.js',
+  'js/services/mission.service.js',
+  'js/services/product.service.js',
+  'js/services/reward.service.js',
+  'js/pages/login.page.js',
+  'js/pages/onboarding.page.js',
+  'js/pages/home.page.js',
+  'js/pages/cardapio.page.js',
+  'js/pages/clube.page.js',
+  'js/pages/busca.page.js',
+  'js/pages/sacola.page.js',
+  'js/pages/pedidos.page.js',
+  'js/pages/perfil.page.js',
+  'js/pages/mission.page.js',
+  'js/pages/convites.page.js'
 ];
 
 // Instalação - cache de recursos estáticos
@@ -148,9 +148,10 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   
-  // Estratégia para CSS/JS (Cache First)
+  // Estratégia para CSS/JS (Network First — garante que deploys reflitam na hora,
+  // com fallback para cache quando offline)
   if (url.pathname.match(/\.(css|js)$/)) {
-    event.respondWith(cacheFirst(event.request));
+    event.respondWith(networkFirst(event.request));
     return;
   }
   

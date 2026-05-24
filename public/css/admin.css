@@ -99,6 +99,15 @@ body.admin { max-width: none; margin: 0; }
 .kpi-icon { font-size: 22px; margin-bottom: 12px; }
 .kpi-val { font-size: 30px; font-weight: 900; color: var(--gold); font-family: var(--f-mono); line-height: 1; }
 .kpi-label { font-size: 11px; color: var(--text-muted); margin-top: 6px; letter-spacing: 0.5px; }
+.kpi.clickable { cursor: pointer; transition: border-color var(--transition), transform var(--transition); }
+.kpi.clickable:hover { border-color: var(--gold-border); transform: translateY(-2px); }
+
+/* Distribuição por status (dashboard) */
+.admin-subtitle { font-size: 10px; letter-spacing: 2px; color: var(--text-dim); font-family: var(--f-mono); margin: 4px 0 12px; }
+.status-chips { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+.status-chip { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; color: var(--text-muted); cursor: pointer; transition: border-color var(--transition); }
+.status-chip:hover { border-color: var(--gold-border); }
+.status-chip b { color: var(--gold); font-family: var(--f-mono); font-size: 14px; }
 
 /* Botão primário */
 .admin-btn { padding: 10px 18px; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--gold); border-radius: var(--radius-sm); background: var(--gold-glow); color: var(--gold); font-family: var(--f-mono); transition: all var(--transition); }
@@ -110,6 +119,9 @@ body.admin { max-width: none; margin: 0; }
 .admin-btn.danger:hover { background: var(--danger); color: #fff; }
 
 /* Linha de dados (card-row, não tabela bootstrap) */
+.orders-day { display: flex; justify-content: space-between; align-items: center; margin: 20px 2px 10px; font-family: var(--f-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+.orders-day:first-child { margin-top: 4px; }
+.orders-day b { color: var(--gold); font-weight: 700; }
 .data-row { display: flex; align-items: center; gap: 16px; padding: 14px 16px; margin-bottom: 8px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); transition: all var(--transition); }
 .data-row:hover { border-color: var(--gold-border); }
 .data-row.inactive { opacity: 0.5; }
@@ -172,6 +184,11 @@ body.admin { max-width: none; margin: 0; }
   .admin-side .admin-brand {
     display: flex;
   }
+
+  /* Mobile: linha de dados (pedidos/produtos) quebra de forma alinhada */
+  .data-row { flex-wrap: wrap; }
+  .data-actions { width: 100%; justify-content: flex-end; margin-top: 4px; }
+  .status-select { flex: 1; }
 }
 
 @media (min-width: 721px) {

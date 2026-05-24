@@ -56,7 +56,13 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
     cliente: codename || "",
     agenteResponsavel: agenteResponsavel || null,
     status: ORDER_STATUS.RECEIVED,
-    items,
+    items: items.map(it => ({
+      name: String(it.name || ""),
+      icon: String(it.icon || ""),
+      price: Number(it.price) || 0,
+      qty: Number(it.qty) || 1,
+      desc: String(it.desc || "")
+    })),
     subtotal,
     deliveryFee: DELIVERY_FEE,
     total,
@@ -75,8 +81,8 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
       timestamp: Date.now(),
       observacao: "Pedido recebido"
     }],
-    criadoEm: tsNow(),
-    atualizadoEm: tsNow(),
+    criadoEm: Date.now(),
+    atualizadoEm: Date.now(),
   };
   const id = await addDoc("orders", order);
   
@@ -107,11 +113,14 @@ export function watchAllOrders(cb) {
   return watchCollection("orders", { orderBy: ["criadoEm", "desc"] }, cb);
 }
 
-export const listUserOrders = (uid) =>
-  getCollection("orders", { where: [["userId", "==", uid]], orderBy: ["criadoEm", "desc"] });
+// Só `where` (sem orderBy) p/ não exigir índice composto; ordena no cliente por criadoEm desc.
+const byCriadoEmDesc = (a, b) => (b.criadoEm || 0) - (a.criadoEm || 0);
 
-export const listAgentOrders = (agentId) =>
-  getCollection("orders", { where: [["agenteResponsavel", "==", agentId]], orderBy: ["criadoEm", "desc"] });
+export const listUserOrders = async (uid) =>
+  (await getCollection("orders", { where: [["userId", "==", uid]] })).sort(byCriadoEmDesc);
+
+export const listAgentOrders = async (agentId) =>
+  (await getCollection("orders", { where: [["agenteResponsavel", "==", agentId]] })).sort(byCriadoEmDesc);
 
 /**
  * Atualiza o status do pedido e adiciona entrada na timeline.
@@ -130,7 +139,7 @@ export async function updateStatus(orderId, status, observacao = "") {
   const updateData = {
     status,
     timeline: [...(order.timeline || []), timelineEntry],
-    atualizadoEm: tsNow()
+    atualizadoEm: Date.now()
   };
   
   await updateDoc(`orders/${orderId}`, updateData);

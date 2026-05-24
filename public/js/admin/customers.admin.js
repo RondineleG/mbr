@@ -3,7 +3,7 @@
    ═══════════════════════════════════════════════════════════════ */
 import { onAction, setHtml, escapeHtml } from "../utils/dom.js";
 import { listAgents } from "../services/user.service.js";
-import { getHistory, getMetiqosHistory } from "../services/points.service.js";
+import { getHistory } from "../services/points.service.js";
 import { listUserOrders } from "../services/order.service.js";
 import { codenameInitials, rankLabel, money, dateShort } from "../utils/format.js";
 import { modalCustom } from "../components/modal.js";
@@ -28,7 +28,6 @@ async function load() {
           <div class="admin-item-meta">
             <span class="admin-tag">${rankLabel(a.points)}</span>
             <span class="admin-tag">⚡ ${a.points || 0}</span>
-            <span class="admin-tag">💰 ${a.metiqos || 0}</span>
             <span class="admin-tag">🎫 ${a.invitesAvailable || 0}</span>
           </div>
         </div>
@@ -43,28 +42,23 @@ async function viewCustomer(uid) {
   const a = cache.find((x) => x.uid === uid);
   if (!a) return;
   const m = modalCustom(`<div class="modal-title">${escapeHtml(a.codename)}</div><div class="modal-message">Carregando dossiê...</div>`);
-  const [history, metiqosHistory, orders] = await Promise.all([
-    getHistory(uid), 
-    getMetiqosHistory(uid),
-    listUserOrders(uid)
-  ]);
+  // allSettled: se uma consulta falhar, o dossiê ainda abre com o resto.
+  const [hRes, oRes] = await Promise.allSettled([getHistory(uid), listUserOrders(uid)]);
+  const history = hRes.status === "fulfilled" ? hRes.value : [];
+  const orders = oRes.status === "fulfilled" ? oRes.value : [];
   
   // Calculate metrics
   const totalSpent = orders.reduce((sum, o) => sum + (o.total || 0), 0);
   const avgOrderValue = orders.length > 0 ? totalSpent / orders.length : 0;
-  const completedOrders = orders.filter(o => o.status === 'delivered').length;
+  const completedOrders = orders.filter(o => o.status === 'entregue').length;
   
   m.el.innerHTML = `
     <div class="modal-title">${escapeHtml(a.codename)} <span style="font-size:11px;color:var(--text-dim)">🔒</span></div>
     <div class="modal-message">
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
         <div style="background:var(--bg-elevated);padding:12px;border-radius:var(--radius)">
           <div style="font-size:10px;color:var(--text-dim);letter-spacing:1px">MÉRITOS</div>
           <div style="font-size:20px;font-weight:800;color:var(--gold);font-family:var(--f-mono)">${a.points || 0} ⚡</div>
-        </div>
-        <div style="background:var(--bg-elevated);padding:12px;border-radius:var(--radius)">
-          <div style="font-size:10px;color:var(--text-dim);letter-spacing:1px">METIQOS</div>
-          <div style="font-size:20px;font-weight:800;color:var(--gold);font-family:var(--f-mono)">${a.metiqos || 0} 💰</div>
         </div>
         <div style="background:var(--bg-elevated);padding:12px;border-radius:var(--radius)">
           <div style="font-size:10px;color:var(--text-dim);letter-spacing:1px">PEDIDOS</div>
@@ -94,11 +88,9 @@ async function viewCustomer(uid) {
       </div>
     </div>
     <div class="modal-label">PEDIDOS RECENTES (${orders.length})</div>
-    ${orders.slice(0, 5).map((o) => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span>#${(o.id || "").slice(-6).toUpperCase()} · ${dateShort(o.createdAt)} · ${o.status}</span><span style="color:var(--gold);font-family:var(--f-mono)">${money(o.total)}</span></div>`).join("") || '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">Nenhum pedido</div>'}
+    ${orders.slice(0, 5).map((o) => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span>#${(o.id || "").slice(-6).toUpperCase()} · ${dateShort(o.criadoEm)} · ${o.status}</span><span style="color:var(--gold);font-family:var(--f-mono)">${money(o.total)}</span></div>`).join("") || '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">Nenhum pedido</div>'}
     <div class="modal-label">EXTRATO DE MÉRITOS</div>
     ${history.slice(0, 6).map((h) => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span>${escapeHtml(h.reason)}</span><span style="color:${h.delta >= 0 ? "var(--success)" : "var(--danger)"};font-family:var(--f-mono)">${h.delta >= 0 ? "+" : ""}${h.delta}</span></div>`).join("") || '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">Sem movimentações</div>'}
-    <div class="modal-label">EXTRATO DE METIQOS</div>
-    ${metiqosHistory.slice(0, 6).map((h) => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span>${escapeHtml(h.reason)}</span><span style="color:${h.delta >= 0 ? "var(--success)" : "var(--danger)"};font-family:var(--f-mono)">${h.delta >= 0 ? "+" : ""}${h.delta}</span></div>`).join("") || '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">Sem movimentações</div>'}
     <div class="modal-actions"><button class="modal-btn primary" id="cclose">Fechar</button></div>`;
   m.el.querySelector("#cclose").onclick = () => document.querySelector(".modal-overlay").classList.remove("show");
 }

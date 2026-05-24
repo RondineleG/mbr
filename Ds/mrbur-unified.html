@@ -4,305 +4,119 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>MrBur — A Ordem</title>
-<meta name="description" content="MrBur — A Ordem. App de pedidos com sistema de missões, recompensas e clube exclusivo.">
-<meta name="theme-color" content="#C9A84C">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="MrBur">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,300;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════
-   MRBUR DESIGN SYSTEM — TOKENS (incorporado)
+   RESET & VARIÁVEIS
+   Motivo: CSS variables para troca de tema instantânea
+   sem reprocessamento de estilos individuais
    ═══════════════════════════════════════════════════ */
 :root {
-  /* Motion */
-  --dur-xs: 120ms;
-  --dur-sm: 240ms;
-  --dur-md: 380ms;
-  --dur-lg: 600ms;
-  --dur-xl: 900ms;
-  --ease: cubic-bezier(0.76, 0, 0.24, 1);
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-in: cubic-bezier(0.55, 0, 0.55, 0.2);
-  --ease-emphasis: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  /* Radius */
-  --r-xs: 4px;
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-lg: 14px;
-  --r-xl: 20px;
-  --r-pill: 999px;
-
-  /* Spacing (4pt) */
-  --s-1: 4px;  --s-2: 8px;  --s-3: 12px; --s-4: 16px;
-  --s-5: 20px; --s-6: 24px; --s-8: 32px; --s-10: 40px;
-  --s-12: 48px; --s-16: 64px; --s-20: 80px;
-
-  /* Type */
-  --f-display: 'Cinzel', 'Georgia', serif;
-  --f-serif: 'Cormorant Garamond', 'Georgia', serif;
-  --f-mono: 'Share Tech Mono', 'Courier New', monospace;
-  --f-ui: 'Georgia', system-ui, serif;
+  --bg: #0d0d14;
+  --bg-card: #161620;
+  --bg-elevated: #1c1c28;
+  --bg-input: #12121a;
+  --text: #e8e5e0;
+  --text-muted: #8a8a9a;
+  --text-dim: #555566;
+  --gold: #c9a84c;
+  --gold-dim: #8a7333;
+  --gold-glow: rgba(201,168,76,0.12);
+  --gold-border: rgba(201,168,76,0.25);
+  --border: #252530;
+  --border-light: #1e1e28;
+  --danger: #e74c3c;
+  --success: #2ecc71;
+  --info: #3498db;
+  --nav-bg: rgba(13,13,20,0.96);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.4);
+  --transition: 0.3s cubic-bezier(0.4,0,0.2,1);
 }
-
-/* DARK — identidade primária do clube */
-[data-theme="dark"] {
-  --bg:     #0a0806;
-  --bg-2:   #141008;
-  --bg-3:   #1e1a0c;
-  --bg-card:rgba(14, 11, 7, 0.96);
-  --bg-input:#100c07;
-  --bg-elev:#1c1810;
-
-  --gold:    #C9A84C;
-  --gold-l:  #E8C97D;
-  --gold-d:  #8A6C2A;
-  --gold-glow: rgba(201, 168, 76, 0.28);
-  --gold-soft: rgba(201, 168, 76, 0.12);
-  --gold-border: rgba(201, 168, 76, 0.25);
-
-  --tx:    #F0E6D0;
-  --tx-2:  rgba(240, 230, 208, 0.55);
-  --tx-3:  rgba(240, 230, 208, 0.28);
-  --tx-dim:rgba(240, 230, 208, 0.14);
-
-  --border:    rgba(201, 168, 76, 0.13);
-  --border-2:  rgba(201, 168, 76, 0.22);
-  --surface:   rgba(255, 255, 255, 0.03);
-
-  --ok:    #4E8840;
-  --ok-bg: rgba(78, 136, 64, 0.10);
-  --er:    #A03A3A;
-  --er-bg: rgba(160, 58, 58, 0.10);
-  --warn:  #C9893A;
-  --info:  #4A8FB5;
-
-  --shadow-sm: 0 2px 8px rgba(0,0,0,.35);
-  --shadow-md: 0 8px 32px rgba(0,0,0,.5);
-  --shadow-lg: 0 40px 100px rgba(0,0,0,.7), 0 8px 32px rgba(0,0,0,.5);
-  --shadow-glow: 0 0 24px rgba(201,168,76,.35);
-
-  --grain-opacity: .07;
-}
-
-/* LIGHT — variação diurna (pergaminho) */
 [data-theme="light"] {
-  --bg:     #F2EBD9;
-  --bg-2:   #E8DEC8;
-  --bg-3:   #D8CBAA;
-  --bg-card: rgba(254, 250, 243, 1);
-  --bg-input:#FAF5E8;
-  --bg-elev: #FCF8EE;
-
-  --gold:    #8A5500;
-  --gold-l:  #C9A84C;
-  --gold-d:  #5A3200;
-  --gold-glow: rgba(138, 85, 0, 0.16);
-  --gold-soft: rgba(138, 85, 0, 0.08);
-  --gold-border: rgba(138, 85, 0, 0.28);
-
-  --tx:    #1A0F00;
-  --tx-2:  rgba(26, 15, 0, 0.55);
-  --tx-3:  rgba(26, 15, 0, 0.32);
-  --tx-dim:rgba(26, 15, 0, 0.16);
-
-  --border:   rgba(138, 85, 0, 0.18);
-  --border-2: rgba(138, 85, 0, 0.32);
-  --surface:  rgba(138, 85, 0, 0.04);
-
-  --ok:    #2E6830;
-  --ok-bg: rgba(46, 104, 48, 0.10);
-  --er:    #9A1A1A;
-  --er-bg: rgba(154, 26, 26, 0.10);
-  --warn:  #8A5500;
-  --info:  #2D6E94;
-
-  --shadow-sm: 0 2px 8px rgba(80,40,0,.06);
-  --shadow-md: 0 8px 28px rgba(80,40,0,.10);
-  --shadow-lg: 0 24px 60px rgba(80,40,0,.14), 0 4px 16px rgba(80,40,0,.08);
-  --shadow-glow: 0 0 24px rgba(138,85,0,.18);
-
-  --grain-opacity: .04;
+  --bg: #f4efe5;
+  --bg-card: #ffffff;
+  --bg-elevated: #faf6ee;
+  --bg-input: #ede8de;
+  --text: #1a1a2e;
+  --text-muted: #6b6b80;
+  --text-dim: #9a9aaa;
+  --gold: #8b6914;
+  --gold-dim: #b8942a;
+  --gold-glow: rgba(139,105,20,0.08);
+  --gold-border: rgba(139,105,20,0.2);
+  --border: #ddd6c6;
+  --border-light: #e8e2d5;
+  --nav-bg: rgba(244,239,229,0.96);
+  --shadow: 0 4px 24px rgba(0,0,0,0.08);
 }
-
-/* ═══════════════════════════════════════════════════
-   BASE STYLES (incorporado do DS)
-   ═══════════════════════════════════════════════════ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+html { font-size: 16px; -webkit-tap-highlight-color: transparent; }
 body {
-  font-family: var(--f-serif);
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--bg);
-  color: var(--tx);
-  line-height: 1.5;
-  min-height: 100vh;
-  transition: background var(--dur-md) var(--ease), color var(--dur-md) var(--ease);
-  overflow-x: hidden;
-}
-img, svg { display: block; max-width: 100%; }
-button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
-input, textarea, select { font: inherit; color: inherit; }
-a { color: var(--gold); text-decoration: none; transition: color var(--dur-sm) var(--ease); }
-a:hover { color: var(--gold-l); }
-
-::selection { background: var(--gold); color: var(--bg); }
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--gold-soft); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: var(--gold-border); }
-
-/* ═══════════════════════════════════════════════════
-   CUSTOM OVERRIDES - MrBur Design System
-   ═══════════════════════════════════════════════════ */
-body {
-  font-family: var(--f-ui);
-  background-image:
-    radial-gradient(ellipse 60% 40% at 50% 0%, var(--gold-glow), transparent 70%),
-    radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0);
-  background-size: 100% 100%, 24px 24px;
-  background-attachment: fixed;
+  color: var(--text);
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background var(--transition), color var(--transition);
 }
 ::-webkit-scrollbar { width: 0; }
 input, button, select { font-family: inherit; }
 button { cursor: pointer; }
 
 /* ═══════════════════════════════════════════════════
-   LOADING SCREEN — AGENTES SE ENCONTRAM
-   Motivo: animação canvas com motoboy e espião trocando pacote
+   SPLASH SCREEN
+   Motivo: animação CSS pura (sem JS timers) para
+   performance máxima e transição suave
    ═══════════════════════════════════════════════════ */
-#loading-screen {
-  position: fixed; inset: 0; z-index: 9999;
-  background: var(--bg);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  overflow: hidden;
-  cursor: default;
-}
+/* ═══════════════════════════════════════════════════
+   BOOT — cena fundida (v14 rua/entrega + v15 espaço/mapa)
+   numa tela só, com HUD em DOM. Fade suave → login.
+   ═══════════════════════════════════════════════════ */
+.boot { position: fixed; inset: 0; z-index: 9999; background: #030201; overflow: hidden; opacity: 1; transition: opacity 0.65s ease; }
+.boot.boot-hide { opacity: 0; pointer-events: none; }
+#bootCv { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+.boot-vgn { position: absolute; inset: 0; z-index: 10; pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 12%, rgba(3,2,1,0.35) 60%, rgba(3,2,1,0.9) 100%); }
+.boot-corners { position: absolute; inset: 20px; z-index: 20; pointer-events: none; }
+.boot-corners span { position: absolute; width: 36px; height: 36px; border-color: rgba(201,168,76,0.3); border-style: solid; }
+.boot-corners span:nth-child(1){ top:0; left:0; border-width:1px 0 0 1px; }
+.boot-corners span:nth-child(2){ top:0; right:0; border-width:1px 1px 0 0; }
+.boot-corners span:nth-child(3){ bottom:0; left:0; border-width:0 0 1px 1px; }
+.boot-corners span:nth-child(4){ bottom:0; right:0; border-width:0 1px 1px 0; }
 
-#loading-screen::before {
-  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
-}
-
-#cvGrain {
-  position: absolute; inset: 0; z-index: 50; pointer-events: none;
-  opacity: .18; mix-blend-mode: screen;
-}
-
-.ld-corners {
-  position: absolute; inset: 22px; z-index: 60; pointer-events: none;
-}
-
-.ld-corners span {
-  position: absolute; width: 38px; height: 38px;
-  border-color: rgba(201,168,76,.28); border-style: solid;
-}
-
-.ld-corners span:nth-child(1){top:0;left:0;border-width:1px 0 0 1px;}
-.ld-corners span:nth-child(2){top:0;right:0;border-width:1px 1px 0 0;}
-.ld-corners span:nth-child(3){bottom:0;left:0;border-width:0 0 1px 1px;}
-.ld-corners span:nth-child(4){bottom:0;right:0;border-width:0 1px 1px 0;}
-
-/* canvas ocupa tela toda */
-#cvLoad {
-  position: absolute; inset: 0; z-index: 5;
-  display: block; width: 100%; height: 100%;
-}
-
-/* overlay de texto no topo e base */
-.ld-overlay {
-  position: absolute; inset: 0; z-index: 55;
-  display: flex; flex-direction: column;
-  justify-content: space-between; align-items: center;
-  pointer-events: none;
-  padding: clamp(22px,4vh,44px) 0 clamp(22px,4vh,44px) 0;
-}
-
-.ld-title {
-  font-family: var(--f-display); font-weight: 600;
-  font-size: clamp(32px,4.5vw,54px);
-  letter-spacing: .22em; color: var(--tx);
-  text-shadow: 0 0 60px var(--gold-glow), 0 0 16px rgba(201,168,76,.15);
-  animation: ldNeon 6s ease infinite;
-}
-
-@keyframes ldNeon {
-  0%,88%,100%{opacity: 1} 89%{opacity:.82} 90%{opacity: 1} 92%{opacity:.74} 93%{opacity: 1}
-}
-
-.ld-tag {
-  font-family: var(--f-mono);
-  font-size: clamp(7px,.7vw,9px);
-  letter-spacing: .55em; color: var(--gold-dim);
-  margin-top: 7px; display: block; text-align: center;
-}
-
-/* barra inferior */
-.ld-bottom {
-  display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%;
-}
-
-.ld-maitre {
-  font-family: var(--f-serif); font-style: italic;
-  font-size: clamp(13px,1.4vw,17px); color: rgba(240,230,208,.7);
-  min-height: 1.4em; text-align: center;
-  transition: opacity .3s ease;
-}
-
-.ld-maitre.fade { opacity: .08; }
-
-.ld-wax-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-
-.ld-wax-track {
-  width: clamp(200px,22vw,280px); height: 1px;
-  background: rgba(201,168,76,.08); position: relative; overflow: visible;
-}
-
-.ld-wax-fill {
-  position: absolute; top: 0; left: 0; height: 100%; width: 0%;
-  background: linear-gradient(90deg,#4a1e04,#C9A84C,#F4D080);
-  box-shadow: 0 0 10px rgba(201,168,76,.5);
-  transition: width .9s cubic-bezier(.4,0,.2,1);
-}
-
-.ld-wax-fill::after {
-  content: ''; position: absolute; right: -4px; top: -4px;
-  width: 8px; height: 8px; border-radius: 50%;
-  background: radial-gradient(circle,#fffacc,#f0c84c);
-  box-shadow: 0 0 12px rgba(244,200,76,.8);
-}
-
-.ld-reserva {
-  font-family: var(--f-mono); font-size: 8px;
-  letter-spacing: .42em; color: rgba(201,168,76,.22);
-}
-
-.ld-stamp {
-  font-family: var(--f-display); font-size: 9px; font-weight: 700;
-  letter-spacing: .55em; color: rgba(201,168,76,.9);
-  text-shadow: 0 0 18px rgba(201,168,76,.6);
-  opacity: 0; transform: translateY(6px);
-  transition: opacity .7s ease, transform .7s ease;
-}
-
-.ld-stamp.show { opacity: 1; transform: translateY( 0); }
-
-/* Fade out animation */
-.fade-out {
-  animation: fadeOut 0.6s ease forwards;
-}
-
-@keyframes fadeOut {
-  to { opacity: 0; pointer-events: none; }
-}
+#bootHud { position: absolute; inset: 0; z-index: 30; pointer-events: none;
+  display: flex; flex-direction: column; justify-content: space-between; align-items: center;
+  padding: clamp(26px,4.5vh,46px) 18px; transition: opacity 0.5s ease; }
+.boot-top { display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+.boot-emblem { width: 72px; height: 72px; position: relative; display: flex; align-items: center; justify-content: center; }
+.boot-ring { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid rgba(201,168,76,0.45); animation: bootPulse 3.5s ease-in-out infinite alternate; }
+.boot-ring:nth-child(2){ inset: 10px; border-color: rgba(201,168,76,0.22); border-style: dashed; animation: bootRot 12s linear infinite; }
+.boot-radar { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; }
+.boot-radar::after { content:''; position:absolute; inset:0; border-radius:50%;
+  background: conic-gradient(from 0deg, rgba(201,168,76,0) 0%, rgba(201,168,76,0.38) 18%, rgba(201,168,76,0) 22%); animation: bootRot 2.2s linear infinite; }
+.boot-emblem-icon { font-size: 22px; z-index:1; filter: drop-shadow(0 0 14px rgba(201,168,76,0.55)); }
+.boot-title { font-family:'Cinzel',serif; font-weight:600; font-size: clamp(30px,7.5vw,52px); letter-spacing:0.2em; color:#EDE0C4;
+  text-shadow: 0 0 60px rgba(201,168,76,0.4), 0 0 16px rgba(201,168,76,0.15); }
+.boot-tag { font-family:'Share Tech Mono',monospace; font-size: clamp(7px,2vw,9px); letter-spacing:0.5em; color: rgba(201,168,76,0.34); margin-top:6px; }
+.boot-bottom { display:flex; flex-direction:column; align-items:center; gap:11px; width:100%; }
+.boot-status { font-family:'Cormorant Garamond',serif; font-style:italic; font-size: clamp(14px,4vw,18px); color: rgba(237,210,160,0.8); min-height:1.4em; text-align:center; }
+.boot-bar-wrap { display:flex; flex-direction:column; align-items:center; gap:8px; }
+.boot-meta { display:flex; justify-content:space-between; width: clamp(210px,64vw,300px); font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.3em; color: rgba(201,168,76,0.55); }
+.boot-track { width: clamp(210px,64vw,300px); height:1px; background: rgba(201,168,76,0.12); position:relative; overflow:visible; }
+.boot-fill { position:absolute; top:0; left:0; height:100%; width:0%; background: linear-gradient(90deg,#4a1e04,#C9A84C,#F4D080); box-shadow:0 0 10px rgba(201,168,76,0.5); transition: width 0.25s linear; }
+.boot-fill::after { content:''; position:absolute; right:-4px; top:-4px; width:8px; height:8px; border-radius:50%; background: radial-gradient(circle,#fffacc,#f0c84c); box-shadow:0 0 12px rgba(244,200,76,0.85); }
+.boot-coords { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.26em; color: rgba(201,168,76,0.28); text-align:center; }
+#bootSkip { position:absolute; bottom:20px; right:20px; z-index:40; pointer-events:auto; background:transparent; border:none;
+  border-bottom:1px solid rgba(201,168,76,0.12); font-family:'Cinzel',serif; font-size:9px; letter-spacing:0.42em;
+  color: rgba(201,168,76,0.32); padding:6px 0; transition: color 0.3s, border-color 0.3s; }
+#bootSkip:hover { color:#C9A84C; border-bottom-color: rgba(201,168,76,0.5); }
+@keyframes bootPulse { from { box-shadow:0 0 10px rgba(201,168,76,0.18); transform:scale(1);} to { box-shadow:0 0 38px rgba(201,168,76,0.5); transform:scale(1.04);} }
+@keyframes bootRot { to { transform: rotate(360deg); } }
 
 /* ═══════════════════════════════════════════════════
    LOGIN
@@ -320,54 +134,54 @@ button { cursor: pointer; }
 .login-overlay.hidden { opacity: 0; pointer-events: none; }
 .login-overlay::before {
   content: ''; position: absolute; inset: 0;
-  background-image: radial-gradient(circle at 1px 1px, var(--gold-soft) 1px, transparent 0);
+  background-image: radial-gradient(circle at 1px 1px, var(--gold-glow) 1px, transparent 0);
   background-size: 40px 40px;
 }
 .login-card { position: relative; z-index: 1; width: 100%; max-width: 360px; text-align: center; }
-.login-logo { font-size: 44px; margin-bottom: 6px; filter: drop-shadow(0 0 16px var(--gold-glow)); }
-.login-brand { font-family: var(--f-display); font-size: 26px; font-weight: 900; letter-spacing: 6px; color: var(--gold); margin-bottom: 2px; }
-.login-subtitle { font-size: 9px; letter-spacing: 4px; color: var(--tx-3); margin-bottom: 28px; font-family: var(--f-mono); }
+.login-logo { font-size: 44px; margin-bottom: 6px; filter: drop-shadow(0 0 16px rgba(201,168,76,0.3)); }
+.login-brand { font-family: 'Georgia', serif; font-size: 26px; font-weight: 900; letter-spacing: 6px; color: var(--gold); margin-bottom: 2px; }
+.login-subtitle { font-size: 9px; letter-spacing: 4px; color: var(--text-dim); margin-bottom: 28px; font-family: 'Courier New', monospace; }
 
 .login-tabs {
-  display: flex; border-radius: var(--r-sm); overflow: hidden;
+  display: flex; border-radius: var(--radius-sm); overflow: hidden;
   border: 1px solid var(--border); margin-bottom: 20px;
 }
 .login-tab {
   flex: 1; padding: 10px 0; font-size: 11px; letter-spacing: 1.5px;
   font-weight: 700; border: none; background: transparent;
-  color: var(--tx-3); transition: all var(--dur-md) var(--ease);
-  font-family: var(--f-mono);
+  color: var(--text-dim); transition: all var(--transition);
+  font-family: 'Courier New', monospace;
 }
-.login-tab.active { background: var(--gold-soft); color: var(--gold); }
+.login-tab.active { background: var(--gold-glow); color: var(--gold); }
 
 .login-field { margin-bottom: 12px; text-align: left; }
-.login-label { font-size: 9px; letter-spacing: 2px; color: var(--tx-3); margin-bottom: 4px; font-family: var(--f-mono); display: block; }
+.login-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); margin-bottom: 4px; font-family: 'Courier New', monospace; display: block; }
 .login-input {
   width: 100%; padding: 12px 14px; font-size: 14px;
   background: var(--bg-input); border: 1px solid var(--border);
-  border-radius: var(--r-sm); color: var(--tx); outline: none;
-  letter-spacing: 0.5px; transition: border var(--dur-md) var(--ease);
+  border-radius: var(--radius-sm); color: var(--text); outline: none;
+  letter-spacing: 0.5px; transition: border var(--transition);
 }
-.login-input:focus { border-color: var(--gold); }
-.login-input::placeholder { color: var(--tx-3); }
-.login-hint { font-size: 9px; color: var(--tx-3); text-align: left; margin-bottom: 16px; font-family: var(--f-mono); }
+.login-input:focus { border-color: var(--gold-border); }
+.login-input::placeholder { color: var(--text-dim); }
+.login-hint { font-size: 9px; color: var(--text-dim); text-align: left; margin-bottom: 16px; font-family: 'Courier New', monospace; }
 .login-error {
-  font-size: 11px; color: var(--er); margin-bottom: 14px;
-  padding: 8px 12px; background: var(--er-bg);
-  border: 1px solid rgba(160,58,58,.25); border-radius: var(--r-xs);
-  letter-spacing: 0.5px; font-family: var(--f-mono);
+  font-size: 11px; color: var(--danger); margin-bottom: 14px;
+  padding: 8px 12px; background: rgba(231,76,60,0.1);
+  border: 1px solid rgba(231,76,60,0.2); border-radius: var(--radius-xs);
+  letter-spacing: 0.5px; font-family: 'Courier New', monospace;
   display: none;
 }
 .login-error.show { display: block; }
 .login-btn {
   width: 100%; padding: 14px 0; font-size: 12px; font-weight: 700;
   letter-spacing: 3px; border: 1px solid var(--gold);
-  border-radius: var(--r-sm); background: var(--gold-soft);
-  color: var(--gold); transition: all var(--dur-md) var(--ease);
-  font-family: var(--f-mono);
+  border-radius: var(--radius-sm); background: var(--gold-glow);
+  color: var(--gold); transition: all var(--transition);
+  font-family: 'Courier New', monospace;
 }
-.login-btn:hover { background: var(--gold); color: var(--bg); }
-.login-footer { font-size: 8px; letter-spacing: 2px; color: var(--tx-3); margin-top: 28px; font-family: var(--f-mono); }
+.login-btn:hover { background: var(--gold); color: #0a0a0f; }
+.login-footer { font-size: 8px; letter-spacing: 2px; color: var(--text-dim); margin-top: 28px; font-family: 'Courier New', monospace; }
 
 /* ═══════════════════════════════════════════════════
    TOP BAR - FIXO
@@ -378,34 +192,34 @@ button { cursor: pointer; }
   position: sticky; top: 0; z-index: 90;
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 16px;
-  background: var(--bg-card);
+  background: var(--nav-bg);
   backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
 }
-.topbar-left { display: flex; align-items: center; gap: 10px; transition: opacity var(--dur-md) var(--ease); }
+.topbar-left { display: flex; align-items: center; gap: 10px; transition: opacity var(--transition); }
 .topbar-left:hover { opacity: 0.8; }
 .topbar-avatar {
   width: 40px; height: 40px; border-radius: 50%;
   border: 2px solid var(--gold);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--f-display); font-weight: 900; font-size: 13px;
-  color: var(--gold); background: var(--gold-soft);
+  font-family: 'Georgia', serif; font-weight: 900; font-size: 13px;
+  color: var(--gold); background: var(--gold-glow);
 }
 .topbar-info { }
-.topbar-name { font-size: 14px; font-weight: 700; color: var(--tx); }
-.topbar-rank { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--gold); font-family: var(--f-mono); }
+.topbar-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.topbar-rank { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; color: var(--gold); font-family: 'Courier New', monospace; }
 .topbar-right { display: flex; align-items: center; gap: 8px; }
 .topbar-btn {
   width: 36px; height: 36px; border-radius: 50%;
   border: 1px solid var(--border); background: var(--bg-card);
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; transition: all var(--dur-md) var(--ease); position: relative;
+  font-size: 16px; transition: all var(--transition); position: relative;
 }
 .topbar-btn:hover { border-color: var(--gold-border); }
 .topbar-badge {
   position: absolute; top: -2px; right: -2px;
   width: 16px; height: 16px; border-radius: 50%;
-  background: var(--er); color: #fff;
+  background: var(--danger); color: #fff;
   font-size: 9px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
@@ -419,7 +233,7 @@ button { cursor: pointer; }
   position: fixed; bottom: 0; left: 0; right: 0;
   max-width: 480px; margin: 0 auto;
   height: 68px; z-index: 90;
-  background: var(--bg-card);
+  background: var(--nav-bg);
   backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   display: flex; align-items: flex-end; justify-content: space-around;
@@ -429,20 +243,20 @@ button { cursor: pointer; }
   display: flex; flex-direction: column; align-items: center;
   gap: 2px; background: none; border: none;
   padding: 4px 12px; position: relative;
-  transition: all var(--dur-md) var(--ease);
+  transition: all var(--transition);
 }
 .nav-item .nav-icon {
   width: 24px; height: 24px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; transition: all var(--dur-md) var(--ease);
+  font-size: 18px; transition: all var(--transition);
 }
 .nav-item .nav-label {
   font-size: 9px; letter-spacing: 1px; font-weight: 700;
-  color: var(--tx-3); transition: color var(--dur-md) var(--ease);
-  font-family: var(--f-mono);
+  color: var(--text-dim); transition: color var(--transition);
+  font-family: 'Courier New', monospace;
 }
 .nav-item.active .nav-label { color: var(--gold); }
-.nav-item.active .nav-icon { filter: drop-shadow(0 0 6px var(--gold-glow)); }
+.nav-item.active .nav-icon { filter: drop-shadow(0 0 6px rgba(201,168,76,0.5)); }
 
 /* Home center elevated */
 .nav-item.nav-home {
@@ -452,16 +266,16 @@ button { cursor: pointer; }
   width: 50px; height: 50px; border-radius: 50%;
   background: var(--bg-card); border: 2px solid var(--gold);
   font-size: 22px;
-  box-shadow: 0 2px 16px var(--gold-glow);
+  box-shadow: 0 2px 16px rgba(201,168,76,0.2);
 }
 .nav-item.nav-home.active .nav-icon {
   background: var(--gold);
-  box-shadow: 0 4px 20px var(--gold-glow);
+  box-shadow: 0 4px 20px rgba(201,168,76,0.4);
 }
 .nav-item .nav-cart-badge {
   position: absolute; top: 0; right: 4px;
   width: 16px; height: 16px; border-radius: 50%;
-  background: var(--er); color: #fff;
+  background: var(--danger); color: #fff;
   font-size: 9px; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
@@ -474,8 +288,8 @@ button { cursor: pointer; }
 @keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 .section-title {
-  font-family: var(--f-display);
-  font-size: 16px; font-weight: 700; color: var(--tx);
+  font-family: 'Georgia', serif;
+  font-size: 16px; font-weight: 700; color: var(--text);
   padding: 16px 16px 10px;
   display: flex; align-items: center; gap: 8px;
 }
@@ -484,8 +298,8 @@ button { cursor: pointer; }
   background: var(--gold); border-radius: 2px;
 }
 .section-subtitle {
-  font-size: 9px; letter-spacing: 2px; color: var(--tx-3);
-  font-family: var(--f-mono); margin-left: auto;
+  font-size: 9px; letter-spacing: 2px; color: var(--text-dim);
+  font-family: 'Courier New', monospace; margin-left: auto;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -493,16 +307,16 @@ button { cursor: pointer; }
    ═══════════════════════════════════════════════════ */
 .home-status {
   margin: 12px 16px; padding: 12px 16px;
-  border-radius: var(--r-md); display: flex;
+  border-radius: var(--radius); display: flex;
   align-items: center; gap: 12px;
 }
-.home-status.open { background: var(--ok-bg); border: 1px solid rgba(78,136,64,.3); }
-.home-status.closed { background: var(--er-bg); border: 1px solid rgba(160,58,58,.25); }
+.home-status.open { background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.2); }
+.home-status.closed { background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.2); }
 .home-status-dot { font-size: 20px; }
 .home-status-text { font-size: 12px; font-weight: 700; }
-.home-status-text.open { color: var(--ok); }
-.home-status-text.closed { color: var(--er); }
-.home-status-sub { font-size: 10px; color: var(--tx-2); margin-top: 1px; }
+.home-status-text.open { color: var(--success); }
+.home-status-text.closed { color: var(--danger); }
+.home-status-sub { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
 
 /* Acesso Rápido - Grid 2x2 como no design atual */
 .quick-grid {
@@ -511,19 +325,19 @@ button { cursor: pointer; }
 }
 .quick-card {
   background: var(--bg-card); border: 1px solid var(--border);
-  border-radius: var(--r-md); padding: 18px 16px;
-  transition: all var(--dur-md) var(--ease); display: flex;
+  border-radius: var(--radius); padding: 18px 16px;
+  transition: all var(--transition); display: flex;
   flex-direction: column; gap: 10px; cursor: pointer;
 }
 .quick-card:hover { border-color: var(--gold-border); }
-.quick-card.highlight { border: 1px dashed var(--gold); background: var(--gold-soft); }
+.quick-card.highlight { border: 1px dashed var(--gold); background: var(--gold-glow); }
 .quick-card-icon {
   width: 40px; height: 40px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; background: var(--gold-soft); border: 1px solid var(--gold-border);
+  font-size: 18px; background: var(--gold-glow); border: 1px solid var(--gold-border);
 }
-.quick-card-label { font-size: 13px; font-weight: 600; color: var(--tx); }
-.quick-card-sub { font-size: 10px; color: var(--tx-2); margin-top: -6px; }
+.quick-card-label { font-size: 13px; font-weight: 600; color: var(--text); }
+.quick-card-sub { font-size: 10px; color: var(--text-muted); margin-top: -6px; }
 .quick-card-guide {
   position: absolute; top: 12px; right: 16px;
   font-size: 11px; color: var(--gold); font-weight: 600;
@@ -560,18 +374,18 @@ button { cursor: pointer; }
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; margin-bottom: 10px;
 }
-.reward-card-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; font-family: var(--f-display); }
+.reward-card-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; font-family: 'Georgia', serif; }
 .reward-card-desc { font-size: 10px; color: var(--text-muted); margin-bottom: 10px; }
 .reward-card-footer { display: flex; align-items: center; justify-content: space-between; }
-.reward-card-cost { font-size: 13px; font-weight: 800; color: var(--gold); font-family: var(--f-mono); }
+.reward-card-cost { font-size: 13px; font-weight: 800; color: var(--gold); font-family: 'Courier New', monospace; }
 .reward-card-btn {
   font-size: 9px; font-weight: 700; letter-spacing: 1px;
   padding: 5px 12px; border-radius: var(--radius-xs);
   border: 1px solid var(--gold); background: var(--gold-glow);
   color: var(--gold); transition: all var(--transition);
-  font-family: var(--f-mono);
+  font-family: 'Courier New', monospace;
 }
-.reward-card-btn:hover { background: var(--gold); color: var(--bg); }
+.reward-card-btn:hover { background: var(--gold); color: #0a0a0f; }
 .reward-card-btn.locked { border-color: var(--border); color: var(--text-dim); background: transparent; cursor: default; }
 
 /* ═══════════════════════════════════════════════════
@@ -589,7 +403,7 @@ button { cursor: pointer; }
 }
 .menu-back:hover { border-color: var(--gold-border); }
 .menu-header-text { }
-.menu-header-title { font-family: var(--f-display); font-size: 18px; font-weight: 700; }
+.menu-header-title { font-family: 'Georgia', serif; font-size: 18px; font-weight: 700; }
 .menu-header-sub { font-size: 11px; color: var(--text-muted); }
 
 /* Step tabs — como no design do Monte Seu Lanche */
@@ -616,8 +430,8 @@ button { cursor: pointer; }
   padding: 14px 16px 8px; display: flex;
   align-items: center; justify-content: space-between;
 }
-.menu-section-title { font-family: var(--f-display); font-size: 15px; font-weight: 700; }
-.menu-section-max { font-size: 10px; color: var(--text-muted); padding: 3px 10px; border: 1px solid var(--border); border-radius: 12px; font-family: var(--f-mono); }
+.menu-section-title { font-family: 'Georgia', serif; font-size: 15px; font-weight: 700; }
+.menu-section-max { font-size: 10px; color: var(--text-muted); padding: 3px 10px; border: 1px solid var(--border); border-radius: 12px; font-family: 'Courier New', monospace; }
 
 /* Item cards for selection */
 .menu-items { padding: 0 16px; }
@@ -634,7 +448,7 @@ button { cursor: pointer; }
 .menu-item-info { flex: 1; min-width: 0; }
 .menu-item-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
 .menu-item-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
-.menu-item-price { font-size: 14px; font-weight: 800; color: var(--gold); font-family: var(--f-mono); flex-shrink: 0; }
+.menu-item-price { font-size: 14px; font-weight: 800; color: var(--gold); font-family: 'Courier New', monospace; flex-shrink: 0; }
 .menu-item-tag {
   position: absolute; top: 8px; right: 8px;
   font-size: 8px; font-weight: 700; letter-spacing: 1px;
@@ -648,7 +462,7 @@ button { cursor: pointer; }
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; transition: all var(--transition);
 }
-.menu-item.selected .menu-item-check { border-color: var(--gold); background: var(--gold); color: var(--bg); }
+.menu-item.selected .menu-item-check { border-color: var(--gold); background: var(--gold); color: #0a0a0f; }
 
 /* Step navigation */
 .step-nav {
@@ -663,7 +477,7 @@ button { cursor: pointer; }
 .step-btn {
   flex: 1; padding: 14px; font-size: 14px; font-weight: 700;
   letter-spacing: 1px; border: none; border-radius: var(--radius);
-  background: var(--gold); color: var(--bg);
+  background: var(--gold); color: #0a0a0f;
   transition: all var(--transition);
 }
 .step-btn:hover { filter: brightness(1.1); }
@@ -696,18 +510,18 @@ button { cursor: pointer; }
 .pronto-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
 .pronto-emoji { font-size: 42px; }
 .pronto-info { flex: 1; }
-.pronto-name { font-family: var(--f-display); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.pronto-name { font-family: 'Georgia', serif; font-size: 16px; font-weight: 700; margin-bottom: 4px; }
 .pronto-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
 .pronto-footer { display: flex; align-items: center; justify-content: space-between; }
-.pronto-price { font-size: 18px; font-weight: 900; color: var(--gold); font-family: var(--f-mono); }
-.pronto-merits { font-size: 11px; color: var(--success); font-weight: 700; font-family: var(--f-mono); }
+.pronto-price { font-size: 18px; font-weight: 900; color: var(--gold); font-family: 'Courier New', monospace; }
+.pronto-merits { font-size: 11px; color: var(--success); font-weight: 700; font-family: 'Courier New', monospace; }
 .pronto-add-btn {
   padding: 8px 20px; font-size: 11px; font-weight: 700;
   letter-spacing: 1px; border: 1px solid var(--gold);
   border-radius: var(--radius-sm); background: var(--gold-glow);
   color: var(--gold); transition: all var(--transition);
 }
-.pronto-add-btn:hover { background: var(--gold); color: var(--bg); }
+.pronto-add-btn:hover { background: var(--gold); color: #0a0a0f; }
 .pronto-tag {
   font-size: 9px; font-weight: 700; letter-spacing: 1.5px;
   padding: 3px 10px; border-radius: 4px; position: absolute;
@@ -772,7 +586,7 @@ button { cursor: pointer; }
 .mission-bar { width: 100%; height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
 .mission-bar-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--gold), #e8d48b); transition: width 0.8s ease; }
 .mission-reward { text-align: right; flex-shrink: 0; }
-.mission-reward-val { font-size: 13px; font-weight: 900; color: var(--gold); font-family: var(--f-mono); }
+.mission-reward-val { font-size: 13px; font-weight: 900; color: var(--gold); font-family: 'Courier New', monospace; }
 .mission-reward-pct { font-size: 9px; color: var(--text-dim); }
 
 /* ═══════════════════════════════════════════════════
@@ -803,7 +617,7 @@ button { cursor: pointer; }
   font-size: 12px; font-weight: 600; color: var(--gold);
   cursor: pointer; transition: all var(--transition);
 }
-.search-tag:hover { background: var(--gold); color: var(--bg); }
+.search-tag:hover { background: var(--gold); color: #0a0a0f; }
 
 .search-cats {
   display: grid; grid-template-columns: repeat(3, 1fr);
@@ -831,7 +645,7 @@ button { cursor: pointer; }
   justify-content: center; padding: 60px 16px; text-align: center;
 }
 .sacola-empty-icon { font-size: 60px; margin-bottom: 16px; opacity: 0.3; }
-.sacola-empty-title { font-family: var(--f-display); font-size: 18px; color: var(--text); margin-bottom: 6px; }
+.sacola-empty-title { font-family: 'Georgia', serif; font-size: 18px; color: var(--text); margin-bottom: 6px; }
 .sacola-empty-sub { font-size: 12px; color: var(--text-muted); }
 
 .sacola-item {
@@ -842,7 +656,7 @@ button { cursor: pointer; }
 .sacola-item-info { flex: 1; }
 .sacola-item-name { font-size: 13px; font-weight: 700; }
 .sacola-item-desc { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-.sacola-item-price { font-size: 14px; font-weight: 800; color: var(--gold); font-family: var(--f-mono); }
+.sacola-item-price { font-size: 14px; font-weight: 800; color: var(--gold); font-family: 'Courier New', monospace; }
 .sacola-item-remove {
   width: 28px; height: 28px; border-radius: 50%;
   border: 1px solid rgba(231,76,60,0.3); background: rgba(231,76,60,0.08);
@@ -862,12 +676,12 @@ button { cursor: pointer; }
 .sacola-total-val { font-size: 13px; font-weight: 700; }
 .sacola-total-row.final { border-top: 1px solid var(--border); padding-top: 8px; margin-bottom: 0; }
 .sacola-total-row.final .sacola-total-label { font-size: 15px; color: var(--text); font-weight: 700; }
-.sacola-total-row.final .sacola-total-val { font-size: 18px; color: var(--gold); font-weight: 900; font-family: var(--f-mono); }
+.sacola-total-row.final .sacola-total-val { font-size: 18px; color: var(--gold); font-weight: 900; font-family: 'Courier New', monospace; }
 
 .sacola-merits-info {
   text-align: center; padding: 8px 16px;
   font-size: 11px; color: var(--success); font-weight: 700;
-  font-family: var(--f-mono);
+  font-family: 'Courier New', monospace;
 }
 
 /* ═══════════════════════════════════════════════════
@@ -908,11 +722,11 @@ button { cursor: pointer; }
   border: 2px solid var(--border); background: var(--bg-card);
   display: flex; align-items: center; justify-content: center;
   font-size: 12px; font-weight: 700; color: var(--text-dim);
-  font-family: var(--f-mono);
+  font-family: 'Courier New', monospace;
   transition: all var(--transition); flex-shrink: 0;
 }
 .onb-progress-step.active { border-color: var(--gold); color: var(--gold); background: var(--gold-glow); }
-.onb-progress-step.done { border-color: var(--gold); background: var(--gold); color: var(--bg); }
+.onb-progress-step.done { border-color: var(--gold); background: var(--gold); color: #0a0a0f; }
 .onb-progress-line {
   flex: 1; height: 2px; background: var(--border);
   position: relative; overflow: hidden;
@@ -926,12 +740,12 @@ button { cursor: pointer; }
 .onb-step { display: none; animation: pageIn 0.3s ease; }
 .onb-step.active { display: block; }
 .onb-icon { font-size: 48px; text-align: center; margin-bottom: 8px; filter: drop-shadow(0 0 12px rgba(201,168,76,0.3)); }
-.onb-title { font-family: var(--f-display); font-size: 20px; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 4px; }
+.onb-title { font-family: 'Georgia', serif; font-size: 20px; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 4px; }
 .onb-subtitle { font-size: 12px; color: var(--text-muted); text-align: center; margin-bottom: 24px; line-height: 1.5; }
 
 .onb-fields { display: flex; flex-direction: column; gap: 14px; }
 .onb-field { display: flex; flex-direction: column; gap: 4px; }
-.onb-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); font-family: var(--f-mono); }
+.onb-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); font-family: 'Courier New', monospace; }
 .onb-input {
   width: 100%; padding: 12px 14px; font-size: 14px;
   background: var(--bg-input); border: 1px solid var(--border);
@@ -948,7 +762,7 @@ button { cursor: pointer; }
   font-size: 11px; color: var(--danger); margin-top: 12px;
   padding: 8px 12px; background: rgba(231,76,60,0.08);
   border: 1px solid rgba(231,76,60,0.2); border-radius: var(--radius-xs);
-  font-family: var(--f-mono); letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace; letter-spacing: 0.5px;
   display: none; text-align: center;
 }
 .onb-error.show { display: block; }
@@ -969,7 +783,7 @@ button { cursor: pointer; }
   color: var(--gold); cursor: pointer; transition: all var(--transition);
   font-family: inherit;
 }
-.onb-btn-next:hover { background: var(--gold); color: var(--bg); }
+.onb-btn-next:hover { background: var(--gold); color: #0a0a0f; }
 .onb-footer { font-size: 9px; color: var(--text-dim); text-align: center; margin-top: 20px; letter-spacing: 1px; }
 
 /* Summary card */
@@ -983,7 +797,7 @@ button { cursor: pointer; }
   padding: 6px 0; border-bottom: 1px solid var(--border);
 }
 .onb-summary-row:last-child { border-bottom: none; }
-.onb-summary-label { font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); font-family: var(--f-mono); }
+.onb-summary-label { font-size: 10px; letter-spacing: 1.5px; color: var(--text-dim); font-family: 'Courier New', monospace; }
 .onb-summary-val { font-size: 13px; color: var(--text); font-weight: 600; text-align: right; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Codename generator box */
@@ -995,7 +809,7 @@ button { cursor: pointer; }
 }
 .onb-codename-value {
   flex: 1; font-size: 18px; font-weight: 900;
-  font-family: var(--f-mono); color: var(--gold);
+  font-family: 'Courier New', monospace; color: var(--gold);
   letter-spacing: 1px;
 }
 .onb-codename-btn {
@@ -1003,12 +817,12 @@ button { cursor: pointer; }
   letter-spacing: 1px; border: 1px solid var(--gold);
   border-radius: var(--radius-xs); background: var(--gold-glow);
   color: var(--gold); cursor: pointer; transition: all var(--transition);
-  font-family: var(--f-mono);
+  font-family: 'Courier New', monospace;
 }
-.onb-codename-btn:hover { background: var(--gold); color: var(--bg); }
+.onb-codename-btn:hover { background: var(--gold); color: #0a0a0f; }
 .onb-codename-hint {
   font-size: 9px; color: var(--danger); margin-top: 4px;
-  font-family: var(--f-mono); letter-spacing: 0.5px;
+  font-family: 'Courier New', monospace; letter-spacing: 0.5px;
   opacity: 0.8;
 }
 
@@ -1032,7 +846,7 @@ button { cursor: pointer; }
   font-size: 28px; margin: 0 auto 10px; position: relative; z-index: 1;
 }
 .profile-codename {
-  font-family: var(--f-mono); font-size: 18px;
+  font-family: 'Courier New', monospace; font-size: 18px;
   font-weight: 900; color: var(--gold); letter-spacing: 1px;
   position: relative; z-index: 1;
 }
@@ -1046,7 +860,7 @@ button { cursor: pointer; }
 }
 .profile-section-title {
   font-size: 10px; letter-spacing: 2px; color: var(--text-dim);
-  font-family: var(--f-mono); font-weight: 700;
+  font-family: 'Courier New', monospace; font-weight: 700;
   margin-bottom: 8px; padding-left: 2px;
 }
 .profile-card {
@@ -1072,7 +886,7 @@ button { cursor: pointer; }
   border: 1px solid rgba(231,76,60,0.3); border-radius: var(--radius);
   background: rgba(231,76,60,0.05); color: var(--danger);
   cursor: pointer; transition: all var(--transition);
-  font-family: var(--f-mono);
+  font-family: 'Courier New', monospace;
 }
 .profile-logout:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 
@@ -1100,7 +914,7 @@ button { cursor: pointer; }
 .sacola-checkout {
   flex: 1; padding: 14px; font-size: 14px; font-weight: 700; letter-spacing: 1px;
   border: none; border-radius: var(--radius);
-  background: var(--gold); color: var(--bg);
+  background: var(--gold); color: #0a0a0f;
   transition: all var(--transition);
 }
 .sacola-checkout:hover { filter: brightness(1.1); }
@@ -1109,36 +923,43 @@ button { cursor: pointer; }
   letter-spacing: 1px; border: 1px solid rgba(231,76,60,0.3);
   border-radius: var(--radius); background: rgba(231,76,60,0.06);
   color: var(--danger); transition: all var(--transition);
-  font-family: var(--f-mono);
+  font-family: 'Courier New', monospace;
 }
 .sacola-clear:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 </style>
 </head>
 <body>
 
-<!-- ═══ LOADING SCREEN ═══ -->
-<div id="loading-screen">
-  <canvas id="cvGrain"></canvas>
-  <div class="ld-corners"><span></span><span></span><span></span><span></span></div>
-  <canvas id="cvLoad"></canvas>
-  <div class="ld-overlay">
-    <div style="text-align:center">
-      <div class="ld-title">MrBur</div>
-      <span class="ld-tag">Clube Secreto Gastronômico</span>
-    </div>
-    <div class="ld-bottom">
-      <div class="ld-maitre" id="ldSt">Aguardando sua chegada…</div>
-      <div class="ld-wax-wrap">
-        <div class="ld-wax-track"><div class="ld-wax-fill" id="ldBar"></div></div>
-        <div class="ld-reserva" id="ldStep">IDENTIFICANDO AGENTE</div>
+<!-- ═══ BOOT — cena fundida (v14 + v15) → login ═══ -->
+<div class="boot" id="boot">
+  <canvas id="bootCv"></canvas>
+  <div class="boot-vgn"></div>
+  <div class="boot-corners"><span></span><span></span><span></span><span></span></div>
+  <div id="bootHud">
+    <div class="boot-top">
+      <div class="boot-emblem">
+        <div class="boot-ring"></div><div class="boot-ring"></div>
+        <div class="boot-radar"></div><div class="boot-emblem-icon">📡</div>
       </div>
-      <div class="ld-stamp" id="ldStamp">✦ &nbsp; ACESSO LIBERADO &nbsp; ✦</div>
+      <div>
+        <div class="boot-title">MRBUR</div>
+        <div class="boot-tag">A&nbsp;ORDEM&nbsp;·&nbsp;OPERAÇÃO&nbsp;ENTREGA&nbsp;SECRETA</div>
+      </div>
+    </div>
+    <div class="boot-bottom">
+      <div class="boot-status" id="bootStatus">Inicializando satélite MBR…</div>
+      <div class="boot-bar-wrap">
+        <div class="boot-meta"><span id="bootStep">ÓRBITA · MBR-SAT</span><span id="bootPct">00%</span></div>
+        <div class="boot-track"><div class="boot-fill" id="bootBar"></div></div>
+      </div>
+      <div class="boot-coords" id="bootCoords">26°18'S · 48°50'W · SAGUAÇU · JOINVILLE</div>
     </div>
   </div>
+  <button id="bootSkip" onclick="window.MBskipBoot&&window.MBskipBoot()">PULAR</button>
 </div>
 
 <!-- ═══ LOGIN ═══ -->
-<div class="login-overlay hidden" id="loginOverlay">
+<div class="login-overlay" id="loginOverlay">
   <div class="login-card">
     <div class="login-logo">🔥</div>
     <div class="login-brand">MRBUR</div>
@@ -1507,10 +1328,10 @@ button { cursor: pointer; }
         <div class="clube-action-label">Histórico</div>
         <div class="clube-action-sub">Ver extrato</div>
       </div>
-      <div class="clube-action" onclick="navigate('missoes')">
-        <div class="clube-action-icon">🎯</div>
+      <div class="clube-action" onclick="showClubeTab('missoes')">
+        <div class="clube-action-icon">🏆</div>
         <div class="clube-action-label">Missões</div>
-        <div class="clube-action-sub">Ganhe pontos</div>
+        <div class="clube-action-sub">3 ativas</div>
       </div>
       <div class="clube-action" onclick="showClubeTab('convidar')">
         <div class="clube-action-icon">🤝</div>
@@ -1716,7 +1537,7 @@ button { cursor: pointer; }
           </div>
           <span class="profile-row-arrow">›</span>
         </div>
-        <div class="profile-row" onclick="showMyInvites()">
+        <div class="profile-row">
           <div class="profile-row-left">
             <span class="profile-row-icon">🎫</span>
             <div class="profile-row-info">
@@ -1732,7 +1553,7 @@ button { cursor: pointer; }
     <button class="profile-logout" onclick="doLogout()">🚪 ENCERRAR SESSÃO</button>
 
     <div style="text-align:center;padding:8px 0 16px;opacity:0.3">
-      <div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);font-family:var(--f-mono)">MRBUR — CAPÍTULO GÊNESIS — v1.0</div>
+      <div style="font-size:9px;letter-spacing:3px;color:var(--text-dim);font-family:'Courier New',monospace">MRBUR — CAPÍTULO GÊNESIS — v1.0</div>
     </div>
   </div>
 
@@ -1740,11 +1561,6 @@ button { cursor: pointer; }
   <div class="page" id="page-sacola">
     <div class="section-title">Sua Sacola</div>
     <div id="sacolaContent"></div>
-  </div>
-
-  <!-- ═══ MISSÕES ═══ -->
-  <div class="page" id="page-missoes">
-    <div id="missionsContent"></div>
   </div>
 
   <!-- BOTTOM NAV -->
@@ -2174,7 +1990,7 @@ function renderProfile() {
   document.getElementById('profAddress').textContent = addr || '—';
   document.getElementById('profNeighborhood').textContent = userProfile.neighborhood || '—';
   document.getElementById('profCep').textContent = userProfile.cep || '—';
-  document.getElementById('profInvites').textContent = (userProfile.invitesAvailable || 0) + ' disponíveis';
+  document.getElementById('profInvites').textContent = userProfile.invites + ' disponíveis';
   document.getElementById('profThemeIcon').textContent = isDark ? '🌙' : '☀️';
   document.getElementById('profThemeLabel').textContent = isDark ? 'Modo Escuro' : 'Modo Claro';
   // Avatar initials
@@ -2209,47 +2025,6 @@ function doLogout() {
   currentPage = 'home';
   cart = [];
   navigate('home');
-}
-
-function showMyInvites() {
-  const invites = userProfile.invites || 0;
-  if (invites === 0) {
-    showToast('info', '🎫', 'Você não tem convites disponíveis no momento. Conquiste mais missões para ganhar convites!');
-    return;
-  }
-  
-  // Criar modal simples para mostrar convites
-  const modalHtml = `
-    <div class="modal-overlay" onclick="closeInviteModal()" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px">
-      <div class="modal-card" onclick="event.stopPropagation()" style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-          <h3 style="font-family:var(--f-display);font-size:18px;font-weight:700;color:var(--text)">🎫 Meus Convites</h3>
-          <button onclick="closeInviteModal()" style="background:none;border:none;font-size:24px;color:var(--text-dim);cursor:pointer">×</button>
-        </div>
-        <div style="text-align:center;padding:20px 0">
-          <div style="font-size:48px;margin-bottom:12px">🎫</div>
-          <div style="font-size:32px;font-weight:700;color:var(--gold);font-family:var(--f-mono)">${invites}</div>
-          <div style="font-size:12px;color:var(--text-muted);letter-spacing:2px;margin-top:4px">CONVITES DISPONÍVEIS</div>
-        </div>
-        <div style="background:var(--bg-elevated);border-radius:var(--radius-sm);padding:16px;margin-top:16px">
-          <div style="font-size:11px;color:var(--text-muted);margin-bottom:8px;font-family:var(--f-mono)">COMO USAR</div>
-          <div style="font-size:13px;color:var(--text);line-height:1.6">
-            1. Compartilhe seu código de convite com amigos<br>
-            2. Quando eles se cadastrarem, você ganha pontos<br>
-            3. Complete missões para ganhar mais convites
-          </div>
-        </div>
-        <button onclick="closeInviteModal()" style="width:100%;padding:14px;margin-top:20px;background:var(--gold-glow);border:1px solid var(--gold);border-radius:var(--radius-sm);color:var(--gold);font-weight:700;letter-spacing:2px;cursor:pointer;font-family:var(--f-mono)">FECHAR</button>
-      </div>
-    </div>
-  `;
-  
-  document.body.insertAdjacentHTML('beforeend', modalHtml);
-}
-
-function closeInviteModal() {
-  const modal = document.querySelector('.modal-overlay');
-  if (modal) modal.remove();
 }
 
 /* ═══════════════════════════════════════════════════
@@ -2322,10 +2097,10 @@ function renderStepContent() {
       if (s.id === 'finalizar') return;
       const sel = monteSelections[s.id] || [];
       if (sel.length) {
-        summary += `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:10px;letter-spacing:2px;color:var(--text-dim);font-family:var(--f-mono);margin-bottom:6px">${s.label.toUpperCase()}</div>`;
+        summary += `<div style="padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:10px;letter-spacing:2px;color:var(--text-dim);font-family:'Courier New',monospace;margin-bottom:6px">${s.label.toUpperCase()}</div>`;
         sel.forEach(item => {
           total += item.price || 0;
-          summary += `<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">${item.icon} ${item.name}</span><span style="font-size:12px;color:var(--gold);font-family:var(--f-mono)">${item.price>0?'+ R$ '+item.price.toFixed(2):'incluso'}</span></div>`;
+          summary += `<div style="display:flex;justify-content:space-between;padding:4px 0"><span style="font-size:13px">${item.icon} ${item.name}</span><span style="font-size:12px;color:var(--gold);font-family:'Courier New',monospace">${item.price>0?'+ R$ '+item.price.toFixed(2):'incluso'}</span></div>`;
         });
         summary += '</div>';
       }
@@ -2333,9 +2108,9 @@ function renderStepContent() {
     const basePrice = 29.90;
     summary += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:14px;font-weight:700">TOTAL</span>
-      <span style="font-size:22px;font-weight:900;color:var(--gold);font-family:var(--f-mono)">R$ ${(basePrice + total).toFixed(2)}</span>
+      <span style="font-size:22px;font-weight:900;color:var(--gold);font-family:'Courier New',monospace">R$ ${(basePrice + total).toFixed(2)}</span>
     </div>`;
-    summary += `<div style="font-size:11px;color:var(--success);font-weight:700;text-align:right;margin-top:4px;font-family:var(--f-mono)">+50⚡ méritos</div>`;
+    summary += `<div style="font-size:11px;color:var(--success);font-weight:700;text-align:right;margin-top:4px;font-family:'Courier New',monospace">+50⚡ méritos</div>`;
     summary += '</div>';
     el.innerHTML = summary;
     return;
@@ -2548,963 +2323,6 @@ function hideToast() {
 }
 
 /* ═══════════════════════════════════════════════════
-   LOADING SCREEN ANIMATION — AGENTES SE ENCONTRAM
-   ═══════════════════════════════════════════════════ */
-(function() {
-  const canvas = document.getElementById('cvLoad');
-  const ctx = canvas.getContext('2d');
-  const grainCanvas = document.getElementById('cvGrain');
-  const grainCtx = grainCanvas.getContext('2d');
-  
-  let W, H, CX, CY, RW, RY;
-  let t = 0;
-  let running = true;
-  let lastTs = 0;
-  
-  const CIN = 'Cinzel';
-  const COR = 'Cormorant Garamond';
-  const M = 'Share Tech Mono';
-  const G = 'rgba(201,168,76,';
-  
-  /* Resize */
-  function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-    grainCanvas.width = W;
-    grainCanvas.height = H;
-    CX = W / 2;
-    CY = H / 2;
-    RW = Math.min(W, H) * 0.35;
-    RY = CY + 20;
-  }
-  window.addEventListener('resize', resize);
-  resize();
-  
-  /* Helpers */
-  const cl = (v, min, max) => Math.max(min, Math.min(max, v));
-  const lr = (a, b, p) => a + (b - a) * p;
-  const fd = (t, start, end) => cl((t - start) / (end - start), 0, 1);
-  const eO = (p) => p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
-  
-  /* Grain */
-  function drawGrain() {
-    const idata = grainCtx.createImageData(W, H);
-    const data = idata.data;
-    for (let i = 0; i < data.length; i += 4) {
-      const v = Math.random() * 255;
-      data[i] = v; data[i + 1] = v; data[i + 2] = v; data[i + 3] = 30;
-    }
-    grainCtx.putImageData(idata, 0, 0);
-  }
-  
-  /* Timeline */
-  const P = {
-    motoIn: 0.5,      /* moto entra */
-    motoSlow: 4,      /* moto desacelera */
-    motoStop: 5.5,    /* moto para */
-    spyIn: 2,         /* espião entra */
-    spyStop: 5,       /* espião para */
-    meetFx: 5.8,      /* efeito encontro */
-    armOut: 6.5,      /* braço estende */
-    handTouch: 7.2,   /* mãos se tocam */
-    transfer: 8,      /* pacote transferido */
-    armBack: 9,       /* braço recolhe */
-    depart: 10,       /* agentes partem */
-    motoDone: 13,     /* moto sai */
-    spyDone: 13,      /* espião sai */
-    titleS: 11.5,     /* título aparece */
-    end: 14           /* fim */
-  };
-  
-  /* Rua */
-  function drawStreet(al) {
-    if (al <= 0) return;
-    ctx.save();
-    ctx.globalAlpha = al;
-    
-    /* asfalto */
-    ctx.fillStyle = '#0a0907';
-    ctx.fillRect(0, RY + 40, W, H - RY - 40);
-    
-    /* meio-fio */
-    ctx.fillStyle = '#141210';
-    ctx.fillRect(0, RY + 35, W, 8);
-    
-    /* calçada */
-    ctx.fillStyle = '#1c1812';
-    ctx.fillRect(0, RY - 60, W, 95);
-    
-    /* linhas da rua */
-    ctx.strokeStyle = 'rgba(201,168,76,.08)';
-    ctx.lineWidth = 2;
-    ctx.setLineDash([20, 20]);
-    ctx.beginPath();
-    ctx.moveTo(0, RY + 44);
-    ctx.lineTo(W, RY + 44);
-    ctx.stroke();
-    ctx.setLineDash([]);
-    
-    /* postes */
-    for (let i = 0; i < 3; i++) {
-      const px = (W / 4) * (i + 1);
-      ctx.fillStyle = '#0e0c08';
-      ctx.fillRect(px - 2, RY - 50, 4, 85);
-      ctx.fillStyle = 'rgba(201,168,76,.12)';
-      ctx.beginPath();
-      ctx.arc(px, RY - 50, 6, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    ctx.restore();
-  }
-  
-  /* Motoboy */
-  function drawMotoboy(x, y, al, spd, armExt, hasBox) {
-    if (al <= 0) return;
-    ctx.save();
-    ctx.globalAlpha = al;
-    ctx.translate(x, y);
-    
-    /* sombra */
-    ctx.fillStyle = 'rgba(0,0,0,.35)';
-    ctx.beginPath();
-    ctx.ellipse(0, 12, 18, 6, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* moto */
-    ctx.fillStyle = '#1a1610';
-    ctx.fillRect(-22, 0, 44, 16);
-    ctx.fillStyle = '#242018';
-    ctx.fillRect(-18, -8, 36, 10);
-    
-    /* rodas */
-    ctx.fillStyle = '#0c0a06';
-    ctx.beginPath();
-    ctx.arc(-14, 12, 8, 0, Math.PI * 2);
-    ctx.arc(14, 12, 8, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* guidão */
-    ctx.strokeStyle = '#2a2418';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.moveTo(-10, -6);
-    ctx.lineTo(10, -6);
-    ctx.stroke();
-    
-    /* corpo do motoboy */
-    ctx.fillStyle = '#181410';
-    ctx.beginPath();
-    ctx.ellipse(0, -4, 8, 12, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* cabeça */
-    ctx.fillStyle = '#161108';
-    ctx.beginPath();
-    ctx.arc(0, -18, 7, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* capacete */
-    ctx.fillStyle = '#0e0c07';
-    ctx.beginPath();
-    ctx.arc(0, -20, 8, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* viseira */
-    ctx.fillStyle = 'rgba(0,0,0,.6)';
-    ctx.beginPath();
-    ctx.ellipse(0, -20, 6, 4, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* braço de entrega */
-    const armP = cl(armExt, 0, 1);
-    if (armP > 0) {
-      const armEndX = 12 + armP * 24;
-      const armEndY = -4 + armP * 2;
-      ctx.strokeStyle = '#221e14';
-      ctx.lineWidth = 8;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(8, -4);
-      ctx.lineTo(armEndX, armEndY);
-      ctx.stroke();
-      ctx.fillStyle = '#241e14';
-      ctx.beginPath();
-      ctx.arc(armEndX, armEndY, 5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    /* pacote MBR */
-    if (hasBox) {
-      const bg = ctx.createLinearGradient(-12, -10, 4, 10);
-      bg.addColorStop(0, '#F2DC8E');
-      bg.addColorStop(.45, '#C9A84C');
-      bg.addColorStop(1, '#8A6C28');
-      ctx.fillStyle = bg;
-      ctx.beginPath();
-      ctx.roundRect(-12, -8, 16, 16, 2);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,.16)';
-      ctx.beginPath();
-      ctx.roundRect(-12, -8, 5, 16, 2);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(201,168,76,.5)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(-12, 0);
-      ctx.lineTo(4, 0);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(5,4,2,.65)';
-      ctx.font = `bold 6px ${CIN}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('MBR', -4, 0);
-    }
-    
-    ctx.restore();
-  }
-  
-  /* Agente Receptor — espião com gabardine */
-  function drawSpy(x, y, al, phase, stopped, armExt, hasBag) {
-    if (al <= 0) return;
-    ctx.save();
-    ctx.globalAlpha = al;
-    ctx.translate(x, y);
-    ctx.scale(-1, 1);
-    
-    const bob = stopped ? 0 : Math.abs(Math.sin(phase)) * 3;
-    ctx.translate(0, -bob);
-    
-    /* sombra */
-    ctx.fillStyle = 'rgba(0,0,0,.35)';
-    ctx.beginPath();
-    ctx.ellipse(0, 12, 20, 7, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* pernas */
-    const lsw = Math.sin(phase) * 24;
-    const llift = Math.abs(Math.sin(phase));
-    ctx.strokeStyle = '#100d08';
-    ctx.lineWidth = 10;
-    ctx.lineCap = 'round';
-    
-    if (!stopped) {
-      ctx.beginPath();
-      ctx.moveTo(0, 10);
-      ctx.lineTo(-lsw * .5, 30);
-      ctx.lineTo(-lsw * .4 + 5, 46);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(0, 10);
-      ctx.lineTo(lsw * .5, 30 - llift * 8);
-      ctx.lineTo(lsw * .4 + 5, 46 - llift * 12);
-      ctx.stroke();
-    } else {
-      ctx.beginPath();
-      ctx.moveTo(-4, 10);
-      ctx.lineTo(-8, 30);
-      ctx.lineTo(-7, 46);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(4, 10);
-      ctx.lineTo(8, 30);
-      ctx.lineTo(10, 46);
-      ctx.stroke();
-    }
-    
-    /* gabardine */
-    ctx.fillStyle = '#181410';
-    ctx.beginPath();
-    ctx.moveTo(-18, 10);
-    ctx.lineTo(18, 10);
-    ctx.lineTo(22, 46);
-    ctx.lineTo(14, 52);
-    ctx.lineTo(-14, 52);
-    ctx.lineTo(-22, 46);
-    ctx.closePath();
-    ctx.fill();
-    
-    /* frente casaco */
-    const cg = ctx.createLinearGradient(-18, -10, 18, 44);
-    cg.addColorStop(0, '#201c12');
-    cg.addColorStop(1, '#141008');
-    ctx.fillStyle = cg;
-    ctx.beginPath();
-    ctx.moveTo(-18, -10);
-    ctx.lineTo(18, -10);
-    ctx.lineTo(20, 10);
-    ctx.lineTo(-20, 10);
-    ctx.closePath();
-    ctx.fill();
-    
-    /* gola */
-    ctx.fillStyle = '#2a2418';
-    ctx.beginPath();
-    ctx.moveTo(-16, -10);
-    ctx.lineTo(16, -10);
-    ctx.lineTo(12, 2);
-    ctx.lineTo(-12, 2);
-    ctx.closePath();
-    ctx.fill();
-    
-    /* cinto */
-    ctx.fillStyle = 'rgba(201,168,76,.16)';
-    ctx.fillRect(-20, 8, 40, 4);
-    
-    /* botões */
-    ctx.fillStyle = 'rgba(201,168,76,.2)';
-    [15, 24, 33].forEach(dy => {
-      ctx.beginPath();
-      ctx.arc(0, dy, 2, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    
-    /* bolsa MBR recebida */
-    if (hasBag) {
-      const bg = ctx.createLinearGradient(-40, -16, -14, 16);
-      bg.addColorStop(0, '#F2DC8E');
-      bg.addColorStop(.45, '#C9A84C');
-      bg.addColorStop(1, '#8A6C28');
-      ctx.fillStyle = bg;
-      ctx.beginPath();
-      ctx.roundRect(-40, -14, 26, 28, 3);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,.16)';
-      ctx.beginPath();
-      ctx.roundRect(-40, -14, 9, 28, 3);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(201,168,76,.5)';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(-40, 0);
-      ctx.lineTo(-14, 0);
-      ctx.stroke();
-      ctx.fillStyle = 'rgba(5,4,2,.65)';
-      ctx.font = `bold 8px ${CIN}`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('MBR', -27, 0);
-      
-      /* alça */
-      ctx.strokeStyle = 'rgba(201,168,76,.55)';
-      ctx.lineWidth = 2.5;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(-36, -14);
-      ctx.quadraticCurveTo(-27, -26, -18, -14);
-      ctx.stroke();
-    }
-    
-    /* braço de recepção */
-    const armP = cl(armExt, 0, 1);
-    if (armP > 0) {
-      const armEndX = 24 + armP * 28;
-      const armEndY = -4 + armP * 2;
-      ctx.strokeStyle = '#221e14';
-      ctx.lineWidth = 10;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(12, -6);
-      ctx.lineTo(armEndX, armEndY);
-      ctx.stroke();
-      ctx.fillStyle = '#241e14';
-      ctx.beginPath();
-      ctx.arc(armEndX, armEndY, 7, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    /* pescoço */
-    ctx.fillStyle = '#1e1a10';
-    ctx.beginPath();
-    ctx.rect(-5, -22, 10, 14);
-    ctx.fill();
-    
-    /* cabeça */
-    ctx.fillStyle = '#161108';
-    ctx.beginPath();
-    ctx.arc(0, -28, 13, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* fedora */
-    ctx.fillStyle = '#0e0c07';
-    ctx.beginPath();
-    ctx.ellipse(0, -30, 22, 6, -.05, 0, Math.PI * 2);
-    ctx.fill();
-    
-    const hgrd = ctx.createLinearGradient(-12, -50, 12, -28);
-    hgrd.addColorStop(0, '#141008');
-    hgrd.addColorStop(1, '#0c0a06');
-    ctx.fillStyle = hgrd;
-    ctx.beginPath();
-    ctx.ellipse(0, -40, 12, 11, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    /* faixa dourada */
-    ctx.strokeStyle = 'rgba(201,168,76,.48)';
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
-    ctx.ellipse(0, -38, 12, 10.5, 0, .06, Math.PI - .06);
-    ctx.stroke();
-    
-    /* óculos escuros */
-    ctx.fillStyle = 'rgba(0,0,0,.82)';
-    ctx.beginPath();
-    ctx.ellipse(-7, -28, 7, 4, -.06, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.ellipse(7, -28, 7, 4, .06, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.restore();
-  }
-  
-  /* Crosshair de rastreamento */
-  function xhair(sx, sy, al, lbl) {
-    if (al <= 0) return;
-    ctx.save();
-    ctx.globalAlpha = al;
-    const cr = 28, cg = 14;
-    ctx.strokeStyle = 'rgba(201,168,76,.78)';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'butt';
-    
-    [[sx - cr, sy, sx - cg, sy], [sx + cg, sy, sx + cr, sy], [sx, sy - cr, sx, sy - cg], [sx, sy + cg, sx, sy + cr]]
-      .forEach(([x1, y1, x2, y2]) => {
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-      });
-    
-    const tb = 18;
-    [[sx - tb, sy - tb, 1, 1], [sx + tb, sy - tb, -1, 1], [sx - tb, sy + tb, 1, -1], [sx + tb, sy + tb, -1, -1]]
-      .forEach(([x, y, dx, dy]) => {
-        ctx.beginPath();
-        ctx.moveTo(x + dx * 9, y);
-        ctx.lineTo(x, y);
-        ctx.lineTo(x, y + dy * 9);
-        ctx.stroke();
-      });
-    
-    /* anel pulsante */
-    const pp = (t % 1.1) / 1.1;
-    ctx.strokeStyle = `rgba(201,168,76,${(1 - pp) * .36})`;
-    ctx.lineWidth = .9;
-    ctx.beginPath();
-    ctx.arc(sx, sy, 26 + pp * 38, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    if (lbl) {
-      ctx.font = `8px ${M}`;
-      ctx.textAlign = 'left';
-      ctx.textBaseline = 'middle';
-      ctx.fillStyle = 'rgba(0,0,0,.6)';
-      ctx.fillRect(sx + 30, sy - 7, 88, 14);
-      ctx.fillStyle = 'rgba(201,168,76,.78)';
-      ctx.fillText(lbl, sx + 33, sy);
-    }
-    
-    ctx.restore();
-  }
-  
-  /* Painel dossier de agente */
-  function agentDossier(side, code, role, status, subStatus, al, blue) {
-    if (al < .04) return;
-    const col = blue ? 'rgba(100,190,255,' : 'rgba(201,168,76,';
-    const PW = 162, PH2 = 96, pad = 10;
-    const px = side === 'left' ? 18 : W - 18 - PW;
-    const py = RY - PH2 - 30;
-    
-    ctx.save();
-    ctx.globalAlpha = al;
-    
-    /* fundo */
-    ctx.fillStyle = 'rgba(4,3,1,.93)';
-    ctx.fillRect(px, py, PW, PH2);
-    ctx.strokeStyle = col + '.48)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(px, py, PW, PH2);
-    
-    /* topo colorido */
-    ctx.fillStyle = col + '.5)';
-    ctx.fillRect(px, py, PW, 2);
-    
-    /* código principal */
-    ctx.font = `bold 13px ${M}`;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillStyle = col + '.95)';
-    ctx.fillText(code, px + pad, py + pad);
-    
-    /* separador */
-    ctx.strokeStyle = col + '.18)';
-    ctx.lineWidth = .8;
-    ctx.beginPath();
-    ctx.moveTo(px + pad, py + pad + 20);
-    ctx.lineTo(px + PW - pad, py + pad + 20);
-    ctx.stroke();
-    
-    /* função */
-    ctx.font = `9px ${M}`;
-    ctx.fillStyle = col + '.58)';
-    ctx.fillText(role, px + pad, py + pad + 28);
-    
-    /* status */
-    ctx.font = `8.5px ${M}`;
-    ctx.fillStyle = col + '.75)';
-    ctx.fillText(status, px + pad, py + pad + 44);
-    
-    /* sub-status */
-    ctx.font = `8px ${M}`;
-    ctx.fillStyle = col + '.38)';
-    ctx.fillText(subStatus, px + pad, py + pad + 58);
-    
-    /* indicador ativo */
-    const blink = Math.sin(t * 3.8) > .1 ? al * .9 : al * .18;
-    ctx.fillStyle = `rgba(80,220,100,${blink})`;
-    ctx.beginPath();
-    ctx.arc(px + PW - pad, py + pad + 11, 4.5, 0, Math.PI * 2);
-    ctx.fill();
-    
-    ctx.font = `7px ${M}`;
-    ctx.textAlign = 'right';
-    ctx.fillStyle = `rgba(80,220,100,${al * .5})`;
-    ctx.fillText('ATIVO', px + PW - pad - 8, py + pad + 14);
-    
-    /* hash */
-    ctx.textAlign = 'left';
-    ctx.fillStyle = col + '.14)';
-    ctx.font = `7px ${M}`;
-    ctx.fillText(`${(Math.sin(t * 14 + px) * 99999999 | 0).toString(16).toUpperCase().slice(0, 10)}`, px + pad, py + pad + 72);
-    
-    ctx.restore();
-  }
-  
-  /* HUD */
-  let hudMsg = 'INICIALIZANDO…';
-  let hudOpacity = 0;
-  
-  function fmtC(b, v) { return b + (v * .00001).toFixed(4) + '°'; }
-  
-  function drawHUD(al, phI) {
-    if (al <= 0) return;
-    ctx.save();
-    ctx.globalAlpha = al;
-    
-    /* scanlines */
-    for (let sy = 0; sy < H; sy += 4) {
-      ctx.fillStyle = 'rgba(0,0,0,.03)';
-      ctx.fillRect(0, sy, W, 1);
-    }
-    
-    /* vinheta */
-    const vg = ctx.createRadialGradient(CX, CY, H * .18, CX, CY, H * .85);
-    vg.addColorStop(0, 'rgba(0,0,0,0)');
-    vg.addColorStop(1, 'rgba(0,0,0,.55)');
-    ctx.fillStyle = vg;
-    ctx.fillRect(0, 0, W, H);
-    
-    /* barra top */
-    ctx.fillStyle = 'rgba(0,0,0,.84)';
-    ctx.fillRect(0, 0, W, 30);
-    ctx.strokeStyle = G + '.12)';
-    ctx.lineWidth = .8;
-    ctx.beginPath();
-    ctx.moveTo(0, 30);
-    ctx.lineTo(W, 30);
-    ctx.stroke();
-    
-    ctx.font = `9px ${M}`;
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = G + '.68)';
-    ctx.textAlign = 'left';
-    ctx.fillText('MBR-SAT  ◆  MODO-IR  ◆  TS/SCI  ◆  OPERAÇÃO ENTREGA SECRETA', 14, 15);
-    
-    ctx.textAlign = 'right';
-    ctx.fillStyle = G + '.34)';
-    ctx.fillText(`${fmtC('26°', t * 12)}S  ${fmtC('48°', t * 9)}W`, W - 14, 15);
-    
-    /* breadcrumbs */
-    ['ÓRBITA MBR', 'BRASIL·SC', 'RUA·JV'].forEach((lb, i) => {
-      const bpx = W / 2 + (i - 1) * 95;
-      ctx.font = `8px ${M}`;
-      ctx.textAlign = 'center';
-      ctx.fillStyle = i === phI ? G + '.92)' : G + '.18)';
-      ctx.fillText(lb, bpx, 15);
-      if (i < 2) {
-        ctx.fillStyle = G + '.14)';
-        ctx.fillText('›', bpx + 47, 15);
-      }
-    });
-    
-    /* barra bottom */
-    ctx.fillStyle = 'rgba(0,0,0,.84)';
-    ctx.fillRect(0, H - 30, W, 30);
-    ctx.strokeStyle = G + '.12)';
-    ctx.lineWidth = .8;
-    ctx.beginPath();
-    ctx.moveTo(0, H - 30);
-    ctx.lineTo(W, H - 30);
-    ctx.stroke();
-    
-    const ts = new Date().toISOString().slice(11, 19);
-    ctx.font = `9px ${M}`;
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = G + '.42)';
-    ctx.textAlign = 'left';
-    ctx.fillText(`MBR-SAT  UTC ${ts}  ALT 484KM`, 14, H - 15);
-    
-    ctx.textAlign = 'right';
-    ctx.fillStyle = G + '.22)';
-    ctx.fillText('MrBur · CLUBE SECRETO GASTRONÔMICO · JOINVILLE·SC', W - 14, H - 15);
-    
-    /* cantos HUD */
-    const bs = 40;
-    ctx.strokeStyle = G + '.4)';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'square';
-    
-    [[4, 31, 1, 1], [W - 4, 31, -1, 1], [4, H - 31, 1, -1], [W - 4, H - 31, -1, -1]]
-      .forEach(([x, y, sx, sy]) => {
-        ctx.beginPath();
-        ctx.moveTo(x + sx * bs, y);
-        ctx.lineTo(x, y);
-        ctx.lineTo(x, y + sy * bs);
-        ctx.stroke();
-      });
-    
-    /* status pill */
-    hudOpacity = cl(hudOpacity + .05, 0, 1);
-    ctx.font = `9.5px ${M}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const sw = ctx.measureText(hudMsg).width + 40;
-    ctx.fillStyle = 'rgba(1,1,0,.74)';
-    ctx.fillRect(CX - sw / 2, H - 66, sw, 22);
-    ctx.strokeStyle = G + `${hudOpacity * .3})`;
-    ctx.lineWidth = .8;
-    ctx.strokeRect(CX - sw / 2, H - 66, sw, 22);
-    ctx.fillStyle = G + `${hudOpacity * .88})`;
-    ctx.fillText(hudMsg, CX, H - 55);
-    
-    /* sinal MBR */
-    const sig = Math.min(5, Math.floor(t * .6 + 1));
-    for (let b = 0; b < 5; b++) {
-      ctx.fillStyle = b < sig ? G + '.52)' : G + '.1)';
-      ctx.fillRect(14, H - 70 - b * 8, 12, 5);
-    }
-    
-    ctx.font = `7px ${M}`;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = G + '.28)';
-    ctx.fillText('MBR', 14, H - 85);
-    
-    ctx.restore();
-  }
-  
-  /* Loop principal */
-  const MX_FINAL = CX - 105;
-  const AX_FINAL = CX + 105;
-  let mX = -W * .9, mSpd = 0, mStop = false;
-  let aX = W * 1.35, aPhase = 0, aStop = false;
-  
-  function updMsg() {
-    if (t < P.motoStop)        hudMsg = 'AGENTE M-02 EM ROTA  ◆  RASTREANDO ENTREGA';
-    else if (t < P.spyStop)   hudMsg = 'AGENTE A-01 A PÉ  ◆  APROXIMAÇÃO CONFIRMADA';
-    else if (t < P.armOut)    hudMsg = 'ENCONTRO CONFIRMADO  ◆  AGUARDANDO TRANSFERÊNCIA';
-    else if (t < P.transfer)  hudMsg = '⬛  ENTREGA EM MÃOS  ◆  M-02 → A-01  ⬛';
-    else if (t < P.depart)    hudMsg = 'TRANSFERÊNCIA OK  ◆  AGENTES DISPERSANDO';
-    else                      hudMsg = 'OPERAÇÃO ENCERRADA  ◆  MBR DESCONECTANDO';
-  }
-  
-  function frame(ts) {
-    if (!running) return;
-    if (ts - lastTs < 14) { requestAnimationFrame(frame); return; }
-    
-    lastTs = ts;
-    t += 1 / 60;
-    updMsg();
-    
-    /* Rua */
-    drawStreet(1);
-    
-    /* Motoboy */
-    const mAl = eO(fd(t, P.motoIn, P.motoIn + .5));
-    if (mAl > .01) {
-      if (t < P.motoSlow) {
-        mX = lr(-W * .9, MX_FINAL - 50, eO(fd(t, P.motoIn, P.motoSlow), 3));
-        mSpd = 1;
-        mStop = false;
-      } else if (t < P.motoStop) {
-        const fp = fd(t, P.motoSlow, P.motoStop);
-        mX = lr(MX_FINAL - 50, MX_FINAL, eO(fp));
-        mSpd = lr(1, .01, fp);
-      } else if (!mStop) {
-        mX = MX_FINAL;
-        mSpd = 0;
-        mStop = true;
-      }
-      
-      if (t >= P.depart) {
-        mX = lr(MX_FINAL, W * 1.4, eO(fd(t, P.depart, P.motoDone), 3));
-        mSpd = lr(.02, 1, fd(t, P.depart, P.motoDone));
-      }
-      
-      const armM = t < P.armOut ? 0
-        : t < P.handTouch ? eO(fd(t, P.armOut, P.handTouch))
-        : t < P.armBack ? 1
-        : 1 - eO(fd(t, P.armBack, P.armBack + .5));
-      
-      const hasBox = t < P.transfer;
-      drawMotoboy(mX, RY, mAl, mSpd, armM, hasBox);
-      
-      if (t < P.handTouch) xhair(mX, RY, mAl * .85, 'M-02 · RASTR.');
-      
-      const dAl = eO(fd(t, P.motoIn + .7, P.motoStop + .4));
-      const mStatus = t < P.motoStop ? 'EM ROTA' : t < P.armOut ? 'PARADO·AGUARDANDO' : t < P.transfer ? 'ENTREGANDO' : 'MISSÃO OK';
-      agentDossier('left', 'AGENTE  M-02', '🏍 MOTOBOY · ENTREGA', mStatus, 'ACESSO NÍV.5', dAl, false);
-    }
-    
-    /* Agente Receptor */
-    const cAl = eO(fd(t, P.spyIn, P.spyIn + 1.2));
-    if (cAl > .01) {
-      if (t < P.spyStop) {
-        aX = lr(W * 1.35, AX_FINAL, fd(t, P.spyIn, P.spyStop));
-        aPhase += .007;
-        aStop = false;
-      } else if (!aStop) {
-        aX = AX_FINAL;
-        aStop = true;
-      }
-      
-      if (t >= P.depart) {
-        aX = lr(AX_FINAL, -W * .5, fd(t, P.depart, P.spyDone));
-        aPhase += .007;
-      }
-      
-      const armR = t < P.armOut ? 0
-        : t < P.handTouch ? eO(fd(t, P.armOut, P.handTouch))
-        : t < P.armBack ? 1
-        : 1 - eO(fd(t, P.armBack, P.armBack + .5));
-      
-      const hasBag = t >= P.transfer;
-      const agStop = aStop && t < P.depart;
-      drawSpy(aX, RY, cAl, aPhase, agStop, armR, hasBag);
-      
-      if (t < P.handTouch) xhair(aX, RY, cAl * .85, 'A-01 · RASTR.');
-      
-      const dAl = eO(fd(t, P.spyIn + 1.2, P.spyStop + .4));
-      const aStatus = t < P.spyStop ? 'A PÉ·APROXIMANDO' : t < P.armOut ? 'AGUARDANDO' : t < P.transfer ? 'RECEBENDO' : 'MISSÃO OK';
-      agentDossier('right', 'AGENTE  A-01', '🎩 RECEPTOR · A PÉ', aStatus, 'ACESSO NÍV.5', dAl, true);
-    }
-    
-    /* Efeito de encontro */
-    if (t >= P.meetFx && t < P.armOut) {
-      const fp = eO(fd(t, P.meetFx, P.meetFx + .3)) * (1 - eO(fd(t, P.meetFx + .5, P.armOut)));
-      
-      ctx.save();
-      ctx.strokeStyle = `rgba(201,168,76,${fp * .42})`;
-      ctx.lineWidth = 1;
-      ctx.setLineDash([5, 9]);
-      ctx.beginPath();
-      ctx.moveTo(mX, RY);
-      ctx.lineTo(aX, RY);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      
-      const midX = (mX + aX) / 2;
-      ctx.font = `9px ${M}`;
-      ctx.textAlign = 'center';
-      ctx.fillStyle = `rgba(201,168,76,${fp * .88})`;
-      ctx.fillText('ENCONTRO CONFIRMADO', midX, RY - RW / 2 - 32);
-      ctx.restore();
-    }
-    
-    /* Entrega em mãos */
-    if (t >= P.handTouch && t < P.armBack + .8) {
-      const handX = (mX + AX_FINAL) / 2 + 6;
-      const handY = RY - 5;
-      const tp = fd(t, P.handTouch, P.armBack);
-      
-      const gp = Math.sin(tp * Math.PI);
-      const hgl = ctx.createRadialGradient(handX, handY, 0, handX, handY, 55);
-      hgl.addColorStop(0, G + `${gp * .45})`);
-      hgl.addColorStop(1, 'rgba(0,0,0,0)');
-      
-      ctx.save();
-      ctx.fillStyle = hgl;
-      ctx.beginPath();
-      ctx.arc(handX, handY, 55, 0, Math.PI * 2);
-      ctx.fill();
-      
-      for (let p = 0; p < 8; p++) {
-        const ang = t * 2 + p * Math.PI * 2 / 8;
-        const pr = 18 + Math.sin(t * 6 + p) * 8;
-        const pa = (.5 + .5 * Math.sin(t * 7 + p)) * .55 * gp;
-        ctx.fillStyle = G + `${pa})`;
-        ctx.beginPath();
-        ctx.arc(handX + Math.cos(ang) * pr, handY + Math.sin(ang) * pr, 2.5, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      
-      if (gp > .15) {
-        ctx.font = `9px ${M}`;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = `rgba(201,168,76,${gp * .82})`;
-        ctx.fillText('ENTREGA EM MÃOS', handX, RY - RW / 2 - 32);
-      }
-      ctx.restore();
-    }
-    
-    /* HUD */
-    drawHUD(eO(fd(t, .3, 1.1)), 2);
-    
-    /* Fade final + título */
-    if (t >= P.titleS) {
-      const fa = eO(fd(t, P.titleS, P.titleS + 1.5));
-      ctx.fillStyle = `rgba(3,2,1,${fa * .97})`;
-      ctx.fillRect(0, 0, W, H);
-      
-      if (fa > .32) {
-        const ta = eO(fd(t, P.titleS + .7, P.titleS + 2.2));
-        const fs = Math.min(W, H) * .092;
-        
-        const hl = ctx.createRadialGradient(CX, CY, 0, CX, CY, Math.min(W, H) * .44);
-        hl.addColorStop(0, G + `${.18 * ta})`);
-        hl.addColorStop(.5, G + `${.07 * ta})`);
-        hl.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = hl;
-        ctx.fillRect(0, 0, W, H);
-        
-        const rw = Math.min(W * .28, 190);
-        ctx.strokeStyle = `rgba(201,168,76,${ta * .18})`;
-        ctx.lineWidth = .8;
-        ctx.beginPath();
-        ctx.moveTo(CX - rw, CY - fs * .65);
-        ctx.lineTo(CX + rw, CY - fs * .65);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(CX - rw, CY + fs * .2);
-        ctx.lineTo(CX + rw, CY + fs * .2);
-        ctx.stroke();
-        
-        ctx.font = `600 ${fs}px ${CIN}`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillStyle = `rgba(242,232,210,${ta})`;
-        ctx.shadowColor = 'rgba(201,168,76,.6)';
-        ctx.shadowBlur = 46;
-        ctx.fillText('MrBur', CX, CY - fs * .52);
-        
-        ctx.shadowBlur = 10;
-        ctx.font = `400 ${fs * .135}px ${CIN}`;
-        ctx.fillStyle = `rgba(201,168,76,${ta * .92})`;
-        ctx.fillText('CLUBE SECRETO GASTRONÔMICO', CX, CY - fs * .08);
-        ctx.shadowBlur = 0;
-        
-        const pa = eO(fd(t, P.titleS + 1.4, P.titleS + 2.8));
-        if (pa > 0) {
-          ctx.font = `300 italic ${fs * .13}px ${COR}`;
-          ctx.fillStyle = `rgba(201,168,76,${pa * .68})`;
-          ctx.fillText('quem sabe, sabe.', CX, CY + fs * .48);
-        }
-        
-        if (ta > .85) {
-          ctx.font = `7px ${M}`;
-          ctx.fillStyle = `rgba(170,35,35,${(ta - .85) * 2 * .36})`;
-          ctx.fillText('MBR-SAT  ◆  OPERAÇÃO ENCERRADA  ◆  CLASSIFICADO', CX, CY + fs * .74);
-        }
-      }
-    }
-    
-    if (t >= P.end && running) {
-      running = false;
-      completeLoading();
-      return;
-    }
-    
-    /* grain overlay */
-    ctx.save();
-    ctx.globalAlpha = .24;
-    ctx.globalCompositeOperation = 'screen';
-    ctx.drawImage(grainCanvas, 0, 0);
-    ctx.restore();
-    
-    requestAnimationFrame(frame);
-  }
-  
-  /* Atualizar barra de progresso */
-  function updateProgress() {
-    const bar = document.getElementById('ldBar');
-    const step = document.getElementById('ldStep');
-    const stamp = document.getElementById('ldStamp');
-    const status = document.getElementById('ldSt');
-    
-    const progress = Math.min((t / P.end) * 100, 100);
-    bar.style.width = progress + '%';
-    
-    if (t < P.motoStop) {
-      step.textContent = 'IDENTIFICANDO AGENTE';
-      status.textContent = 'Aguardando sua chegada…';
-    } else if (t < P.spyStop) {
-      step.textContent = 'APROXIMAÇÃO CONFIRMADA';
-      status.textContent = 'Receptor em posição…';
-    } else if (t < P.armOut) {
-      step.textContent = 'ENCONTRO CONFIRMADO';
-      status.textContent = 'Sincronizando protocolo…';
-    } else if (t < P.transfer) {
-      step.textContent = 'TRANSFERINDO CARGA';
-      status.textContent = 'Entrega em andamento…';
-    } else if (t < P.depart) {
-      step.textContent = 'FINALIZANDO OPERAÇÃO';
-      status.textContent = 'Verificando integridade…';
-    } else {
-      step.textContent = 'ACESSO LIBERADO';
-      status.textContent = 'Bem-vindo ao Clube.';
-      stamp.classList.add('show');
-    }
-  }
-  
-  /* Completar loading */
-  function completeLoading() {
-    const screen = document.getElementById('loading-screen');
-    screen.classList.add('fade-out');
-    
-    setTimeout(() => {
-      screen.style.display = 'none';
-      if (typeof window.onLoadingComplete === 'function') {
-        window.onLoadingComplete();
-      }
-    }, 600);
-  }
-  
-  /* Iniciar */
-  document.fonts.ready.then(() => {
-    document.body.classList.add('rdy');
-    
-    // Callback quando loading terminar
-    window.onLoadingComplete = function() {
-      // Mostrar login após loading
-      document.getElementById('loginOverlay').classList.remove('hidden');
-    };
-    
-    // Atualizar progresso a cada frame
-    const progressInterval = setInterval(() => {
-      if (!running) {
-        clearInterval(progressInterval);
-        return;
-      }
-      updateProgress();
-    }, 100);
-    
-    requestAnimationFrame(frame);
-  });
-  
-  /* Expor função para completar loading manualmente */
-  window.completeLoadingScreen = completeLoading;
-})();
-
-/* ═══════════════════════════════════════════════════
    REWARDS DRAG SCROLL
    Motivo: permite arrastar os cards de recompensa
    com mouse/touch, atualiza dots indicadores
@@ -3597,6 +2415,679 @@ function filterSearch() {
   ).join('') : `<div style="text-align:center;padding:24px;color:var(--text-dim)">Nenhum resultado para "${q}"</div>`;
 }
 
+/* ═══════════════════════════════════════════════════
+   BOOT — CENA FUNDIDA (nova)
+   Funde a abertura cósmica/mapa do v15 (espaço → Brasil →
+   zoom Joinville → agentes no Saguaçu) com a entrega de rua
+   do v14 (motoboy + espião + entrega em mãos) numa única
+   timeline, encerrando com o título e fade suave pro login.
+   Util/draws fatiados dos arquivos originais para fidelidade.
+   ═══════════════════════════════════════════════════ */
+(function(){
+  const cvs = document.getElementById('bootCv');
+  if(!cvs) return;
+  const ctx = cvs.getContext('2d');
+  let W,H,CX,CY;
+  function resize(){ W=cvs.width=innerWidth; H=cvs.height=innerHeight; CX=W/2; CY=H/2; }
+  resize(); addEventListener('resize', resize);
+
+  /* ── utils (uniões dos dois estilos) ── */
+  const cl   = (v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+  const fd   = (v,a,b)=>cl((v-a)/(b-a));
+  const eOut = (v,p=2)=>1-(1-cl(v))**p;
+  const eO   = eOut;
+  const eIn  = (v,p=2)=>cl(v)**p;
+  const lerp = (a,b,v)=>a+(b-a)*v;
+  const lr   = lerp;
+  const G    = 'rgba(201,168,76,';
+  const M    = '"Share Tech Mono",monospace';
+  const MONO = M;
+  const CIN  = '"Cinzel",serif';
+  const COR  = '"Cormorant Garamond",serif';
+  let t = 0, running = true, lastTs = 0, raf = 0;
+
+  /* ── grain ── */
+  const gC = document.createElement('canvas');
+  function mkGrain(){ gC.width=W; gC.height=H; const gx=gC.getContext('2d'),id=gx.createImageData(W,H),d=id.data;
+    for(let i=0;i<d.length;i+=4){const v=Math.random()*255|0;d[i]=v;d[i+1]=v;d[i+2]=v;d[i+3]=Math.random()*20|0;} gx.putImageData(id,0,0); }
+  mkGrain(); const grainTimer = setInterval(mkGrain, 90);
+
+  /* ── dados/câmera (v15) ── */
+  let camLon=-52, camLat=-15, camScale=Math.min(W,H)/40;
+
+  function geo(lon,lat){
+    /* lon → X (direita = leste = lon maior)
+       lat → Y (cima = norte = lat maior, portanto Y invertido) */
+    return[CX+(lon-camLon)*camScale, CY-(lat-camLat)*camScale];
+  }
+
+  /* ══════════════════════════════════════════
+     DADOS GEOGRÁFICOS
+  ══════════════════════════════════════════ */
+
+  /* Brasil — polígono ~52 vértices */
+  const BR=[
+    [-60.0,5.2],[-61.0,4.0],[-63.5,3.8],[-67.5,3.8],
+    [-70.0,1.5],[-72.5,-5.0],[-73.5,-9.5],
+    [-72.0,-11.0],[-68.0,-11.2],[-65.0,-9.8],
+    [-60.5,-13.2],[-55.0,-14.2],[-53.0,-16.2],
+    [-52.2,-18.5],[-52.5,-21.5],[-54.5,-20.5],
+    [-57.5,-22.5],[-57.5,-24.5],[-57.8,-31.0],
+    [-51.8,-34.2],[-51.0,-34.0],[-53.5,-33.8],
+    [-57.5,-34.5],[-58.0,-33.5],
+    [-53.5,-33.8],[-50.0,-30.2],
+    [-48.8,-29.4],[-48.6,-28.1],
+    [-48.84,-26.3], /* Joinville */
+    [-48.5,-25.5],[-47.8,-24.2],[-46.5,-23.8],
+    [-44.8,-23.3],[-43.3,-23.5],[-42.0,-22.9],
+    [-41.0,-21.5],[-40.5,-20.8],[-40.2,-19.8],
+    [-39.7,-18.5],[-39.5,-16.0],[-38.5,-13.8],
+    [-37.2,-12.0],[-35.8,-10.5],[-35.0,-8.8],
+    [-35.2,-5.2],[-37.0,-3.9],[-40.2,-3.0],
+    [-43.5,-2.5],[-44.5,-2.0],[-46.0,-1.5],
+    [-48.5,-1.5],[-49.5,-0.1],[-50.5,1.5],
+    [-51.2,4.0],[-60.0,5.2],
+  ];
+
+  /* Santa Catarina — outline simplificado */
+  const SC=[
+    [-53.8,-26.3],[-53.0,-25.5],[-50.5,-25.4],
+    [-48.84,-26.3],[-48.6,-27.0],[-48.6,-28.2],
+    [-49.2,-29.4],[-50.5,-30.2],[-52.0,-30.5],
+    [-53.5,-33.5],[-57.5,-34.5],[-57.8,-31.0],
+    [-57.5,-24.5],[-54.5,-20.5],[-53.8,-26.3],
+  ];
+
+  /* Joinville */
+  const JV_LON=-48.84, JV_LAT=-26.30;
+
+  /* Saguaçu — centro */
+  const SAG_LON=-48.845, SAG_LAT=-26.295;
+
+  /* Motoboys — 6 pontos ao redor do Saguaçu */
+  const MOTOS=[
+    {lon:-48.854,lat:-26.290,id:'M-01'},
+    {lon:-48.848,lat:-26.299,id:'M-02'},/* ALVO */
+    {lon:-48.839,lat:-26.293,id:'M-03'},
+    {lon:-48.861,lat:-26.285,id:'M-04'},
+    {lon:-48.832,lat:-26.304,id:'M-05'},
+    {lon:-48.858,lat:-26.308,id:'M-06'},
+  ];
+
+  /* Agentes receptores — 5 pontos */
+  const AGTS=[
+    {lon:-48.844,lat:-26.292,id:'A-01'},/* ALVO */
+    {lon:-48.850,lat:-26.286,id:'A-02'},
+    {lon:-48.836,lat:-26.298,id:'A-03'},
+    {lon:-48.862,lat:-26.296,id:'A-04'},
+    {lon:-48.828,lat:-26.290,id:'A-05'},
+  ];
+
+  /* ══════════════════════════════════════════
+     ESTRELAS
+  ══════════════════════════════════════════ */
+  const stars=Array.from({length:260},()=>({
+    x:Math.random()*W,y:Math.random()*H,
+    r:0.5+Math.random()*1.5,a:0.3+Math.random()*0.6,
+    fl:Math.random()*Math.PI*2
+  }));
+
+  /* ── desenhos do mapa (v15) ── */
+  const CAM={
+    brasil:{lon:-52,lat:-15,scale:Math.min(W,H)/40},
+    jvApprox:{lon:JV_LON,lat:JV_LAT,scale:Math.min(W,H)/0.12},
+    saguacu:{lon:SAG_LON,lat:SAG_LAT,scale:Math.min(W,H)/0.025},
+  };
+
+  function updateCamera(){
+    if(t<PH.zoomJV){
+      /* Brasil estático */
+      camLon=CAM.brasil.lon;camLat=CAM.brasil.lat;camScale=CAM.brasil.scale;
+    } else if(t<PH.jvFull){
+      /* zoom Brasil → Joinville */
+      const p=eOut(fd(t,PH.zoomJV,PH.jvFull));
+      camLon=lerp(CAM.brasil.lon,CAM.jvApprox.lon,p);
+      camLat=lerp(CAM.brasil.lat,CAM.jvApprox.lat,p);
+      camScale=lerp(CAM.brasil.scale,CAM.jvApprox.scale,p);
+    } else if(t<PH.sagFull){
+      /* zoom Joinville → Saguaçu */
+      const p=eOut(fd(t,PH.jvFull,PH.sagFull));
+      camLon=lerp(CAM.jvApprox.lon,CAM.saguacu.lon,p);
+      camLat=lerp(CAM.jvApprox.lat,CAM.saguacu.lat,p);
+      camScale=lerp(CAM.jvApprox.scale,CAM.saguacu.scale,p);
+    } else {
+      /* Saguaçu fixo */
+      camLon=CAM.saguacu.lon;camLat=CAM.saguacu.lat;camScale=CAM.saguacu.scale;
+    }
+  }
+
+  /* ══════════════════════════════════════════
+     DRAW — ESPAÇO
+  ══════════════════════════════════════════ */
+  function drawSpace(al){
+    ctx.save();ctx.globalAlpha=al;
+    ctx.fillStyle='#010101';ctx.fillRect(0,0,W,H);
+    stars.forEach(s=>{
+      const fa=s.a*(0.5+0.5*Math.sin(t*0.8+s.fl));
+      ctx.fillStyle=`rgba(220,215,200,${fa})`;
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  /* ══════════════════════════════════════════
+     DRAW — BRASIL + SC
+  ══════════════════════════════════════════ */
+  function drawBrasil(al){
+    if(al<=0)return;
+    ctx.save();ctx.globalAlpha=al;
+
+    /* glow verde ao redor */
+    const[gcx,gcy]=geo(-51,-15);
+    const gr=ctx.createRadialGradient(gcx,gcy,0,gcx,gcy,Math.min(W,H)*.5);
+    gr.addColorStop(0,'rgba(5,18,7,.5)');gr.addColorStop(.6,'rgba(3,10,5,.2)');gr.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+
+    /* polígono Brasil */
+    ctx.beginPath();
+    BR.forEach(([lon,lat],i)=>{const[x,y]=geo(lon,lat);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+    ctx.closePath();
+    ctx.fillStyle='rgba(15,34,17,1)';ctx.fill();
+    ctx.strokeStyle=G+`${al*.5})`;ctx.lineWidth=1.2;ctx.stroke();
+
+    /* SC destacado quando zoom chega */
+    const scScale=CAM.jvApprox.scale;
+    const scAl=cl((camScale-CAM.brasil.scale*2)/(scScale-CAM.brasil.scale*2),0,1);
+    if(scAl>0.05){
+      ctx.beginPath();
+      SC.forEach(([lon,lat],i)=>{const[x,y]=geo(lon,lat);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+      ctx.closePath();
+      ctx.fillStyle=`rgba(24,55,28,${scAl})`;ctx.fill();
+      ctx.strokeStyle=G+`${scAl*.7})`;ctx.lineWidth=1.5;ctx.stroke();
+
+      /* label SC */
+      if(scAl>0.4){
+        const[sx,sy]=geo(-52.5,-27.5);
+        ctx.font=`${cl(scAl*11,8,13)}px ${MONO}`;ctx.textAlign='center';
+        ctx.fillStyle=G+`${scAl*.6})`;ctx.fillText('SANTA CATARINA',sx,sy);
+      }
+    }
+
+    /* ponto Joinville pulsando */
+    const jvAl=cl((camScale-CAM.brasil.scale*3)/(CAM.jvApprox.scale/10),0,1);
+    if(jvAl>0.05){
+      const[jx,jy]=geo(JV_LON,JV_LAT);
+      const pulse=(t%1.8)/1.8;
+      ctx.strokeStyle=G+`${jvAl*(1-pulse)*.7})`;ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(jx,jy,5+pulse*20,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle=G+`${jvAl})`;ctx.beginPath();ctx.arc(jx,jy,3.5,0,Math.PI*2);ctx.fill();
+      if(jvAl>0.35){
+        ctx.font=`${cl(jvAl*10,7,11)}px ${MONO}`;
+        ctx.textAlign='left';ctx.fillStyle=G+`${jvAl*.85})`;
+        const[jx2,jy2]=geo(JV_LON,JV_LAT);
+        ctx.fillText(' JOINVILLE · SC',jx2+5,jy2);
+      }
+    }
+
+    ctx.restore();
+  }
+
+  /* ══════════════════════════════════════════
+     DRAW — CIDADE (grade de quarteirões)
+  ══════════════════════════════════════════ */
+  function drawCity(al){
+    if(al<=0)return;
+    ctx.save();ctx.globalAlpha=al;
+
+    /* fundo escuro urbano */
+    ctx.fillStyle='rgba(3,3,2,1)';ctx.fillRect(0,0,W,H);
+
+    const step=0.0025; /* ~250m — quarteirões compactos */
+    const lonMin=camLon-W/camScale/2-step;
+    const lonMax=camLon+W/camScale/2+step;
+    const latMin=camLat-H/camScale/2-step;
+    const latMax=camLat+H/camScale/2+step;
+    const bSize=step*0.7; /* tamanho do bloco vs rua */
+    const pxStep=step*camScale;
+
+    /* só desenha se quarteirão > 6px */
+    if(pxStep>6){
+      for(let lon=Math.floor(lonMin/step)*step;lon<lonMax;lon+=step){
+        for(let lat=Math.floor(latMin/step)*step;lat<latMax;lat+=step){
+          const[x1,y2]=geo(lon,lat+bSize);
+          const[x2,y1]=geo(lon+bSize,lat);
+          if(x2<0||x1>W||y2<0||y1>H)continue;
+          /* bloco/edifício */
+          ctx.fillStyle='rgba(6,5,3,.98)';
+          ctx.fillRect(x1,y2,x2-x1,y1-y2);
+          /* textura de telhado */
+          if(pxStep>30){
+            ctx.strokeStyle='rgba(10,9,5,.5)';ctx.lineWidth=4;
+            for(let gx=x1;gx<x2;gx+=18){ctx.beginPath();ctx.moveTo(gx,y2);ctx.lineTo(gx,y1);ctx.stroke();}
+          }
+        }
+      }
+      /* poste de luz nas interseções */
+      if(pxStep>25){
+        for(let lon=Math.floor(lonMin/step)*step;lon<lonMax;lon+=step){
+          for(let lat=Math.floor(latMin/step)*step;lat<latMax;lat+=step){
+            const[px,py]=geo(lon,lat);
+            if(px<-10||px>W+10||py<-10||py>H+10)continue;
+            const lr=pxStep*0.22;
+            const lg=ctx.createRadialGradient(px,py,0,px,py,lr);
+            lg.addColorStop(0,'rgba(255,220,100,.12)');lg.addColorStop(1,'rgba(0,0,0,0)');
+            ctx.fillStyle=lg;ctx.beginPath();ctx.arc(px,py,lr,0,Math.PI*2);ctx.fill();
+          }
+        }
+      }
+    }
+
+    ctx.restore();
+  }
+
+  /* ══════════════════════════════════════════
+     DRAW — PONTOS DOS AGENTES NO SAGUAÇU
+  ══════════════════════════════════════════ */
+  function drawAgentDots(al){
+    if(al<=0)return;
+    ctx.save();ctx.globalAlpha=al;
+
+    /* motoboys */
+    MOTOS.forEach((mb,i)=>{
+      const[x,y]=geo(mb.lon,mb.lat);
+      if(x<-50||x>W+50||y<-50||y>H+50)return;
+      const isAlvo=i===1;
+      const pulse=(t+i*.45)%2/2;
+
+      ctx.strokeStyle=`rgba(201,168,76,${(1-pulse)*al*.6})`;ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(x,y,7+pulse*22,0,Math.PI*2);ctx.stroke();
+
+      ctx.fillStyle=isAlvo?'rgba(255,225,80,.95)':'rgba(201,168,76,.78)';
+      ctx.beginPath();ctx.ellipse(x,y,7,5,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=isAlvo?'rgba(255,248,180,1)':'rgba(240,220,140,1)';
+      ctx.beginPath();ctx.arc(x,y,2.8,0,Math.PI*2);ctx.fill();
+
+      if(al>0.45){
+        const lw=38;
+        ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(x+9,y-7,lw,14);
+        ctx.strokeStyle=G+(isAlvo?'.4)':'.2)');ctx.lineWidth=.7;ctx.strokeRect(x+9,y-7,lw,14);
+        ctx.font=`8.5px ${MONO}`;ctx.textAlign='left';ctx.textBaseline='middle';
+        ctx.fillStyle=G+(isAlvo?'.95)':'.62)');ctx.fillText(mb.id,x+12,y);
+      }
+    });
+
+    /* agentes receptores */
+    AGTS.forEach((ag,i)=>{
+      const[x,y]=geo(ag.lon,ag.lat);
+      if(x<-50||x>W+50||y<-50||y>H+50)return;
+      const isAlvo=i===0;
+      const pulse=(t+i*.6+1.1)%2.5/2.5;
+
+      ctx.strokeStyle=`rgba(100,190,255,${(1-pulse)*al*.6})`;ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(x,y,6+pulse*18,0,Math.PI*2);ctx.stroke();
+
+      ctx.fillStyle=isAlvo?'rgba(120,215,255,.95)':'rgba(80,165,225,.75)';
+      ctx.beginPath();ctx.arc(x,y,5.5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=isAlvo?'rgba(200,242,255,1)':'rgba(160,215,242,1)';
+      ctx.beginPath();ctx.arc(x,y,2.5,0,Math.PI*2);ctx.fill();
+
+      if(al>0.45){
+        const lw=36;
+        ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(x+8,y-7,lw,14);
+        ctx.strokeStyle=`rgba(100,190,255,${isAlvo?.4:.2})`;ctx.lineWidth=.7;ctx.strokeRect(x+8,y-7,lw,14);
+        ctx.font=`8.5px ${MONO}`;ctx.textAlign='left';ctx.textBaseline='middle';
+        ctx.fillStyle=`rgba(120,215,255,${isAlvo?.95:.62})`;ctx.fillText(ag.id,x+11,y);
+      }
+    });
+
+    /* linha tracejada ligando par alvo */
+    if(al>0.3){
+      const[mx,my]=geo(MOTOS[1].lon,MOTOS[1].lat);
+      const[ax,ay]=geo(AGTS[0].lon,AGTS[0].lat);
+      const dash=(t%1.4)/1.4;
+      ctx.save();ctx.globalAlpha=al*.55;
+      ctx.strokeStyle=G+'.6)';ctx.lineWidth=1.2;
+      ctx.setLineDash([5,5]);ctx.lineDashOffset=-dash*20;
+      ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(ax,ay);ctx.stroke();
+      ctx.setLineDash([]);ctx.restore();
+    }
+
+    /* legenda */
+    if(al>0.55){
+      const lx=16,ly=H-100;
+      ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(lx,ly,164,70);
+      ctx.strokeStyle=G+'.22)';ctx.lineWidth=.8;ctx.strokeRect(lx,ly,164,70);
+      ctx.font=`8px ${MONO}`;ctx.textBaseline='middle';ctx.textAlign='left';
+
+      ctx.fillStyle='rgba(201,168,76,.85)';
+      ctx.beginPath();ctx.ellipse(lx+13,ly+16,6,4,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle=G+'.65)';ctx.fillText('AGENTE ENTREGA (MOTO)',lx+24,ly+16);
+
+      ctx.fillStyle='rgba(100,195,255,.85)';
+      ctx.beginPath();ctx.arc(lx+13,ly+36,5,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='rgba(120,215,255,.65)';ctx.fillText('AGENTE RECEPTOR',lx+24,ly+36);
+
+      ctx.fillStyle=G+'.45)';
+      ctx.fillText(`${MOTOS.length+AGTS.length} AGENTES ATIVOS · SAGUAÇU`,lx+13,ly+55);
+    }
+
+    ctx.restore();
+  }
+
+  /* ── rua/entrega (v14) ── */
+  const RY=()=>H/2, RW=()=>Math.max(H*.13,70);
+  function drawStreetL(){
+    const H2=H,W2=W,CX2=CX,CY2=CY,RY2=RY(),RW2=RW();
+    ctx.save();
+    ctx.fillStyle='#030201';ctx.fillRect(0,0,W2,H2);
+    [[0,W2*.18],[W2*.22,W2*.16],[W2*.42,W2*.17],[W2*.63,W2*.15],[W2*.82,W2*.15]].forEach(([x,bw])=>{
+      const bf=ctx.createLinearGradient(x,0,x+bw,0);
+      bf.addColorStop(0,'#090704');bf.addColorStop(.5,'#0c0904');bf.addColorStop(1,'#070503');
+      ctx.fillStyle=bf;
+      ctx.fillRect(x,0,bw,RY2-RW2/2-12);ctx.fillRect(x,RY2+RW2/2+12,bw,H2);
+      ctx.strokeStyle='rgba(15,12,5,.5)';ctx.lineWidth=5;
+      for(let gx=x+8;gx<x+bw-4;gx+=20){
+        ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,RY2-RW2/2-12);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(gx,RY2+RW2/2+12);ctx.lineTo(gx,H2);ctx.stroke();
+      }
+    });
+    ctx.fillStyle='rgba(13,10,6,.97)';
+    ctx.fillRect(0,RY2-RW2/2-12,W2,12);ctx.fillRect(0,RY2+RW2/2,W2,12);
+    ctx.fillStyle='rgba(17,14,8,1)';ctx.fillRect(0,RY2-RW2/2,W2,RW2);
+    ctx.save();ctx.strokeStyle='rgba(201,168,76,.04)';ctx.lineWidth=2;ctx.setLineDash([18,16]);
+    ctx.beginPath();ctx.moveTo(0,RY2);ctx.lineTo(W2,RY2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+    [CX2*.38,CX2*.95,CX2*1.52].forEach(lx=>{
+      const lg=ctx.createRadialGradient(lx,RY2,0,lx,RY2,W2*.22);
+      lg.addColorStop(0,'rgba(255,215,100,.06)');lg.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=lg;ctx.fillRect(0,0,W2,H2);
+    });
+    for(let i=0;i<50;i++){
+      const wx=(Math.sin(i*2.3)*.49+.5)*W2;
+      const ab=Math.sin(i*1.7)*.5+.5<.5;
+      const wy=ab?(Math.sin(i*3.1)*.49+.5)*(RY2-RW2/2-16):RY2+RW2/2+16+(Math.sin(i*2.9)*.49+.5)*(H2-RY2-RW2/2-16);
+      const wa=.03+.012*Math.sin(t*.2+i*.85);
+      ctx.fillStyle=`rgba(255,195,70,${wa})`;ctx.beginPath();ctx.arc(wx,wy,1.1,0,Math.PI*2);ctx.fill();
+    }
+    /* névoa de rua */
+    const fog=ctx.createRadialGradient(CX2,RY2+20,0,CX2,RY2+20,W2*.35);
+    fog.addColorStop(0,'rgba(255,140,20,.03)');fog.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=fog;ctx.fillRect(0,0,W2,H2);
+    ctx.restore();
+  }
+
+  /* ─── MOTOBOY ─── cópia inline das funções do intro ─── */
+  function drawMotoL(x,y,al,spd,armExtP,hasBox){
+    if(al<=0)return;
+    const RY2=RY();
+    ctx.save();ctx.globalAlpha=al;ctx.translate(x,y);
+    if(spd>.08){ctx.save();ctx.beginPath();ctx.moveTo(52,0);ctx.lineTo(52+W*.28,-W*.28*.35);ctx.lineTo(52+W*.28,W*.28*.35);ctx.closePath();const hg=ctx.createLinearGradient(52,0,52+W*.28,0);hg.addColorStop(0,`rgba(255,240,150,${spd*.17})`);hg.addColorStop(1,'rgba(255,240,150,0)');ctx.fillStyle=hg;ctx.fill();ctx.restore();}
+    ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(2,13,54,11,0,0,Math.PI*2);ctx.fill();
+    [[-42,0],[44,0]].forEach(([rx])=>{
+      ctx.fillStyle='#131008';ctx.beginPath();ctx.arc(rx,0,17,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='rgba(45,38,20,.8)';ctx.lineWidth=5.5;ctx.beginPath();ctx.arc(rx,0,17,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle='rgba(201,168,76,.22)';ctx.lineWidth=2;ctx.beginPath();ctx.arc(rx,0,12,0,Math.PI*2);ctx.stroke();
+      ctx.save();ctx.translate(rx,0);ctx.rotate(t*spd*9);ctx.strokeStyle='rgba(201,168,76,.18)';ctx.lineWidth=1.2;
+      for(let r=0;r<5;r++){ctx.save();ctx.rotate(r*Math.PI*2/5);ctx.beginPath();ctx.moveTo(0,-12);ctx.lineTo(0,12);ctx.stroke();ctx.restore();}
+      ctx.restore();
+    });
+    ctx.strokeStyle='#262018';ctx.lineWidth=5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(22,-8);ctx.lineTo(44,0);ctx.stroke();
+    ctx.fillStyle='#231d0e';ctx.beginPath();ctx.moveTo(-42,0);ctx.bezierCurveTo(-16,-22,8,-20,22,-8);ctx.bezierCurveTo(36,-6,44,0,44,0);ctx.bezierCurveTo(18,14,-18,11,-32,7);ctx.closePath();ctx.fill();
+    const tg=ctx.createLinearGradient(0,-24,0,4);tg.addColorStop(0,'#342810');tg.addColorStop(.6,'#1e1608');tg.addColorStop(1,'#181208');
+    ctx.fillStyle=tg;ctx.beginPath();ctx.ellipse(8,-11,26,12,-.1,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='#2a2215';ctx.lineWidth=4;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(28,-10);ctx.lineTo(28,-26);ctx.stroke();ctx.beginPath();ctx.moveTo(19,-26);ctx.lineTo(38,-26);ctx.stroke();
+    if(hasBox){
+      const bg=ctx.createLinearGradient(-62,-19,-35,19);bg.addColorStop(0,'#F2DC8E');bg.addColorStop(.45,'#C9A84C');bg.addColorStop(1,'#8A6C28');
+      ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(-62,-19,28,38,3);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.roundRect(-62,-19,10,38,3);ctx.fill();
+      ctx.strokeStyle='rgba(201,168,76,.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-62,0);ctx.lineTo(-34,0);ctx.stroke();
+      ctx.fillStyle='rgba(5,4,2,.65)';ctx.font=`bold 9px ${CIN}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('MBR',-48,0);
+    }
+    ctx.fillStyle='#151108';ctx.beginPath();ctx.ellipse(-4,0,16,12,-.08,0,Math.PI*2);ctx.fill();
+    const hgr=ctx.createRadialGradient(-4,-5,0,-4,-5,15);hgr.addColorStop(0,'#221c0e');hgr.addColorStop(1,'#0e0a06');
+    ctx.fillStyle=hgr;ctx.beginPath();ctx.arc(-4,-4,15,Math.PI,0);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#141008';ctx.beginPath();ctx.ellipse(-4,-1,17,5.5,0,0,Math.PI*2);ctx.fill();
+    const vis=ctx.createLinearGradient(-14,-9,2,-2);vis.addColorStop(0,'rgba(201,168,76,.44)');vis.addColorStop(1,'rgba(240,210,100,.2)');
+    ctx.fillStyle=vis;ctx.beginPath();ctx.arc(-4,-4,12,Math.PI*.12,Math.PI*.85);ctx.fill();
+    ctx.strokeStyle='rgba(201,168,76,.65)';ctx.lineWidth=1.1;ctx.beginPath();ctx.arc(-4,-4,12,Math.PI*.12,Math.PI*.85);ctx.stroke();
+    const armP=cl(armExtP,0,1);
+    if(armP>0){
+      const aex=22+armP*32,aey=-5+armP*3;
+      ctx.strokeStyle='#1e1810';ctx.lineWidth=10;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(6,-5);ctx.lineTo(aex,aey);ctx.stroke();
+      ctx.fillStyle='#201c12';ctx.beginPath();ctx.arc(aex,aey,7,0,Math.PI*2);ctx.fill();
+      if(!hasBox){
+        const pg=ctx.createLinearGradient(aex-10,aey-10,aex+10,aey+10);pg.addColorStop(0,'#F2DC8E');pg.addColorStop(1,'#C9A84C');
+        ctx.fillStyle=pg;ctx.beginPath();ctx.roundRect(aex-10,aey-10,20,20,2);ctx.fill();
+        ctx.fillStyle='rgba(5,4,2,.65)';ctx.font=`bold 8px ${CIN}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('MBR',aex,aey);
+      }
+    }
+    ctx.fillStyle='rgba(255,248,200,.9)';ctx.beginPath();ctx.arc(52,0,5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,248,200,.18)';ctx.beginPath();ctx.arc(52,0,13,0,Math.PI*2);ctx.fill();
+    if(spd>.12){for(let s=0;s<4;s++){const sp=(t*5+s*.7)%1;ctx.fillStyle=`rgba(80,65,40,${(1-sp)*spd*.2})`;ctx.beginPath();ctx.arc(-60-sp*40,s*6-6,3+sp*16,0,Math.PI*2);ctx.fill();}}
+    ctx.restore();
+  }
+
+  /* ─── ESPIÃO/RECEPTOR ─── */
+  function drawSpyL(x,y,al,phase,stopped,armExtP,hasBag){
+    if(al<=0)return;
+    ctx.save();ctx.globalAlpha=al;ctx.translate(x,y);ctx.scale(-1,1);
+    const bob=stopped?0:Math.abs(Math.sin(phase))*3;ctx.translate(0,-bob);
+    ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(0,12,20,7,0,0,Math.PI*2);ctx.fill();
+    const lsw=Math.sin(phase)*24,llift=Math.abs(Math.sin(phase));
+    ctx.strokeStyle='#100d08';ctx.lineWidth=10;ctx.lineCap='round';
+    if(!stopped){
+      ctx.beginPath();ctx.moveTo(0,10);ctx.lineTo(-lsw*.5,30);ctx.lineTo(-lsw*.4+5,46);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(0,10);ctx.lineTo(lsw*.5,30-llift*8);ctx.lineTo(lsw*.4+5,46-llift*12);ctx.stroke();
+      ctx.strokeStyle='#1e1a12';ctx.lineWidth=6;
+      ctx.beginPath();ctx.moveTo(-lsw*.4+5,46);ctx.lineTo(-lsw*.4+16,46);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(lsw*.4+5,46-llift*12);ctx.lineTo(lsw*.4+16,46-llift*12);ctx.stroke();
+    } else {
+      ctx.beginPath();ctx.moveTo(-4,10);ctx.lineTo(-8,30);ctx.lineTo(-7,46);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(4,10);ctx.lineTo(8,30);ctx.lineTo(10,46);ctx.stroke();
+      ctx.strokeStyle='#1e1a12';ctx.lineWidth=6;
+      ctx.beginPath();ctx.moveTo(-7,46);ctx.lineTo(3,46);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(10,46);ctx.lineTo(20,46);ctx.stroke();
+    }
+    const cg=ctx.createLinearGradient(-18,-10,18,44);cg.addColorStop(0,'#201c12');cg.addColorStop(1,'#141008');
+    ctx.fillStyle='#181410';ctx.beginPath();ctx.moveTo(-18,10);ctx.lineTo(18,10);ctx.lineTo(22,46);ctx.lineTo(14,52);ctx.lineTo(-14,52);ctx.lineTo(-22,46);ctx.closePath();ctx.fill();
+    ctx.fillStyle=cg;ctx.beginPath();ctx.moveTo(-18,-10);ctx.lineTo(18,-10);ctx.lineTo(20,10);ctx.lineTo(-20,10);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#2a2418';ctx.beginPath();ctx.moveTo(-16,-10);ctx.lineTo(16,-10);ctx.lineTo(12,2);ctx.lineTo(-12,2);ctx.closePath();ctx.fill();
+    ctx.fillStyle='rgba(201,168,76,.16)';ctx.fillRect(-20,8,40,4);
+    ctx.fillStyle='rgba(201,168,76,.2)';[15,24,33].forEach(dy=>{ctx.beginPath();ctx.arc(0,dy,2,0,Math.PI*2);ctx.fill();});
+    ctx.fillStyle='#242018';ctx.beginPath();ctx.ellipse(0,-10,22,9,0,0,Math.PI*2);ctx.fill();
+    if(hasBag){
+      const bg=ctx.createLinearGradient(-40,-16,-14,16);bg.addColorStop(0,'#F2DC8E');bg.addColorStop(.45,'#C9A84C');bg.addColorStop(1,'#8A6C28');
+      ctx.fillStyle=bg;ctx.beginPath();ctx.roundRect(-40,-14,26,28,3);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,.16)';ctx.beginPath();ctx.roundRect(-40,-14,9,28,3);ctx.fill();
+      ctx.strokeStyle='rgba(201,168,76,.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-40,0);ctx.lineTo(-14,0);ctx.stroke();
+      ctx.fillStyle='rgba(5,4,2,.65)';ctx.font=`bold 8px ${CIN}`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('MBR',-27,0);
+      ctx.strokeStyle='rgba(201,168,76,.55)';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-36,-14);ctx.quadraticCurveTo(-27,-26,-18,-14);ctx.stroke();
+    }
+    const armP=cl(armExtP,0,1);
+    if(armP>0){
+      const aex=24+armP*28,aey=-4+armP*2;
+      ctx.strokeStyle='#221e14';ctx.lineWidth=10;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(12,-6);ctx.lineTo(aex,aey);ctx.stroke();
+      ctx.fillStyle='#241e14';ctx.beginPath();ctx.arc(aex,aey,7,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle='#1e1a10';ctx.beginPath();ctx.rect(-5,-22,10,14);ctx.fill();
+    ctx.fillStyle='#161108';ctx.beginPath();ctx.arc(0,-28,13,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#0e0c07';ctx.beginPath();ctx.ellipse(0,-30,22,6,-.05,0,Math.PI*2);ctx.fill();
+    const hgrd=ctx.createLinearGradient(-12,-50,12,-28);hgrd.addColorStop(0,'#141008');hgrd.addColorStop(1,'#0c0a06');
+    ctx.fillStyle=hgrd;ctx.beginPath();ctx.ellipse(0,-40,12,11,0,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(201,168,76,.48)';ctx.lineWidth=2.4;ctx.beginPath();ctx.ellipse(0,-38,12,10.5,0,.06,Math.PI-.06);ctx.stroke();
+    ctx.fillStyle='rgba(0,0,0,.82)';
+    ctx.beginPath();ctx.ellipse(-7,-28,7,4,-.06,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(7,-28,7,4,.06,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle='rgba(130,105,55,.55)';ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.ellipse(-7,-28,7,4,-.06,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.ellipse(7,-28,7,4,.06,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-14,-28);ctx.lineTo(-20,-26);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(14,-28);ctx.lineTo(20,-26);ctx.stroke();
+    ctx.restore();
+  }
+
+  /* ─── crosshair ─── */
+  function xhairL(sx,sy,al){
+    if(al<=0)return;
+    ctx.save();ctx.globalAlpha=al;
+    const cr=26,cg=14;ctx.strokeStyle='rgba(201,168,76,.72)';ctx.lineWidth=1.4;ctx.lineCap='butt';
+    [[sx-cr,sy,sx-cg,sy],[sx+cg,sy,sx+cr,sy],[sx,sy-cr,sx,sy-cg],[sx,sy+cg,sx,sy+cr]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
+    const pp=(t%1.1)/1.1;ctx.strokeStyle=`rgba(201,168,76,${(1-pp)*.3})`;ctx.lineWidth=.9;ctx.beginPath();ctx.arc(sx,sy,24+pp*36,0,Math.PI*2);ctx.stroke();
+    ctx.restore();
+  }
+
+
+  /* ── timeline única ── */
+  const PH = {
+    brShow:0.4,  brFull:2.0,
+    zoomJV:2.4,  jvFull:4.4,
+    sagShow:4.6, sagFull:6.2,
+    streetFade:7.0, streetFull:7.9,
+    titleS:13.4, end:16.2,
+  };
+  /* updateCamera() já vem das fatias do v15 acima (mesmas fases PH) */
+
+  /* ── choreografia da rua (v14) ── */
+  const STP = { motoIn:0, motoSlow:1.1, motoStop:1.9, spyIn:.2, spyStop:2.8, meetFx:3.0,
+                armOut:3.3, touch:3.8, transfer:4.0, armBack:4.3, depart:4.6, motoDone:5.8, spyDone:6.8 };
+  let mX=-W*.9, aX=W*1.35, aPhase=0, aStop=false;
+
+  function drawStreetScene(al, st){
+    const mxf=CX-105, axf=CX+105;
+    ctx.save(); ctx.globalAlpha=al; drawStreetL(); ctx.restore();
+
+    const mAl = eO(fd(st,STP.motoIn,STP.motoIn+.5))*al;
+    if(mAl>.01){
+      let mSpd;
+      if(st<STP.motoSlow){ mX=lr(-W*.9,mxf-50,eO(fd(st,STP.motoIn,STP.motoSlow),3)); mSpd=1; }
+      else if(st<STP.motoStop){ const fp=fd(st,STP.motoSlow,STP.motoStop); mX=lr(mxf-50,mxf,eO(fp)); mSpd=lr(1,.01,fp); }
+      else { mX=mxf; mSpd=0; }
+      if(st>=STP.depart){ mX=lr(mxf,W*1.4,eO(fd(st,STP.depart,STP.motoDone),3)); mSpd=lr(.02,1,fd(st,STP.depart,STP.motoDone)); }
+      const armM = st<STP.armOut?0:st<STP.touch?eO(fd(st,STP.armOut,STP.touch)):st<STP.armBack?1:1-eO(fd(st,STP.armBack,STP.armBack+.5));
+      drawMotoL(mX,RY(),mAl,mSpd,armM, st<STP.transfer);
+      if(st<STP.touch) xhairL(mX,RY(),mAl*.7);
+    }
+
+    const cAl = eO(fd(st,STP.spyIn,STP.spyIn+1))*al;
+    if(cAl>.01){
+      if(st<STP.spyStop){ aX=lr(W*1.35,axf,fd(st,STP.spyIn,STP.spyStop)); aPhase+=.007; aStop=false; }
+      else if(!aStop){ aX=axf; aStop=true; }
+      if(st>=STP.depart){ aX=lr(axf,-W*.5,fd(st,STP.depart,STP.spyDone)); aPhase+=.007; }
+      const armR = st<STP.armOut?0:st<STP.touch?eO(fd(st,STP.armOut,STP.touch)):st<STP.armBack?1:1-eO(fd(st,STP.armBack,STP.armBack+.5));
+      drawSpyL(aX,RY(),cAl,aPhase, aStop&&st<STP.depart, armR, st>=STP.transfer);
+      if(st<STP.touch) xhairL(aX,RY(),cAl*.7);
+    }
+
+    if(st>=STP.meetFx && st<STP.armOut){
+      const fp=eO(fd(st,STP.meetFx,STP.meetFx+.3))*(1-eO(fd(st,STP.meetFx+.5,STP.armOut)))*al;
+      ctx.save(); ctx.strokeStyle='rgba(201,168,76,'+(fp*.4)+')'; ctx.lineWidth=1; ctx.setLineDash([5,9]);
+      ctx.beginPath(); ctx.moveTo(mX,RY()); ctx.lineTo(aX,RY()); ctx.stroke(); ctx.setLineDash([]);
+      ctx.font='9px '+M; ctx.textAlign='center'; ctx.fillStyle='rgba(201,168,76,'+(fp*.9)+')';
+      ctx.fillText('ENCONTRO CONFIRMADO',(mX+aX)/2,RY()-RW()/2-28); ctx.restore();
+    }
+    if(st>=STP.touch && st<STP.armBack+.8){
+      const gp=Math.sin(fd(st,STP.touch,STP.armBack)*Math.PI)*al;
+      const hx=(mX+axf)/2+6, hy=RY()-6;
+      const hgl=ctx.createRadialGradient(hx,hy,0,hx,hy,55);
+      hgl.addColorStop(0,G+(gp*.45)+')'); hgl.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.save(); ctx.fillStyle=hgl; ctx.beginPath(); ctx.arc(hx,hy,55,0,Math.PI*2); ctx.fill();
+      for(let p=0;p<8;p++){ const ang=st*2+p*Math.PI*2/8, pr=18+Math.sin(st*6+p)*8;
+        ctx.fillStyle=G+((.5+.5*Math.sin(st*7+p))*.5*gp)+')'; ctx.beginPath(); ctx.arc(hx+Math.cos(ang)*pr,hy+Math.sin(ang)*pr,2.5,0,Math.PI*2); ctx.fill(); }
+      ctx.font='9px '+M; ctx.textAlign='center'; ctx.fillStyle='rgba(201,168,76,'+(gp*.85)+')';
+      ctx.fillText('ENTREGA EM MÃOS',hx,RY()-RW()/2-28); ctx.restore();
+    }
+  }
+
+  /* ── HUD (DOM) ── */
+  const hud   = document.getElementById('bootHud');
+  const hudSt = document.getElementById('bootStatus');
+  const hudBar= document.getElementById('bootBar');
+  const hudPct= document.getElementById('bootPct');
+  const hudCo = document.getElementById('bootCoords');
+  function pad(n,w){ n=Math.floor(n); let s=''+Math.abs(n); while(s.length<w)s='0'+s; return s; }
+  function updHud(){
+    let msg, step;
+    if(t<PH.zoomJV){ msg='Posicionando satélite MBR sobre o território…'; step='ÓRBITA · MBR-SAT'; }
+    else if(t<PH.sagFull){ msg='Triangulando coordenadas de Joinville…'; step='ZOOM · BRASIL→SC→SAGUAÇU'; }
+    else if(t<PH.streetFull){ msg='Localizando agentes de campo no Saguaçu…'; step='RASTREANDO AGENTES'; }
+    else if(t<STP_t(STP.transfer)){ msg='Encontro confirmado · transferência em andamento…'; step='ENTREGA EM MÃOS · M-02→A-01'; }
+    else { msg='Operação concluída · liberando acesso.'; step='ACESSO LIBERADO'; }
+    if(hudSt && hudSt.dataset.m!==msg){ hudSt.textContent=msg; hudSt.dataset.m=msg; }
+    if(hudPct){ const p=Math.round(cl(t/PH.titleS,0,1)*100); hudBar.style.width=p+'%'; hudPct.textContent=pad(p,2)+'%'; }
+    const stepEl=document.getElementById('bootStep'); if(stepEl) stepEl.textContent=step;
+    if(hudCo){ hudCo.textContent="26°"+pad(18+Math.sin(t*1.3),2)+"'S · 48°"+pad(50+Math.cos(t*1.1),2)+"'W · SAGUAÇU"; }
+  }
+  function STP_t(x){ return PH.streetFull + x; }
+
+  /* ── título final (canvas) ── */
+  function drawTitle(){
+    const fa=eOut(fd(t,PH.titleS,PH.titleS+1.4));
+    ctx.fillStyle='rgba(3,2,1,'+(fa*.98)+')'; ctx.fillRect(0,0,W,H);
+    if(fa<=.3) return;
+    const ta=eOut(fd(t,PH.titleS+.6,PH.titleS+2.0));
+    const fs=Math.min(W,H)*.095;
+    const hl=ctx.createRadialGradient(CX,CY,0,CX,CY,Math.min(W,H)*.45);
+    hl.addColorStop(0,G+(.18*ta)+')'); hl.addColorStop(.5,G+(.07*ta)+')'); hl.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=hl; ctx.fillRect(0,0,W,H);
+    const rw=Math.min(W*.28,190);
+    ctx.strokeStyle='rgba(201,168,76,'+(ta*.18)+')'; ctx.lineWidth=.8;
+    ctx.beginPath(); ctx.moveTo(CX-rw,CY-fs*.62); ctx.lineTo(CX+rw,CY-fs*.62); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(CX-rw,CY+fs*.2); ctx.lineTo(CX+rw,CY+fs*.2); ctx.stroke();
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='600 '+fs+'px '+CIN; ctx.fillStyle='rgba(242,232,210,'+ta+')';
+    ctx.shadowColor='rgba(201,168,76,.6)'; ctx.shadowBlur=46; ctx.fillText('MrBur',CX,CY-fs*.5);
+    ctx.shadowBlur=10; ctx.font='400 '+(fs*.135)+'px '+CIN; ctx.fillStyle=G+(ta*.92)+')';
+    ctx.fillText('CLUBE SECRETO GASTRONÔMICO',CX,CY-fs*.05); ctx.shadowBlur=0;
+    const pa=eOut(fd(t,PH.titleS+1.3,PH.titleS+2.6));
+    if(pa>0){ ctx.font='300 italic '+(fs*.14)+'px '+COR; ctx.fillStyle=G+(pa*.7)+')'; ctx.fillText('quem sabe, sabe.',CX,CY+fs*.5); }
+    if(ta>.85){ ctx.font='7px '+M; ctx.fillStyle='rgba(170,35,35,'+((ta-.85)*2*.36)+')';
+      ctx.fillText('MBR-SAT  ◆  OPERAÇÃO ENCERRADA  ◆  CLASSIFICADO',CX,CY+fs*.75); }
+  }
+
+  /* ── loop ── */
+  function frame(ts){
+    if(!running) return;
+    if(ts-lastTs<16){ raf=requestAnimationFrame(frame); return; }
+    lastTs=ts; t+=1/60;
+
+    const mapAl = 1 - eOut(fd(t,PH.streetFade,PH.streetFull));
+    if(mapAl>0.001){
+      updateCamera();
+      drawSpace(mapAl);
+      const cityAl = mapAl * cl((camScale-CAM.jvApprox.scale)/(CAM.saguacu.scale-CAM.jvApprox.scale),0,1);
+      drawCity(cityAl);
+      drawBrasil(mapAl*(1-cl(cityAl,0,1)));
+      drawAgentDots(mapAl*eOut(fd(t,PH.sagShow,PH.sagFull)));
+    } else { ctx.fillStyle='#030201'; ctx.fillRect(0,0,W,H); }
+
+    const stAl = eOut(fd(t,PH.streetFade,PH.streetFull));
+    if(stAl>0.001) drawStreetScene(stAl, t-PH.streetFull);
+
+    /* HUD some no título */
+    if(hud){ const h = t>=PH.titleS ? 0 : 1; hud.style.opacity = h; }
+    updHud();
+
+    if(t>=PH.titleS) drawTitle();
+
+    /* grain */
+    ctx.save(); ctx.globalAlpha=.18; ctx.globalCompositeOperation='screen'; ctx.drawImage(gC,0,0); ctx.restore();
+
+    if(t>=PH.end){ endBoot(); return; }
+    raf=requestAnimationFrame(frame);
+  }
+
+  /* ── fim → login ── */
+  let ended=false;
+  function endBoot(){
+    if(ended) return; ended=true; running=false;
+    cancelAnimationFrame(raf); clearInterval(grainTimer);
+    const boot=document.getElementById('boot');
+    if(boot){ boot.classList.add('boot-hide'); setTimeout(()=>boot.remove(),700); }
+    const lu=document.getElementById('loginUser'); if(lu) setTimeout(()=>lu.focus(),750);
+  }
+  window.MBskipBoot = endBoot;
+
+  document.fonts && document.fonts.ready ? document.fonts.ready.then(()=>{raf=requestAnimationFrame(frame);}) : (raf=requestAnimationFrame(frame));
+})();
 </script>
 </body>
 </html>
