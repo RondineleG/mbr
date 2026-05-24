@@ -509,17 +509,48 @@
 </div>
 
 <script type="module" src="js/app/main.js"></script>
-<!-- Service Worker Registration -->
+<!-- Service Worker Registration + auto-update (PWA sempre atualizado) -->
 <script>
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('Service Worker registrado:', registration);
-      })
-      .catch(error => {
-        console.log('Service Worker falhou:', error);
+  let refreshing = false;
+  // Quando um SW novo assume o controle, recarrega uma vez para pegar a versão nova.
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload();
+  });
+
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+
+      // Se já existe um SW aguardando, ativa imediatamente.
+      if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+
+      // Ao encontrar atualização, ativa assim que terminar de instalar.
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            nw.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
       });
+
+      // Checa atualização a cada abertura e periodicamente (PWA aberto por muito tempo).
+      reg.update();
+      setInterval(() => reg.update(), 60 * 1000);
+    } catch (error) {
+      console.error('Service Worker falhou:', error);
+    }
+  });
+
+  // Reabrir o PWA / voltar o foco → checa versão nova.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      navigator.serviceWorker.getRegistration().then((reg) => reg && reg.update());
+    }
   });
 }
 </script>

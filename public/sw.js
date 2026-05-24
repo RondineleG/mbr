@@ -3,7 +3,7 @@
    Cache de recursos estáticos para funcionar offline
    Estratégia: Cache First para estáticos, Network First para dinâmicos
    ═══════════════════════════════════════════════════════════════ */
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const CACHE_NAME = `mrbur-${CACHE_VERSION}`;
 
 // Cache de recursos estáticos (app shell)
@@ -74,6 +74,11 @@ self.addEventListener('install', (event) => {
   );
 });
 
+// Permite que a página peça a ativação imediata do SW novo (auto-update).
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 // Ativação - limpeza de caches antigos
 self.addEventListener('activate', (event) => {
   event.waitUntil(
@@ -141,26 +146,26 @@ self.addEventListener('fetch', (event) => {
   }
 
   const url = new URL(event.request.url);
-  
-  // Estratégia para recursos estáticos (Cache First)
-  if (STATIC_CACHE.some(path => url.pathname === path || url.pathname.endsWith(path))) {
-    event.respondWith(cacheFirst(event.request));
+
+  // HTML / navegação → SEMPRE Network First (o PWA pega o shell mais novo online;
+  // cai pro cache só offline). Precisa vir ANTES do STATIC_CACHE.
+  if (event.request.mode === 'navigate' || url.pathname.match(/\.html$/) || url.pathname === '/') {
+    event.respondWith(networkFirst(event.request));
     return;
   }
-  
-  // Estratégia para CSS/JS (Network First — garante que deploys reflitam na hora,
-  // com fallback para cache quando offline)
+
+  // CSS/JS → Network First (deploys refletem na hora; fallback p/ cache offline).
   if (url.pathname.match(/\.(css|js)$/)) {
     event.respondWith(networkFirst(event.request));
     return;
   }
-  
-  // Estratégia para HTML (Network First)
-  if (url.pathname.match(/\.html$/) || url.pathname === '/') {
-    event.respondWith(networkFirst(event.request));
+
+  // Ícones e assets estáticos imutáveis → Cache First.
+  if (STATIC_CACHE.some(path => url.pathname === path || url.pathname.endsWith(path))) {
+    event.respondWith(cacheFirst(event.request));
     return;
   }
-  
-  // Padrão: Network First
+
+  // Padrão: Network First.
   event.respondWith(networkFirst(event.request));
 });
