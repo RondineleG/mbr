@@ -1,11 +1,40 @@
 /* ═══════════════════════════════════════════════════════════════
    ADMIN · DASHBOARD — KPIs do dia (realtime)
    ═══════════════════════════════════════════════════════════════ */
-import { setHtml } from "../utils/dom.js";
+import { setHtml, onAction } from "../utils/dom.js";
 import { getOrders, subscribeOrders } from "./admin-store.js";
 import { listAgents } from "../services/user.service.js";
 import { ORDER_STATUS_LABELS } from "../services/order.service.js";
 import { money, toDate } from "../utils/format.js";
+import { getDoc, setDoc, tsNow } from "../firebase/db.service.js";
+import { APP_VERSION } from "../version.js";
+import { toastSuccess, toastError } from "../components/toast.js";
+
+// ── Controle de versão do app (config/app no Firestore) ──
+async function loadVersionConfig() {
+  try {
+    const cfg = await getDoc("config/app");
+    const v = document.getElementById("cfgVersion");
+    const f = document.getElementById("cfgForce");
+    const cur = document.getElementById("cfgCurrent");
+    if (v) v.value = cfg?.version || APP_VERSION;
+    if (f) f.checked = !!cfg?.forceUpdate;
+    if (cur) cur.textContent = `Build deste painel: ${APP_VERSION} · No banco: ${cfg?.version || "—"}${cfg?.forceUpdate ? " · ⚡ forçando" : ""}`;
+  } catch { /* leitura best-effort */ }
+}
+
+async function saveVersionConfig() {
+  const version = (document.getElementById("cfgVersion")?.value || "").trim();
+  const forceUpdate = !!document.getElementById("cfgForce")?.checked;
+  if (!/^\d+\.\d+\.\d+$/.test(version)) return toastError("Versão inválida — use x.y.z (ex.: 1.1.1)");
+  try {
+    await setDoc("config/app", { version, forceUpdate, updatedAt: tsNow() });
+    toastSuccess(`Versão ${version} salva${forceUpdate ? " (forçando atualização)" : ""}`);
+    loadVersionConfig();
+  } catch {
+    toastError("Falha ao salvar (precisa ser admin)");
+  }
+}
 
 let customerCount = 0;
 let countLoaded = false;
@@ -66,4 +95,6 @@ export function renderDashboard() {
 
 export function initDashboard() {
   subscribeOrders(() => { if (document.getElementById("section-dashboard")?.classList.contains("active")) renderDashboard(); });
+  onAction("save-version", () => saveVersionConfig());
+  loadVersionConfig();
 }

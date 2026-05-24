@@ -74,6 +74,22 @@
       <div class="kpi-grid" id="dashKpis"></div>
       <div id="dashStatus"></div>
 
+      <!-- Controle de versão do app (força/avisa atualização nos clientes) -->
+      <div style="margin-top:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;max-width:560px">
+        <div class="admin-subtitle">VERSÃO DO APP</div>
+        <div id="cfgCurrent" style="font-size:11px;color:var(--text-dim);margin-bottom:12px">—</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <input id="cfgVersion" placeholder="1.1.0" style="flex:1;min-width:120px;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-family:var(--f-mono)">
+          <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);cursor:pointer">
+            <input type="checkbox" id="cfgForce"> Forçar atualização
+          </label>
+          <button class="admin-btn" data-action="save-version">Salvar versão</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:10px;line-height:1.5">
+          "Forçar" recarrega todos os clientes ao abrir. Sem forçar, eles veem um aviso "Atualizar".
+        </div>
+      </div>
+
       <div id="seedOutput"></div>
     </section>
 
