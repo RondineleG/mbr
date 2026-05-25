@@ -528,8 +528,16 @@ if ('serviceWorker' in navigator) {
 
   function reloadOnce() { if (refreshing) return; refreshing = true; window.location.reload(); }
 
-  // Quando um SW novo assume o controle → recarrega (caminho AUTOMÁTICO).
-  navigator.serviceWorker.addEventListener('controllerchange', reloadOnce);
+  // Quando um SW novo assume o controle → recarrega, mas NO MÁXIMO 1x por sessão
+  // (evita loop de reload na animação de boot). Updates seguintes viram aviso.
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    let already = false;
+    try { already = sessionStorage.getItem('mb-sw-reloaded') === '1'; } catch {}
+    if (already) { showUpdateNotice(); return; }
+    try { sessionStorage.setItem('mb-sw-reloaded', '1'); } catch {}
+    reloadOnce();
+  });
 
   // Aviso (FALLBACK) se a atualização automática não acontecer.
   function showUpdateNotice() {
