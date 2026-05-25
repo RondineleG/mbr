@@ -28,13 +28,23 @@ export async function checkAppVersion() {
       info("VERSION", `Desatualizado: instalada ${APP_VERSION}, banco ${cfg.version}`);
       // Garante que o SW busque a nova versão.
       try { (await navigator.serviceWorker?.getRegistration())?.update(); } catch {}
-      // forceUpdate no banco → recarrega sozinho; senão → mostra aviso.
-      if (cfg.forceUpdate && typeof window.MBforceUpdate === "function") {
+
+      // ANTI-LOOP: só força reload UMA vez por versão-alvo. Se já tentamos forçar
+      // para esta versão e o build ainda não acompanhou (deploy não saiu), apenas
+      // avisamos — assim não entra em reload infinito.
+      let alreadyTried = false;
+      const key = "mb-update-attempt";
+      try { alreadyTried = localStorage.getItem(key) === cfg.version; } catch {}
+
+      if (cfg.forceUpdate && !alreadyTried && typeof window.MBforceUpdate === "function") {
+        try { localStorage.setItem(key, cfg.version); } catch {}
         window.MBforceUpdate();
       } else if (typeof window.MBshowUpdateNotice === "function") {
         window.MBshowUpdateNotice();
       }
     } else {
+      // Build alcançou (ou passou) a versão do banco → limpa marca de tentativa.
+      try { localStorage.removeItem("mb-update-attempt"); } catch {}
       debug("VERSION", `App na última versão (${APP_VERSION})`);
     }
   } catch (e) {
