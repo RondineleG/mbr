@@ -524,69 +524,48 @@
 </style>
 <script>
 if ('serviceWorker' in navigator) {
-  let refreshing = false;
+  let reloading = false;
+  // Reload é SEMPRE iniciado pelo usuário (botão) — nunca automático no controllerchange,
+  // pra não dar loop de recarregamento na animação de boot.
+  async function applyUpdate() {
+    if (reloading) return;
+    reloading = true;
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+    } catch {}
+    window.location.reload();
+  }
 
-  function reloadOnce() { if (refreshing) return; refreshing = true; window.location.reload(); }
-
-  // Quando um SW novo assume o controle → recarrega, mas NO MÁXIMO 1x por sessão
-  // (evita loop de reload na animação de boot). Updates seguintes viram aviso.
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    let already = false;
-    try { already = sessionStorage.getItem('mb-sw-reloaded') === '1'; } catch {}
-    if (already) { showUpdateNotice(); return; }
-    try { sessionStorage.setItem('mb-sw-reloaded', '1'); } catch {}
-    reloadOnce();
-  });
-
-  // Aviso (FALLBACK) se a atualização automática não acontecer.
+  // Aviso "Atualizar" (aparece quando há versão nova; o usuário decide quando aplicar).
   function showUpdateNotice() {
-    if (refreshing || document.getElementById('pwaUpdate')) return;
+    if (reloading || document.getElementById('pwaUpdate')) return;
     const el = document.createElement('div');
     el.id = 'pwaUpdate';
     el.innerHTML = '<span>✦ Nova versão disponível</span><button type="button">Atualizar</button>';
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add('show'));
-    el.querySelector('button').onclick = async () => {
-      const reg = await navigator.serviceWorker.getRegistration();
-      if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      // Se em 1s o controllerchange não recarregar, força o reload.
-      setTimeout(reloadOnce, 1000);
-    };
-  }
-
-  // Quando um SW novo termina de instalar (e já há um controlando = é update):
-  // tenta ativar automaticamente; se em 6s não recarregou, mostra o aviso.
-  function onInstalled() {
-    if (!navigator.serviceWorker.controller) return; // 1ª instalação: não faz nada
-    navigator.serviceWorker.getRegistration().then((reg) => {
-      if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    });
-    setTimeout(() => { if (!refreshing) showUpdateNotice(); }, 6000);
+    el.querySelector('button').onclick = applyUpdate;
   }
 
   // Expostos para o version-check (controle de versão via banco).
   window.MBshowUpdateNotice = showUpdateNotice;
-  window.MBforceUpdate = async () => {
-    const reg = await navigator.serviceWorker.getRegistration();
-    if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-    setTimeout(reloadOnce, 1000);
-  };
+  window.MBforceUpdate = applyUpdate;
+
+  // Mostra o aviso quando um SW novo termina de instalar (já havendo um controlando).
+  function onInstalled() {
+    if (navigator.serviceWorker.controller) showUpdateNotice();
+  }
 
   window.addEventListener('load', async () => {
     try {
       const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-
-      if (reg.waiting && navigator.serviceWorker.controller) onInstalled();
-
+      if (reg.waiting && navigator.serviceWorker.controller) showUpdateNotice();
       reg.addEventListener('updatefound', () => {
         const nw = reg.installing;
         if (!nw) return;
-        nw.addEventListener('statechange', () => {
-          if (nw.state === 'installed') onInstalled();
-        });
+        nw.addEventListener('statechange', () => { if (nw.state === 'installed') onInstalled(); });
       });
-
       reg.update();
       setInterval(() => reg.update(), 60 * 1000);
     } catch (error) {
@@ -594,7 +573,7 @@ if ('serviceWorker' in navigator) {
     }
   });
 
-  // Reabrir o PWA / voltar o foco → checa versão nova.
+  // Reabrir o PWA / voltar o foco → checa versão nova (mostra aviso se houver).
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       navigator.serviceWorker.getRegistration().then((reg) => reg && reg.update());
