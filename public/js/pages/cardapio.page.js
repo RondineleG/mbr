@@ -166,7 +166,10 @@ function renderCategories() {
   const profile = store.get("profile");
   const missionProgress = store.get("missionProgress") || { completed: [], claimed: [] };
   
-  const byCat = (c) => products.filter((p) => p.category === c && p.active !== false);
+  // Itens exclusivos por méritos só aparecem se a Loja de Méritos estiver ativa pro papel.
+  const meritosOn = isEnabled(store.get("features") || {}, profile?.role || "agent", "lojaMeritos");
+  const byCat = (c) => products.filter((p) =>
+    p.category === c && p.active !== false && (meritosOn || !p.exclusiveToPoints));
   const loading = products.length === 0;
 
   setHtml("catDia", loading ? skeletonList(2) : byCat("dia").map(prontoCard).join("") || '<div class="empty-state">📋</div>');
@@ -194,6 +197,7 @@ function renderCategories() {
 
 export function showCat(next) {
   if (next === "monte" && !monteEnabled()) next = "dia";
+  if (next === "exclusivos" && !meritosEnabled()) next = "dia";
   cat = next;
   ["monte", "dia", "mbox", "acomp", "bebidas", "sobremesas", "exclusivos"].forEach((c) =>
     show($("#cat-" + c), c === next));
@@ -263,15 +267,27 @@ function monteEnabled() {
   return isEnabled(store.get("features") || {}, profile?.role || "agent", "monteSeuLanche");
 }
 
-/** Esconde a aba "Monte" e, se for a atual, cai pro "dia" quando desabilitado. */
-function applyMonteGate() {
-  const enabled = monteEnabled();
-  const btn = document.querySelector('[data-cat="monte"]');
-  if (btn) btn.style.display = enabled ? "" : "none";
-  if (!enabled && cat === "monte") showCat("dia");
+/** Loja de Méritos ativa pro papel? (controla itens exclusivos por méritos) */
+function meritosEnabled() {
+  const profile = store.get("profile");
+  return isEnabled(store.get("features") || {}, profile?.role || "agent", "lojaMeritos");
 }
 
-export function renderCardapio() { renderWizard(); renderCategories(); applyMonteGate(); }
+/** Esconde abas indisponíveis (Monte, Exclusivos) e troca a atual se preciso. */
+function applyCardapioGates() {
+  const monte = monteEnabled();
+  const btnMonte = document.querySelector('[data-cat="monte"]');
+  if (btnMonte) btnMonte.style.display = monte ? "" : "none";
+
+  const exclusivos = meritosEnabled();
+  const btnEx = document.querySelector('[data-cat="exclusivos"]');
+  if (btnEx) btnEx.style.display = exclusivos ? "" : "none";
+
+  if (!monte && cat === "monte") showCat("dia");
+  if (!exclusivos && cat === "exclusivos") showCat("dia");
+}
+
+export function renderCardapio() { renderWizard(); renderCategories(); applyCardapioGates(); }
 
 export function initCardapio() {
   onAction("cardapio-cat", (el) => showCat(el.dataset.cat));
@@ -286,5 +302,8 @@ export function initCardapio() {
   store.subscribe("products", renderCategories);
   store.subscribe("missionProgress", () => {
     if (store.get("page") === "cardapio") renderCategories();
+  });
+  store.subscribe("features", () => {
+    if (store.get("page") === "cardapio") { renderCategories(); applyCardapioGates(); }
   });
 }

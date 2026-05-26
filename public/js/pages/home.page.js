@@ -1,11 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
    HOME PAGE — status, progresso de rank, atalhos e recompensas
    ═══════════════════════════════════════════════════════════════ */
-import { setHtml } from "../utils/dom.js";
+import { setHtml, show } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { rankFromPoints, money } from "../utils/format.js";
 import { skeletonCards } from "../components/skeleton.js";
 import { renderRewardCards } from "./clube.page.js";
+import { isEnabled } from "../services/features.service.js";
 
 function renderRankProgress() {
   const p = store.get("profile");
@@ -24,11 +25,17 @@ function renderRankProgress() {
 }
 
 function renderRewards() {
+  // "Recompensas em Destaque" depende da Loja de Méritos estar ativa pro papel.
+  const profile = store.get("profile");
+  const meritosOn = isEnabled(store.get("features") || {}, profile?.role || "agent", "lojaMeritos");
+  show(document.getElementById("homeRewardsSection"), meritosOn);
+  if (!meritosOn) return;
+
   const rewards = store.get("rewards");
   const el = document.getElementById("homeRewardsScroll");
   if (!el) return;
   if (!rewards.length) { el.innerHTML = skeletonCards(3); return; }
-  el.innerHTML = renderRewardCards(rewards.slice(0, 4), store.get("profile")?.points || 0);
+  el.innerHTML = renderRewardCards(rewards.slice(0, 4), profile?.points || 0);
 }
 
 export function renderHome() {
@@ -39,6 +46,7 @@ export function renderHome() {
 export function initHome() {
   store.subscribe("profile", renderHome);
   store.subscribe("rewards", renderRewards);
+  store.subscribe("features", renderRewards);
 }
 
 export { money };

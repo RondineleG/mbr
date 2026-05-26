@@ -40,6 +40,10 @@ const PRODUCTS = [
   { id: "p-ex-2", name: "Batata Dourada da Ordem", description: "Batata especial com tempero secreto dourado. Requer méritos.", price: 0, pointsRequired: 500, category: "exclusivos", icon: "👑", tag: "EXCLUSIVO", exclusiveToPoints: true, active: true },
   { id: "p-ex-3", name: "Combo Elite", description: "Burger exclusivo + batata dourada + bebida premium. Requer 1500 méritos.", price: 0, pointsRequired: 1500, category: "exclusivos", icon: "⭐", tag: "EXCLUSIVO", exclusiveToPoints: true, active: true },
   { id: "p-ex-4", name: "MBox Phantom Edition", description: "Versão ultra-limitada da MBox com itens exclusivos.", price: 0, pointsRequired: 5000, category: "exclusivos", icon: "📦", tag: "ULTRA RARO", exclusiveToPoints: true, active: true },
+  // Acompanhamentos exclusivos — adquiridos SOMENTE com méritos (somem se a Loja de Méritos estiver off).
+  { id: "p-acx-1", name: "Batata Trufada Confidencial", description: "Batata rústica com óleo de trufa e parmesão. Só para agentes com méritos.", price: 0, pointsRequired: 600, category: "acomp", icon: "🍟", tag: "SÓ MÉRITOS", exclusiveToPoints: true, active: true },
+  { id: "p-acx-2", name: "Anéis de Cebola Dourados", description: "Onion rings empanados em panko dourado. Resgate com méritos.", price: 0, pointsRequired: 900, category: "acomp", icon: "🧅", tag: "SÓ MÉRITOS", exclusiveToPoints: true, active: true },
+  { id: "p-acx-3", name: "Nuggets Black Label", description: "12 nuggets premium com molho secreto da Ordem. Exclusivo por méritos.", price: 0, pointsRequired: 1200, category: "acomp", icon: "🍗", tag: "SÓ MÉRITOS", exclusiveToPoints: true, active: true },
 ];
 
 const REWARDS = [
