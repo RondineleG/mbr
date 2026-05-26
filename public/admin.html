@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MrBur — Comando da Ordem</title>
+<script>
+  // Aplica o tema ANTES do CSS/JS para nunca piscar branco (load e pós-logout).
+  try { document.documentElement.setAttribute("data-theme", localStorage.getItem("admin-theme") === "light" ? "light" : "dark"); } catch (e) {}
+</script>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

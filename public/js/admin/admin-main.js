@@ -53,7 +53,7 @@ function updateThemeUI() {
 
 function toggleAdminTheme() {
   isDark = !isDark;
-  document.body.setAttribute("data-theme", isDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   localStorage.setItem("admin-theme", isDark ? "dark" : "light");
   updateThemeUI();
 }
@@ -99,7 +99,7 @@ async function doAdminLogin() {
 
 async function boot() {
   console.info("%c[MrBur Comando] admin v2 carregado ✅", "color:#C9A84C;font-weight:bold");
-  document.body.setAttribute("data-theme", isDark ? "dark" : "light");
+  document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   updateThemeUI();
   await ensureSeed();
   initDashboard(); initProducts(); initOrders(); initCustomers(); initMissions(); initRewards(); initInvites();
@@ -108,7 +108,14 @@ async function boot() {
   onAction("admin-toggle-sidebar", () => toggleAdminSidebar());
   
   onAction("admin-login", () => doAdminLogin());
-  onAction("admin-logout", async () => { await auth.signOut(); location.reload(); });
+  onAction("admin-logout", async () => {
+    await auth.signOut();
+    // Sem location.reload(): o onAuthChanged abaixo já mostra o gate.
+    // Evita o flash branco + delay do recarregamento completo.
+    $("#adminShell").style.display = "none";
+    $("#adminGate").classList.remove("hidden");
+    gateError("");
+  });
   onAction("admin-theme-toggle", () => toggleAdminTheme());
   ["adminEmail", "adminPass"].forEach((id) =>
     $("#" + id)?.addEventListener("keydown", (e) => { if (e.key === "Enter") doAdminLogin(); }));
