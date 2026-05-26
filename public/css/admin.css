@@ -81,7 +81,7 @@ body.admin { max-width: none; margin: 0; }
 .admin-navbtn.active { background: var(--gold-glow); border-color: var(--gold-border); color: var(--gold); }
 .admin-navbtn-icon { font-size: 18px; width: 22px; text-align: center; }
 .admin-side-foot { margin-top: auto; }
-.admin-logout { width: 100%; padding: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(231,76,60,0.3); border-radius: var(--radius-sm); background: rgba(231,76,60,0.06); color: var(--danger); font-family: var(--f-mono); transition: all var(--transition); }
+.admin-logout { width: 100%; padding: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--er-line); border-radius: var(--radius-sm); background: var(--er-soft); color: var(--danger); font-family: var(--f-mono); transition: all var(--transition); }
 .admin-logout:hover { background: var(--danger); color: #fff; }
 
 /* Main */
@@ -115,7 +115,7 @@ body.admin { max-width: none; margin: 0; }
 .admin-btn.ghost { border-color: var(--border); background: transparent; color: var(--text-muted); }
 .admin-btn.ghost:hover { border-color: var(--gold-border); color: var(--text); }
 .admin-btn.sm { padding: 6px 12px; font-size: 11px; }
-.admin-btn.danger { border-color: var(--danger); background: rgba(231,76,60,0.08); color: var(--danger); }
+.admin-btn.danger { border-color: var(--danger); background: var(--er-soft); color: var(--danger); }
 .admin-btn.danger:hover { background: var(--danger); color: #fff; }
 
 /* Linha de dados (card-row, não tabela bootstrap) */
@@ -228,8 +228,8 @@ body.admin { max-width: none; margin: 0; }
 
 /* Admin Tags */
 .admin-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.5px; padding: 4px 8px; border-radius: var(--radius-xs); background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-dim); }
-.admin-tag.active { background: rgba(46,204,113,0.1); color: var(--success); border-color: rgba(46,204,113,0.3); }
-.admin-tag.inactive { background: rgba(231,76,60,0.1); color: var(--danger); border-color: rgba(231,76,60,0.3); }
+.admin-tag.active { background: var(--ok-soft); color: var(--success); border-color: var(--ok-line); }
+.admin-tag.inactive { background: var(--er-soft); color: var(--danger); border-color: var(--er-line); }
 
 /* Admin States */
 .admin-loading { text-align: center; padding: 40px; color: var(--text-dim); font-size: 13px; }

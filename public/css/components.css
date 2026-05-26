@@ -112,8 +112,8 @@
 /* ── Toast ── */
 .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%) translateY(-100px); max-width: 420px; width: calc(100% - 32px); padding: 14px 20px; border-radius: 12px; display: flex; align-items: center; gap: 12px; z-index: 2000; opacity: 0; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 8px 32px rgba(0,0,0,0.3); font-size: 13px; font-weight: 600; }
 .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-.toast.success { background: var(--bg3); border: 1px solid rgba(46,204,113,0.3); color: var(--ok); }
-.toast.error { background: var(--bg3); border: 1px solid rgba(231,76,60,0.3); color: var(--er); }
+.toast.success { background: var(--bg3); border: 1px solid var(--ok-line); color: var(--ok); }
+.toast.error { background: var(--bg3); border: 1px solid var(--er-line); color: var(--er); }
 .toast.info { background: var(--bg3); border: 1px solid var(--G); color: var(--G); }
 
 /* ── Convites Page ── */
@@ -141,10 +141,10 @@
 .convite-actions .btn { flex: 1; }
 
 .badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
-.badge-success { background: rgba(46,204,113,0.1); color: var(--ok); border: 1px solid rgba(46,204,113,0.3); }
-.badge-info { background: rgba(52,152,219,0.1); color: var(--info); border: 1px solid rgba(52,152,219,0.3); }
-.badge-warning { background: rgba(230,126,34,0.1); color: var(--warning); border: 1px solid rgba(230,126,34,0.3); }
-.badge-danger { background: rgba(231,76,60,0.1); color: var(--er); border: 1px solid rgba(231,76,60,0.3); }
+.badge-success { background: var(--ok-soft); color: var(--ok); border: 1px solid var(--ok-line); }
+.badge-info { background: var(--info-soft); color: var(--info); border: 1px solid var(--info-line); }
+.badge-warning { background: var(--warning-soft); color: var(--warning); border: 1px solid var(--warning-line); }
+.badge-danger { background: var(--er-soft); color: var(--er); border: 1px solid var(--er-line); }
 
 /* ── Botões genéricos (.btn) — usados na página de convites ── */
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid var(--bd); background: var(--card); color: var(--tx); font-size: 12px; font-weight: 700; letter-spacing: 0.5px; cursor: pointer; transition: all var(--dur) var(--ease); }
@@ -308,7 +308,7 @@
   cursor: pointer; transition: all var(--transition);
   margin-top: 8px;
 }
-.mission-claim-btn:hover { background: #2ecc71; }
+.mission-claim-btn:hover { background: var(--ok); }
 .mission-claim-btn:active { transform: scale(0.98); }
 
 .mission-card.claimed { opacity: 0.5; }
@@ -328,7 +328,7 @@
 .modal-btn { flex: 1; padding: 12px; font-size: 12px; font-weight: 700; letter-spacing: 1px; border-radius: var(--radius-sm); transition: all var(--transition); font-family: var(--f-mono); border: 1px solid var(--border); background: transparent; color: var(--text-muted); }
 .modal-btn.primary { border-color: var(--gold); background: var(--gold-glow); color: var(--gold); }
 .modal-btn.primary:hover { background: var(--gold); color: var(--bg); }
-.modal-btn.danger { border-color: var(--danger); background: rgba(231,76,60,0.08); color: var(--danger); }
+.modal-btn.danger { border-color: var(--danger); background: var(--er-soft); color: var(--danger); }
 .modal-btn.danger:hover { background: var(--danger); color: #fff; }
 .modal-btn.ghost:hover { border-color: var(--gold-border); color: var(--text); }
 
@@ -339,8 +339,8 @@
 .order-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .order-total { font-size: 16px; font-weight: 900; color: var(--gold); font-family: var(--f-mono); }
 .order-badge { font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 4px 10px; border-radius: 12px; font-family: var(--f-mono); border: 1px solid var(--gold-border); background: var(--gold-glow); color: var(--gold); }
-.order-badge.delivered { border-color: rgba(46,204,113,0.3); background: rgba(46,204,113,0.08); color: var(--success); }
-.order-badge.cancelled { border-color: rgba(231,76,60,0.3); background: rgba(231,76,60,0.08); color: var(--danger); }
+.order-badge.delivered { border-color: var(--ok-line); background: var(--ok-soft); color: var(--success); }
+.order-badge.cancelled { border-color: var(--er-line); background: var(--er-soft); color: var(--danger); }
 .order-items-line { font-size: 11px; color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
 
 /* Timeline de status */

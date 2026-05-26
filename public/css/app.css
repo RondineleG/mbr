@@ -183,13 +183,13 @@
 }
 .sidemenu-logout {
   width: 100%; padding: 10px 16px; border-radius: var(--radius-sm);
-  background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3);
+  background: var(--er-soft); border: 1px solid var(--er-line);
   color: var(--danger); font-weight: 700; font-size: 13px;
   cursor: pointer; transition: all var(--transition);
   display: flex; align-items: center; gap: 12px;
   white-space: nowrap;
 }
-.sidemenu-logout:hover { background: rgba(231,76,60,0.2); }
+.sidemenu-logout:hover { background: var(--er-line); }
 .sidemenu-logout .sidemenu-item-icon { width: 24px; text-align: center; }
 
 /* Admin only items */
@@ -229,8 +229,8 @@
 
 /* ── HOME ── */
 .home-status { margin: 12px 16px; padding: 12px 16px; border-radius: var(--radius); display: flex; align-items: center; gap: 12px; }
-.home-status.open { background: rgba(46,204,113,0.08); border: 1px solid rgba(46,204,113,0.2); }
-.home-status.closed { background: rgba(231,76,60,0.08); border: 1px solid rgba(231,76,60,0.2); }
+.home-status.open { background: var(--ok-soft); border: 1px solid var(--ok-line); }
+.home-status.closed { background: var(--er-soft); border: 1px solid var(--er-line); }
 .home-status-dot { font-size: 20px; }
 .home-status-text { font-size: 12px; font-weight: 700; }
 .home-status-text.open { color: var(--success); }
@@ -320,7 +320,7 @@
 .pronto-add-btn { padding: 8px 20px; font-size: 11px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--gold); border-radius: var(--radius-sm); background: var(--gold-glow); color: var(--gold); transition: all var(--transition); }
 .pronto-add-btn:hover { background: var(--gold); color: var(--bg); }
 .pronto-tag { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; padding: 3px 10px; border-radius: 4px; position: absolute; top: 12px; right: 12px; }
-.pronto-tag.limitado { background: rgba(231,76,60,0.1); color: var(--danger); border: 1px solid rgba(231,76,60,0.2); }
+.pronto-tag.limitado { background: var(--er-soft); color: var(--danger); border: 1px solid var(--er-line); }
 .pronto-tag.exclusivo { background: var(--gold-glow); color: var(--gold); border: 1px solid var(--gold-border); }
 .pronto-tag.sabado { background: rgba(163,85,247,0.1); color: #a855f7; border: 1px solid rgba(163,85,247,0.2); }
 
@@ -417,7 +417,7 @@
 .sacola-item-name { font-size: 13px; font-weight: 700; }
 .sacola-item-desc { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 .sacola-item-price { font-size: 14px; font-weight: 800; color: var(--gold); font-family: var(--f-mono); }
-.sacola-item-remove { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(231,76,60,0.3); background: rgba(231,76,60,0.08); color: var(--danger); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition); }
+.sacola-item-remove { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--er-line); background: var(--er-soft); color: var(--danger); font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all var(--transition); }
 .sacola-item-remove:hover { background: var(--danger); color: #fff; }
 .sacola-total { padding: 16px; margin: 12px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); }
 .sacola-total-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
@@ -431,7 +431,7 @@
 .sacola-checkout { flex: 1; padding: 14px; font-size: 14px; font-weight: 700; letter-spacing: 1px; border: none; border-radius: var(--radius); background: var(--gold); color: var(--bg); transition: all var(--transition); }
 .sacola-checkout:hover { filter: brightness(1.1); }
 .sacola-checkout:disabled { opacity: 0.5; cursor: wait; }
-.sacola-clear { flex: 0 0 auto; padding: 14px 18px; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(231,76,60,0.3); border-radius: var(--radius); background: rgba(231,76,60,0.06); color: var(--danger); transition: all var(--transition); font-family: var(--f-mono); }
+.sacola-clear { flex: 0 0 auto; padding: 14px 18px; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--er-line); border-radius: var(--radius); background: var(--er-soft); color: var(--danger); transition: all var(--transition); font-family: var(--f-mono); }
 .sacola-clear:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 .sacola-history { flex: 0 0 auto; padding: 14px 18px; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-card); color: var(--text); transition: all var(--transition); font-family: var(--f-mono); }
 .sacola-history:hover { border-color: var(--gold-border); color: var(--gold); }
@@ -464,5 +464,5 @@
 .profile-row-label { font-size: 13px; color: var(--text); }
 .profile-row-value { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
 .profile-row-arrow { font-size: 14px; color: var(--text-dim); }
-.profile-logout { width: calc(100% - 32px); margin: 8px 16px 16px; padding: 13px; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid rgba(231,76,60,0.3); border-radius: var(--radius); background: rgba(231,76,60,0.05); color: var(--danger); cursor: pointer; transition: all var(--transition); font-family: var(--f-mono); }
+.profile-logout { width: calc(100% - 32px); margin: 8px 16px 16px; padding: 13px; text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--er-line); border-radius: var(--radius); background: var(--er-soft); color: var(--danger); cursor: pointer; transition: all var(--transition); font-family: var(--f-mono); }
 .profile-logout:hover { background: var(--danger); color: #fff; border-color: var(--danger); }

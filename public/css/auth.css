@@ -67,8 +67,8 @@
 .login-link:hover { text-decoration: underline; }
 .login-error {
   font-size: 11px; color: var(--danger); margin-bottom: 14px;
-  padding: 8px 12px; background: rgba(231,76,60,0.1);
-  border: 1px solid rgba(231,76,60,0.2); border-radius: var(--radius-xs);
+  padding: 8px 12px; background: var(--er-soft);
+  border: 1px solid var(--er-line); border-radius: var(--radius-xs);
   letter-spacing: 0.5px; font-family: var(--f-mono); display: none;
 }
 .login-error.show { display: block; }
@@ -128,8 +128,8 @@
 .onb-row { display: flex; gap: 10px; }
 .onb-error {
   font-size: 11px; color: var(--danger); margin-top: 12px;
-  padding: 8px 12px; background: rgba(231,76,60,0.08);
-  border: 1px solid rgba(231,76,60,0.2); border-radius: var(--radius-xs);
+  padding: 8px 12px; background: var(--er-soft);
+  border: 1px solid var(--er-line); border-radius: var(--radius-xs);
   font-family: var(--f-mono); letter-spacing: 0.5px; display: none; text-align: center;
 }
 .onb-error.show { display: block; }

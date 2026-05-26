@@ -17,7 +17,7 @@
   --bd:rgba(201,168,76,.12);--bd2:rgba(201,168,76,.22);
   --sf:rgba(255,255,255,.025);
   --tx:#EDE0C4;--t2:rgba(237,224,196,.38);--t3:rgba(237,224,196,.14);
-  --ok:#3D7034;--er:#8C2E2E;--info:#5DA9E9;--warning:#E0A23C;
+  --ok:#4FAE74;--er:#D15B52;--info:#5DA9E9;--warning:#E0A23C;
   --card-shadow:0 40px 100px rgba(0,0,0,.7),0 8px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(201,168,76,.08);
   /* aliases admin.css (design system antigo) */
   --gold:var(--G);--gold-glow:var(--gw);--gold-border:var(--bd2);--border:var(--bd);
@@ -50,4 +50,15 @@
   --f-mono:'Share Tech Mono',monospace;
   --f-display:'Cinzel',serif;
   --transition:.24s var(--ease-out);
+
+  /* Tints semânticos derivados do MESMO token (fundo/borda sempre batem com o texto).
+     Fonte única — não usar rgba() de verde/vermelho/azul/laranja avulsos. */
+  --ok-soft:color-mix(in srgb, var(--ok) 14%, transparent);
+  --ok-line:color-mix(in srgb, var(--ok) 34%, transparent);
+  --er-soft:color-mix(in srgb, var(--er) 14%, transparent);
+  --er-line:color-mix(in srgb, var(--er) 34%, transparent);
+  --info-soft:color-mix(in srgb, var(--info) 14%, transparent);
+  --info-line:color-mix(in srgb, var(--info) 34%, transparent);
+  --warning-soft:color-mix(in srgb, var(--warning) 14%, transparent);
+  --warning-line:color-mix(in srgb, var(--warning) 34%, transparent);
 }
