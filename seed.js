@@ -259,7 +259,7 @@ async function seedMissions() {
   ];
 
   for (const mission of MISSIONS) {
-    await db.collection('missions').doc(mission.id).set({ ...mission, createdAt: admin.firestore.FieldValue.serverTimestamp() });
+    await db.collection('missions').doc(mission.id).set({ ...mission, active: true, order: MISSIONS.indexOf(mission) + 1, createdAt: admin.firestore.FieldValue.serverTimestamp() });
   }
   console.log('✅ Missões criadas no Firestore.');
 }

@@ -68,17 +68,21 @@ function timeline(order) {
   if (!order.timeline || order.timeline.length === 0) return "";
   
   return `<div class="order-timeline">
-    <div class="timeline-title">Timeline do Pedido</div>
-    ${order.timeline.map((entry, index) => `
+    <div class="timeline-title">Timeline do Pedido · Total <span class="timeline-total">${money(order.total)}</span></div>
+    ${order.timeline.map((entry, index) => {
+      const isLast = index === order.timeline.length - 1;
+      // Toda entrada da timeline é uma etapa já cumprida → marca com ✓ (verde);
+      // a última é a etapa atual (dourado).
+      return `
       <div class="timeline-entry">
-        <div class="timeline-dot ${index === order.timeline.length - 1 ? 'active' : ''}"></div>
+        <div class="timeline-dot done ${isLast ? 'active' : ''}">✓</div>
         <div class="timeline-content">
           <div class="timeline-status">${ORDER_STATUS_LABELS[entry.status] || entry.status}</div>
           <div class="timeline-time">${formatDate(entry.timestamp)}</div>
           ${entry.observacao ? `<div class="timeline-obs">${escapeHtml(entry.observacao)}</div>` : ""}
         </div>
-      </div>
-    `).join("")}
+      </div>`;
+    }).join("")}
   </div>`;
 }
 
