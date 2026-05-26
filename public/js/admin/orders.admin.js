@@ -22,6 +22,7 @@ function lockRemaining(o) {
 export { startOrdersWatch };
 
 let filter = "all";
+let motoboys = []; // agentes com motoboy:true (para atribuição inline)
 
 const ORDER_FLOW = ["recebido", "analisando", "aprovado", "producao", "enviado", "entregue"];
 
@@ -54,6 +55,10 @@ function row(o) {
     <div class="data-actions">
       <button class="admin-btn sm ghost" data-action="order-view" data-id="${o.id}">Detalhes</button>
       ${action}
+      ${motoboys.length ? `<select class="status-select" data-action="order-assign" data-id="${o.id}" title="Atribuir motoboy">
+        <option value="">🛵 sem motoboy</option>
+        ${motoboys.map((mb) => `<option value="${mb.uid}" ${o.agenteResponsavel === mb.uid ? "selected" : ""}>🛵 ${escapeHtml(mb.codename || mb.email)}</option>`).join("")}
+      </select>` : ""}
     </div>
   </div>`;
 }
@@ -122,8 +127,20 @@ async function viewOrder(id) {
   m.el.querySelector("#vclose").onclick = () => document.querySelector(".modal-overlay").classList.remove("show");
 }
 
+async function loadMotoboys() {
+  try { motoboys = (await listAgents()).filter((a) => a.motoboy); renderOrders(); }
+  catch (e) { console.warn("Falha ao carregar motoboys:", e?.message || e); }
+}
+
 export function initOrders() {
   subscribeOrders(() => { if (document.getElementById("section-pedidos")?.classList.contains("active")) renderOrders(); });
+  loadMotoboys();
+
+  // Atribuir/remover motoboy direto na linha do pedido.
+  onChange("order-assign", async (el) => {
+    try { await assignAgent(el.dataset.id, el.value); toastSuccess(el.value ? "Motoboy atribuído" : "Atribuição removida"); }
+    catch { toastError("Falha ao atribuir motoboy"); }
+  });
   onAction("order-filter", (el) => {
     filter = el.dataset.status;
     // O visual ativo é o botão SEM .ghost (dourado); inativos ficam .ghost (apagado).

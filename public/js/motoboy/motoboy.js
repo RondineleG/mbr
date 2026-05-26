@@ -10,7 +10,7 @@ import { updateDoc } from "../firebase/db.service.js";
 import { adjustPoints } from "../services/points.service.js";
 import { openChat } from "../components/chat.js";
 import { money } from "../utils/format.js";
-import { DELIVERY_MERITOS } from "../utils/constants.js";
+import { DELIVERY_MERITOS, DELIVERY_FEE } from "../utils/constants.js";
 import { toast, toastError } from "../components/toast.js";
 
 let me = null;
@@ -20,12 +20,12 @@ let orders = [];
 const ACTIVE = ["aprovado", "producao", "enviado"];
 const addrStr = (a) => !a ? "" : [a.street, a.neighborhood, a.city].filter(Boolean).join(", ");
 const mapUrl = (a) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addrStr(a) || "MrBur");
-// "A receber" = pagamento ainda pendente (dinheiro/pix na entrega).
-const aReceber = (o) => o?.pagamento?.status === "pendente" ? (o.pagamento.valor ?? o.total ?? 0) : 0;
+// O motoboy NÃO recebe o valor do pedido — ele recebe a taxa de entrega que o
+// PRÓPRIO APP paga por entrega (+ méritos). Não há dinheiro do cliente a coletar.
+const deliveryPay = (o) => o?.deliveryFee ?? DELIVERY_FEE;
 
 function card(o) {
   const itens = (o.items || []).map((i) => `${i.qty || 1}× ${escapeHtml(i.name)}`).join(", ");
-  const receber = aReceber(o);
   const isSent = o.status === ORDER_STATUS.SENT;
   const action = o.status === ORDER_STATUS.DELIVERED ? "" : (isSent
     ? `<button class="admin-btn sm" data-action="moto-delivered" data-id="${o.id}">✅ Entregue</button>`
@@ -38,8 +38,8 @@ function card(o) {
         <div class="admin-item-sub">📍 ${escapeHtml(addrStr(o.address) || "Endereço não informado")}</div>
         <div class="admin-item-meta">
           <span class="admin-tag">${ORDER_STATUS_LABELS[o.status] || o.status}</span>
-          <span class="admin-tag">Total ${money(o.total || 0)}</span>
-          ${receber > 0 ? `<span class="admin-tag" style="color:var(--G)">A receber ${money(receber)} (${escapeHtml(o.pagamento?.metodo || "?")})</span>` : `<span class="admin-tag">Pago</span>`}
+          <span class="admin-tag">Pedido ${money(o.total || 0)}</span>
+          <span class="admin-tag" style="color:var(--G)">Você ganha ${money(deliveryPay(o))} + ${DELIVERY_MERITOS}⚡</span>
         </div>
       </div>
       <div class="admin-item-actions" style="flex-direction:column;gap:8px">
@@ -53,12 +53,13 @@ function card(o) {
 function render() {
   const active = orders.filter((o) => ACTIVE.includes(o.status));
   const done = orders.filter((o) => o.status === ORDER_STATUS.DELIVERED).slice(0, 20);
-  const totalReceber = active.reduce((s, o) => s + aReceber(o), 0);
+  // Ganhos pagos pelo app: taxa de entrega de cada entrega concluída.
+  const ganhos = done.reduce((s, o) => s + deliveryPay(o), 0);
 
   setHtml("motoSummary", `
     <div class="moto-kpis">
       <div class="moto-kpi"><div class="moto-kpi-val">${active.length}</div><div class="moto-kpi-lbl">Em rota</div></div>
-      <div class="moto-kpi"><div class="moto-kpi-val" style="color:var(--G)">${money(totalReceber)}</div><div class="moto-kpi-lbl">A receber</div></div>
+      <div class="moto-kpi"><div class="moto-kpi-val" style="color:var(--G)">${money(ganhos)}</div><div class="moto-kpi-lbl">Ganhos (entregas)</div></div>
       <div class="moto-kpi"><div class="moto-kpi-val">${done.length}</div><div class="moto-kpi-lbl">Concluídas</div></div>
     </div>`);
 
