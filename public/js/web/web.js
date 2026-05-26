@@ -7,7 +7,8 @@ import * as auth from "../firebase/auth.service.js";
 import { getProfile } from "../services/user.service.js";
 import { loadWebEnabled } from "../services/features.service.js";
 import { listProducts } from "../services/product.service.js";
-import { money } from "../utils/format.js";
+import { listUserOrders, ORDER_STATUS_LABELS } from "../services/order.service.js";
+import { money, dateShort } from "../utils/format.js";
 
 const show = (id, on) => { const el = $("#" + id); if (el) el.style.display = on ? "" : "none"; };
 
@@ -29,7 +30,8 @@ async function renderWeb(profile) {
   show("webShell", true);
 
   const CATS = [["dia", "Lanche do Dia"], ["mbox", "MBox"], ["acomp", "Acompanhamentos"], ["bebidas", "Bebidas"], ["sobremesas", "Sobremesas"]];
-  setHtml("webNav", CATS.map(([k, l]) => `<a href="#cat-${k}">${l}</a>`).join(""));
+  setHtml("webNav", CATS.map(([k, l]) => `<a href="#cat-${k}">${l}</a>`).join("") + `<a href="#pedidos">Meus Pedidos</a>`);
+  renderPedidos(profile);
 
   try {
     const products = (await listProducts({ activeOnly: true })) || [];
@@ -49,11 +51,37 @@ async function renderWeb(profile) {
   }
 }
 
+// Pedidos do usuário (admin ou agente) na versão web.
+function orderCard(o) {
+  const itens = (o.items || []).map((i) => `${i.qty || 1}× ${escapeHtml(i.name)}`).join(", ");
+  return `
+    <div class="web-card">
+      <span class="web-card-tag">${escapeHtml(ORDER_STATUS_LABELS[o.status] || o.status)}</span>
+      <div class="web-card-name">${escapeHtml(o.numeroPedido || "#" + (o.id || "").slice(-6).toUpperCase())}</div>
+      <div class="web-card-desc">${itens || "—"}<br><small style="color:var(--t3)">${dateShort(o.criadoEm)}</small></div>
+      <div class="web-card-price">${money(o.total || 0)}</div>
+    </div>`;
+}
+async function renderPedidos(profile) {
+  const main = document.querySelector(".web-main");
+  if (!main) return;
+  const sec = document.createElement("div");
+  sec.innerHTML = `<div class="web-section-title" id="pedidos" style="margin-top:48px">Meus Pedidos</div><div id="webPedidos" class="web-grid"></div>`;
+  main.appendChild(sec);
+  try {
+    const orders = (await listUserOrders(profile.uid)) || [];
+    setHtml("webPedidos", orders.length ? orders.map(orderCard).join("") : '<p style="color:var(--t2)">Você ainda não tem pedidos.</p>');
+  } catch (err) {
+    console.error("Erro ao carregar pedidos:", err);
+    setHtml("webPedidos", '<p style="color:var(--er)">Erro ao carregar pedidos.</p>');
+  }
+}
+
 auth.onAuthChanged(async (user) => {
   if (!user) { window.location.replace("/"); return; }            // sem sessão → login único
   const profile = await getProfile(user.uid);
-  if (profile?.role !== "admin") { window.location.replace("/"); return; }  // só admin
+  if (!profile) { window.location.replace("/"); return; }
   const enabled = await loadWebEnabled();
   if (!enabled) { show("webLoading", false); show("webBlocked", true); return; } // desativada pelo admin
-  renderWeb(profile);
+  renderWeb(profile);                                              // admin e agentes podem ver quando habilitada
 });
