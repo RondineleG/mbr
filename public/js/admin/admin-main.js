@@ -13,15 +13,17 @@ import { initCustomers, renderCustomers } from "./customers.admin.js";
 import { initMissions, renderMissions } from "./missions.admin.js";
 import { initRewards, renderRewards } from "./rewards.admin.js";
 import { initInvites, renderInvites } from "./invites.admin.js";
+import { initFeatures, renderFeatures } from "./features.admin.js";
 
-const SECTIONS = { 
-  dashboard: renderDashboard, 
-  produtos: renderProducts, 
-  pedidos: renderOrders, 
+const SECTIONS = {
+  dashboard: renderDashboard,
+  produtos: renderProducts,
+  pedidos: renderOrders,
   clientes: renderCustomers,
   missoes: renderMissions,
   recompensas: renderRewards,
-  convites: renderInvites
+  convites: renderInvites,
+  acessos: renderFeatures
 };
 let current = "dashboard";
 let isDark = localStorage.getItem("admin-theme") === "light" ? false : true;
@@ -102,7 +104,7 @@ async function boot() {
   document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   updateThemeUI();
   await ensureSeed();
-  initDashboard(); initProducts(); initOrders(); initCustomers(); initMissions(); initRewards(); initInvites();
+  initDashboard(); initProducts(); initOrders(); initCustomers(); initMissions(); initRewards(); initInvites(); initFeatures();
 
   onAction("admin-nav", (el) => navigate(el.dataset.section));
   onAction("admin-toggle-sidebar", () => toggleAdminSidebar());

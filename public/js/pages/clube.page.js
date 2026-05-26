@@ -12,6 +12,7 @@ import { codenameInitials, rankLabel, dateShort } from "../utils/format.js";
 import { modalConfirm } from "../components/modal.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
 import { skeletonList, skeletonCards, emptyState, withLoading, withEmpty, loadingState } from "../utils/loading.js";
+import { isEnabled } from "../services/features.service.js";
 
 let tab = "recompensas";
 let category = "all"; // all, benefits, physical, experiences, status
@@ -187,6 +188,13 @@ function renderRewardsTab() {
     </div>
   `;
   
+  // Loja de Méritos pode ser desligada pelo admin (por papel).
+  const lojaOn = isEnabled(store.get("features") || {}, profile?.role || "agent", "lojaMeritos");
+  const lojaBlock = lojaOn ? `
+    <div class="section-title">Loja da Ordem</div>
+    ${categoryFilters}
+    <div class="rewards-scroll">${rewardsContent}</div>` : "";
+
   setHtml("clubeDynamic", `
     <div class="clube-balance">
       <div class="balance-card">
@@ -197,14 +205,12 @@ function renderRewardsTab() {
         </div>
       </div>
     </div>
-    <div class="section-title">Loja da Ordem</div>
-    ${categoryFilters}
-    <div class="rewards-scroll">${rewardsContent}</div>
+    ${lojaBlock}
     <div class="section-title">Missões Ativas</div>
     ${renderMissions()}`);
 
   // Arrastar-para-o-lado na loja (mostra todos os itens, não só os 2 visíveis).
-  enableDragScroll($(".rewards-scroll"));
+  if (lojaOn) enableDragScroll($(".rewards-scroll"));
 }
 
 export function renderClube() {

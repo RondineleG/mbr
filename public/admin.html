@@ -61,6 +61,7 @@
     <button class="admin-navbtn" data-action="admin-nav" data-section="missoes"><span class="admin-navbtn-icon">🎯</span> Missões</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="recompensas"><span class="admin-navbtn-icon">🎁</span> Recompensas</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="convites"><span class="admin-navbtn-icon">🎫</span> Convites</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="acessos"><span class="admin-navbtn-icon">🔐</span> Funcionalidades</button>
     <div class="admin-side-foot">
       <div style="font-size:10px;color:var(--text-dim);font-family:var(--f-mono);padding:8px;letter-spacing:1px" id="adminWho">—</div>
       <button class="admin-navbtn" data-action="admin-theme-toggle" style="margin-bottom:8px">
@@ -140,6 +141,12 @@
     <section class="admin-section" id="section-convites">
       <div class="admin-head"><div><div class="admin-title">Convites</div><div class="admin-title-sub">SISTEMA DE INDICAÇÕES</div></div><button class="admin-btn" data-action="invite-new">+ Novo convite</button></div>
       <div id="invitesList"></div>
+    </section>
+
+    <section class="admin-section" id="section-acessos">
+      <div class="admin-head"><div><div class="admin-title">Funcionalidades</div><div class="admin-title-sub">CONTROLE DE ACESSO POR PAPEL</div></div><button class="admin-btn" data-action="features-save">💾 Salvar</button></div>
+      <div class="admin-title-sub" style="padding:0 4px 12px">Ligue/desligue o que cada papel enxerga no app. O Admin sempre vê tudo.</div>
+      <div id="featuresPanel"></div>
     </section>
   </main>
 </div>

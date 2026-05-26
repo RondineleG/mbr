@@ -2,9 +2,10 @@
    SESSION — orquestra overlays (splash/login/onboarding/app),
    o perfil corrente e os listeners realtime do agente.
    ═══════════════════════════════════════════════════════════════ */
-import { $, show, onAction } from "../utils/dom.js";
+import { $, $$, show, onAction } from "../utils/dom.js";
 import * as store from "./state.js";
 import { navigate } from "./router.js";
+import { loadFeatures, watchFeatures, isEnabled } from "../services/features.service.js";
 import * as auth from "../firebase/auth.service.js";
 import * as userSvc from "../services/user.service.js";
 import { watchUserOrders } from "../services/order.service.js";
@@ -18,7 +19,26 @@ import { toastSuccess } from "../components/toast.js";
 let unsubProfile = null;
 let unsubOrders = null;
 let unsubMissions = null;
+let unsubFeatures = null;
 let entered = false;
+
+/** Mapeia um elemento de navegação para a chave de funcionalidade. */
+function featureKeyOf(el) {
+  if (el.dataset.action === "clube-open") return el.dataset.tab === "missoes" ? "missoes" : "lojaMeritos";
+  return el.dataset.page || null;
+}
+
+/** Mostra/esconde itens de navegação conforme as flags do papel do usuário. */
+export function applyFeatureGates() {
+  const profile = store.get("profile");
+  const features = store.get("features") || {};
+  const role = profile?.role || "agent";
+  $$('[data-page], [data-action="clube-open"]').forEach((el) => {
+    const key = featureKeyOf(el);
+    if (!key) return;
+    show(el, isEnabled(features, role, key));
+  });
+}
 let deferredPrompt = null;
 
 // Captura o evento de instalação do PWA
@@ -121,6 +141,7 @@ function stopWatchers() {
   unsubProfile?.(); unsubProfile = null;
   unsubOrders?.(); unsubOrders = null;
   unsubMissions?.(); unsubMissions = null;
+  unsubFeatures?.(); unsubFeatures = null;
 }
 
 /** Aplica o tema salvo ao <body>. */
@@ -178,6 +199,10 @@ export async function enterApp(profile) {
   // Catálogo + recompensas (uma vez).
   listProducts({ activeOnly: true }).then((p) => store.set("products", p)).catch(() => {});
   listRewards({ activeOnly: true }).then((r) => store.set("rewards", r)).catch(() => {});
+
+  // Feature flags: carrega e observa em tempo real; reaplica os gates ao mudar.
+  loadFeatures().then((f) => { store.set("features", f); applyFeatureGates(); }).catch(() => {});
+  unsubFeatures = watchFeatures((f) => { store.set("features", f); applyFeatureGates(); });
 
   renderTopbar();
   navigate("home");

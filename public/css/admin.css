@@ -235,3 +235,15 @@ body.admin { max-width: none; margin: 0; }
 .admin-loading { text-align: center; padding: 40px; color: var(--text-dim); font-size: 13px; }
 .admin-empty { text-align: center; padding: 40px; color: var(--text-dim); font-size: 13px; }
 .admin-error { text-align: center; padding: 40px; color: var(--danger); font-size: 13px; }
+
+/* ── Funcionalidades (feature flags por papel) ── */
+.feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.feat-card { background: var(--card); border: 1px solid var(--bd); border-radius: var(--radius); padding: 16px; }
+.feat-card-title { font-family: var(--f-display); font-size: 15px; font-weight: 700; color: var(--G); margin-bottom: 12px; letter-spacing: 1px; }
+.feat-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--bd); }
+.feat-row:last-child { border-bottom: none; }
+.feat-label { font-size: 13px; color: var(--tx); }
+.feat-toggle { width: 42px; height: 24px; -webkit-appearance: none; appearance: none; background: var(--bg3); border: 1px solid var(--bd2); border-radius: 999px; position: relative; cursor: pointer; transition: background var(--transition); flex-shrink: 0; }
+.feat-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--t2); transition: all var(--transition); }
+.feat-toggle:checked { background: var(--gw); border-color: var(--G); }
+.feat-toggle:checked::after { left: 20px; background: var(--G); }

@@ -6,6 +6,7 @@
 import { $$, onAction } from "../utils/dom.js";
 import { set, get } from "./state.js";
 import { showLogin } from "./session.js";
+import { isEnabled } from "../services/features.service.js";
 
 const routeListeners = new Set();
 
@@ -62,13 +63,27 @@ function checkRouteAccess(page) {
   return true;
 }
 
+/** Bloqueia rotas cuja funcionalidade está desligada para o papel do usuário. */
+function checkFeatureAccess(page) {
+  const profile = get("profile");
+  if (!profile || profile.role === "admin") return true;
+  if (isEnabled(get("features") || {}, profile.role, page)) return true;
+  console.warn(`[Router] Funcionalidade "${page}" indisponível para o papel "${profile.role}"`);
+  import("../components/toast.js").then((m) => m.toastInfo?.("🔒", "Funcionalidade indisponível no momento"));
+  if (page !== "home") navigate("home");
+  return false;
+}
+
 export function navigate(page) {
   // Verificar permissão antes de navegar
   if (!checkRouteAccess(page)) {
     showLogin();
     return;
   }
-  
+
+  // Verificar se a funcionalidade está habilitada para o papel.
+  if (!checkFeatureAccess(page)) return;
+
   set("page", page);
   $$(".page").forEach((p) => p.classList.remove("active"));
   document.getElementById("page-" + page)?.classList.add("active");

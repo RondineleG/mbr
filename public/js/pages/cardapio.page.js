@@ -7,6 +7,7 @@ import { BUILD_STEPS, BUILD_BASE_PRICE } from "../utils/constants.js";
 import { money } from "../utils/format.js";
 import { skeletonList } from "../components/skeleton.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
+import { isEnabled } from "../services/features.service.js";
 
 let currentStep = 0;
 // Itens inclusos já vêm pré-selecionados: Pão (Brioche), Carne (Smash 90g),
@@ -192,6 +193,7 @@ function renderCategories() {
 }
 
 export function showCat(next) {
+  if (next === "monte" && !monteEnabled()) next = "dia";
   cat = next;
   ["monte", "dia", "mbox", "acomp", "bebidas", "sobremesas", "exclusivos"].forEach((c) =>
     show($("#cat-" + c), c === next));
@@ -255,7 +257,21 @@ async function buyWithPoints(id) {
   }
 }
 
-export function renderCardapio() { renderWizard(); renderCategories(); }
+/** "Monte Seu Lanche" habilitado para o papel do usuário? */
+function monteEnabled() {
+  const profile = store.get("profile");
+  return isEnabled(store.get("features") || {}, profile?.role || "agent", "monteSeuLanche");
+}
+
+/** Esconde a aba "Monte" e, se for a atual, cai pro "dia" quando desabilitado. */
+function applyMonteGate() {
+  const enabled = monteEnabled();
+  const btn = document.querySelector('[data-cat="monte"]');
+  if (btn) btn.style.display = enabled ? "" : "none";
+  if (!enabled && cat === "monte") showCat("dia");
+}
+
+export function renderCardapio() { renderWizard(); renderCategories(); applyMonteGate(); }
 
 export function initCardapio() {
   onAction("cardapio-cat", (el) => showCat(el.dataset.cat));
