@@ -3,7 +3,7 @@
    collections: 
    - pointsHistory: { userId, delta, reason, orderId, type, createdAt }
    ═══════════════════════════════════════════════════════════════ */
-import { updateDoc, addDoc, getCollection, inc, tsNow } from "../firebase/db.service.js";
+import { getDoc, updateDoc, addDoc, getCollection, inc, tsNow } from "../firebase/db.service.js";
 import { rankFromPoints } from "../utils/format.js";
 
 /**
@@ -12,8 +12,9 @@ import { rankFromPoints } from "../utils/format.js";
  */
 export async function adjustPoints(uid, delta, reason, orderId = null) {
   // Lê o total atual para recalcular rank (o increment cuida do valor real).
-  const users = await getCollection("users", { where: [["uid", "==", uid]] });
-  const current = users[0]?.points || 0;
+  // getDoc direto pelo id do doc (= uid) evita query de coleção desnecessária.
+  const user = await getDoc(`users/${uid}`);
+  const current = user?.points || 0;
   const next = current + delta;
   const rank = rankFromPoints(next);
 
