@@ -133,7 +133,10 @@ function getStatusBadge(status) {
   return badges[status] || status;
 }
 
+let submitting = false; // trava anti-duplo-clique no envio do pedido
+
 async function checkout(btn) {
+  if (submitting) return; // já tem um envio em andamento
   const profile = store.get("profile");
   const cart = store.get("cart");
   if (!profile || !cart.length) return;
@@ -145,15 +148,19 @@ async function checkout(btn) {
     return;
   }
 
-  const ok = await modalConfirm({
-    title: "Confirmar pedido",
-    message: `Total ${money(store.cartSubtotal() + DELIVERY_FEE)} · entrega em ${[profile.address?.street, profile.address?.number].filter(Boolean).join(", ") || "seu endereço"}.`,
-    confirmText: "Confirmar",
-  });
-  if (!ok) return;
+  // Trava IMEDIATA: desabilita o botão antes de qualquer await, evitando
+  // múltiplos pedidos quando o usuário clica várias vezes.
+  submitting = true;
+  if (btn) btn.disabled = true;
 
-  btn.disabled = true;
   try {
+    const ok = await modalConfirm({
+      title: "Confirmar pedido",
+      message: `Total ${money(store.cartSubtotal() + DELIVERY_FEE)} · entrega em ${[profile.address?.street, profile.address?.number].filter(Boolean).join(", ") || "seu endereço"}.`,
+      confirmText: "Confirmar",
+    });
+    if (!ok) return;
+
     const order = await createOrder({
       uid: profile.uid,
       codename: profile.codename,
@@ -177,7 +184,8 @@ async function checkout(btn) {
       toastError("Não foi possível enviar o pedido — tente novamente");
     }
   } finally {
-    btn.disabled = false;
+    submitting = false;
+    if (btn) btn.disabled = false;
   }
 }
 

@@ -73,6 +73,7 @@ function toggleAdminSidebar() {
 }
 
 function enterAdmin(profile) {
+  const loading = $("#adminLoading"); if (loading) loading.style.display = "none";
   $("#adminGate").classList.add("hidden");
   $("#adminShell").style.display = "flex";
   $("#adminWho").textContent = profile.codename || profile.email;

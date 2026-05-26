@@ -20,8 +20,10 @@
 </head>
 <body class="admin">
 
-<!-- ═══ GATE DE ACESSO ═══ -->
-<div class="admin-gate" id="adminGate">
+<div id="adminLoading" style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--t2)">Verificando acesso…</div>
+
+<!-- ═══ GATE DE ACESSO (legado — login centralizado no app; mantido oculto) ═══ -->
+<div class="admin-gate" id="adminGate" style="display:none">
   <div class="admin-gate-card login-card">
     <div class="login-logo">🛡️</div>
     <div class="login-brand">COMANDO</div>

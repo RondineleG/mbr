@@ -19,10 +19,10 @@ export const FEATURES = [
   { key: "perfil", label: "Perfil", icon: "👤" },
 ];
 
-/** Papéis configuráveis (admin não entra: sempre liberado). */
+/** Papéis configuráveis (admin não entra: sempre liberado).
+    Só existe "agent" (o usuário final; o motoboy também é agente). */
 export const ROLES = [
   { key: "agent", label: "Agente" },
-  { key: "client", label: "Cliente" },
 ];
 
 const PATH = "config/features";
