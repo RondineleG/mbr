@@ -1,15 +1,5 @@
 {
   "projects": {
-    "default": "projetohowx"
-  },
-  "targets": {
-    "projetohowx": {
-      "hosting": {
-        "projetohowx": [
-          "web"
-        ]
-      }
-    }
-  },
-  "etags": {}
+    "default": "trabalhohowx"
+  }
 }
