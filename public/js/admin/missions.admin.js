@@ -151,4 +151,3 @@ export function initMissions() {
 }
 
 export { renderMissions };
-</content>

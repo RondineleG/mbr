@@ -159,4 +159,3 @@ export function initRewards() {
 }
 
 export { renderRewards };
-</content>
