@@ -71,10 +71,10 @@ function isStandalone() {
 window.addEventListener('appinstalled', (evt) => {
   console.log('MrBur PWA instalado com sucesso!');
   deferredPrompt = null;
-  // Esconder botão de instalação
+  window.__deferredPrompt = null;
   const installBtn = $("#sidemenuInstallBtn");
   if (installBtn) installBtn.style.display = "none";
-  // Premiar o usuário
+  toastSuccess("App instalado! 🔥 Abra pela chama na sua tela inicial.");
   rewardPwaInstall();
 });
 
