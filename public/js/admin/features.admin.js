@@ -57,7 +57,9 @@ async function save() {
   // Lê o estado atual de todos os toggles na tela.
   const next = {};
   for (const role of ROLES) next[role.key] = {};
-  $$(".feat-toggle").forEach((el) => {
+  // Só os toggles de papel (o toggle da Versão Web não tem data-role e salva à parte).
+  $$(".feat-toggle[data-role]").forEach((el) => {
+    if (!next[el.dataset.role]) next[el.dataset.role] = {};
     next[el.dataset.role][el.dataset.key] = el.checked;
   });
   try {
