@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MrBur — Versão Web</title>
+<script>
+  try { document.documentElement.setAttribute("data-theme", localStorage.getItem("admin-theme") === "light" ? "light" : "dark"); } catch (e) {}
+</script>
+<link rel="icon" type="image/png" href="/favicon-flame.png?v=133">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/web.css">
+</head>
+<body class="web">
+
+<div id="webLoading" class="web-loader">
+  <div class="al-radar"><span class="al-emoji">🖥️</span></div>
+  <div class="al-text">Carregando versão web…</div>
+  <div class="al-sub">ACESSO RESTRITO · COMANDO</div>
+</div>
+
+<div id="webBlocked" class="web-blocked" style="display:none">
+  <div class="wb-icon">🔒</div>
+  <div class="wb-title">Versão Web desativada</div>
+  <div class="wb-sub">O administrador desativou esta página. Ative em Admin → Funcionalidades.</div>
+  <a class="web-btn" href="/admin.html">Voltar ao painel</a>
+</div>
+
+<div id="webShell" style="display:none">
+  <header class="web-header">
+    <div class="web-brand"><span class="web-flame">🔥</span> <span>MRBUR</span> <small>VERSÃO WEB</small></div>
+    <nav class="web-nav" id="webNav"></nav>
+    <div class="web-actions">
+      <span id="webWho" class="web-who"></span>
+      <a class="web-btn ghost" href="/admin.html">Painel admin</a>
+    </div>
+  </header>
+
+  <section class="web-hero">
+    <div class="web-hero-text">
+      <h1>O clube secreto dos melhores lanches</h1>
+      <p>Monte seu lanche, acumule méritos e suba de patente. Agora também na tela grande.</p>
+    </div>
+  </section>
+
+  <main class="web-main">
+    <div class="web-section-title">Cardápio</div>
+    <div id="webGrid" class="web-grid"></div>
+  </main>
+
+  <footer class="web-foot">MrBur — A Ordem · Versão Web (visualização administrativa)</footer>
+</div>
+
+<script type="module" src="js/web/web.js"></script>
+</body>
+</html>

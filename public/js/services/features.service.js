@@ -46,6 +46,15 @@ export async function saveFeatures(data) {
   return setDoc(PATH, data);
 }
 
+// ── Página Web/Desktop (admin-only) — liga/desliga em config/webPage ──
+const WEB_PATH = "config/webPage";
+/** A Versão Web/Desktop está habilitada? (padrão: habilitada). */
+export async function loadWebEnabled() {
+  try { const d = await getDoc(WEB_PATH); return d?.enabled !== false; } catch { return true; }
+}
+/** Liga/desliga a Versão Web/Desktop. */
+export async function setWebEnabled(enabled) { return setDoc(WEB_PATH, { enabled: !!enabled }); }
+
 /**
  * Decide se a funcionalidade está habilitada para o perfil.
  * - admin: sempre true

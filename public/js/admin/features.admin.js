@@ -1,11 +1,12 @@
 /* ═══════════════════════════════════════════════════════════════
    FEATURES ADMIN — liga/desliga funcionalidades por papel (agente/cliente)
    ═══════════════════════════════════════════════════════════════ */
-import { $, $$, onAction, setHtml } from "../utils/dom.js";
-import { FEATURES, ROLES, loadFeatures, saveFeatures, isEnabled } from "../services/features.service.js";
+import { $, $$, onAction, onChange, setHtml } from "../utils/dom.js";
+import { FEATURES, ROLES, loadFeatures, saveFeatures, isEnabled, loadWebEnabled, setWebEnabled } from "../services/features.service.js";
 import { toastSuccess, toastError } from "../components/toast.js";
 
-let model = {}; // { agent:{key:bool}, client:{key:bool} }
+let model = {}; // { agent:{key:bool} }
+let webEnabled = true; // Versão Web/Desktop (admin-only)
 
 function roleCard(role) {
   const rows = FEATURES.map((f) => {
@@ -23,14 +24,28 @@ function roleCard(role) {
     </div>`;
 }
 
+function webCard() {
+  return `
+    <div class="feat-card" style="margin-bottom:16px">
+      <div class="feat-card-title">Páginas administrativas</div>
+      <label class="feat-row">
+        <span class="feat-label">🖥️ Versão Web / Desktop
+          <a href="/web.html" target="_blank" rel="noopener" style="color:var(--G);font-size:11px;margin-left:6px;text-decoration:none">abrir ↗</a>
+        </span>
+        <input type="checkbox" class="feat-toggle" data-action="web-toggle" ${webEnabled ? "checked" : ""}>
+      </label>
+    </div>`;
+}
+
 export function renderFeatures() {
-  setHtml("featuresPanel", `<div class="feat-grid">${ROLES.map(roleCard).join("")}</div>`);
+  setHtml("featuresPanel", webCard() + `<div class="feat-grid">${ROLES.map(roleCard).join("")}</div>`);
 }
 
 async function load() {
   setHtml("featuresPanel", '<div class="admin-loading">Carregando funcionalidades...</div>');
   try {
     model = await loadFeatures();
+    webEnabled = await loadWebEnabled();
     renderFeatures();
   } catch (err) {
     console.error("Erro ao carregar funcionalidades:", err);
@@ -57,5 +72,10 @@ async function save() {
 
 export function initFeatures() {
   onAction("features-save", () => save());
+  // Liga/desliga a Versão Web/Desktop na hora (independe do botão Salvar).
+  onChange("web-toggle", async (el) => {
+    try { await setWebEnabled(el.checked); webEnabled = el.checked; toastSuccess(`Versão Web ${el.checked ? "ativada" : "desativada"}`); }
+    catch { toastError("Erro ao atualizar a Versão Web"); }
+  });
   load();
 }
