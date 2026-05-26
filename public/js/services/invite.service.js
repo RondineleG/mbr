@@ -137,6 +137,9 @@ export async function createInvite(data) {
     token: code,
     criadoPor: data.createdBy || null,
     roleCriador: data.roleCreator || null,
+    // Agente dono do convite (a quem ele está vinculado). null = do admin/sistema.
+    vinculadoA: data.vinculadoA || null,
+    vinculadoNome: data.vinculadoNome || null,
     emailDestino: data.emailDestino || null,
     status: "ativo",
     dataCriacao: tsNow(),
@@ -164,16 +167,20 @@ export async function listInvites(filters = {}) {
     return invites.filter((i) => i.status === filters.status);
   }
   
+  if (filters.vinculadoA) {
+    return invites.filter((i) => i.vinculadoA === filters.vinculadoA);
+  }
+
   if (filters.createdBy) {
     return invites.filter((i) => i.criadoPor === filters.createdBy);
   }
-  
+
   return invites;
 }
 
-/** Obtém estatísticas de convites */
-export async function getInviteStats(createdBy = null) {
-  const invites = await listInvites(createdBy ? { createdBy } : {});
+/** Obtém estatísticas de convites (opcionalmente por vínculo/criador). */
+export async function getInviteStats(filters = {}) {
+  const invites = await listInvites(filters || {});
   
   return {
     totalEnviados: invites.length,

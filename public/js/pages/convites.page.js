@@ -64,8 +64,8 @@ function renderInviteList() {
           </div>
           <div class="convite-info">
             <div class="convite-row">
-              <span class="label">Criado por:</span>
-              <span class="value">${invite.criadoPor || "—"}</span>
+              <span class="label">Vinculado a:</span>
+              <span class="value">${invite.vinculadoNome || invite.vinculadoA || "Admin / Sistema"}</span>
             </div>
             <div class="convite-row">
               <span class="label">Email destino:</span>
@@ -129,8 +129,10 @@ async function loadInvites() {
   renderInviteList();
 
   try {
-    invites = await listInvites(profile.role === "admin" ? {} : { createdBy: profile.uid });
-    stats = await getInviteStats(profile.role === "admin" ? null : profile.uid);
+    // Admin vê todos; agente vê os convites VINCULADOS a ele.
+    const filter = profile.role === "admin" ? {} : { vinculadoA: profile.uid };
+    invites = await listInvites(filter);
+    stats = await getInviteStats(filter);
     isLoading = false;
     renderStats();
     renderInviteList();
