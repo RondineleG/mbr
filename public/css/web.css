@@ -2,7 +2,8 @@
    WEB — versão desktop/larga do app (admin-only). NÃO é mobile-first:
    usa toda a largura, grade de produtos responsiva.
    ═══════════════════════════════════════════════════════════════ */
-body.web { background: var(--bg); color: var(--tx); min-height: 100vh; }
+/* Anula o max-width mobile-first do base.css — esta página é desktop/larga. */
+body.web { max-width: none !important; margin: 0 !important; width: 100%; background: var(--bg); color: var(--tx); min-height: 100vh; }
 
 /* Loader / bloqueio (reusa o radar do admin.css? aqui standalone) */
 .web-loader, .web-blocked { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; text-align: center; padding: 24px; }
