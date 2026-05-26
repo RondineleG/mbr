@@ -34,9 +34,11 @@ function renderStepTabs() {
     return `<div class="${cls}" data-action="build-step" data-step="${i}"></div>`;
   }).join(""));
   show($("#stepBackBtn"), currentStep > 0);
-  const btn = $("#stepBtn");
-  if (currentStep === BUILD_STEPS.length - 1) { btn.textContent = "Adicionar à Sacola 🛒"; btn.dataset.action = "build-add"; }
-  else { btn.textContent = "Próximo →"; btn.dataset.action = "build-next"; }
+  // Na revisão, as ações ficam dentro do resumo (montar outro / ir pra sacola);
+  // o botão do rodapé some para não duplicar.
+  const isReview = currentStep === BUILD_STEPS.length - 1;
+  show($("#stepBtn"), !isReview);
+  if (!isReview) { $("#stepBtn").textContent = "Próximo →"; $("#stepBtn").dataset.action = "build-next"; }
   $(".step-tab.active")?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
 }
 
@@ -80,7 +82,11 @@ function renderReview() {
   body += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:14px;font-weight:700">TOTAL</span>
       <span style="font-size:22px;font-weight:900;color:var(--gold);font-family:var(--f-mono)">${money(total)}</span></div>
-    <div style="font-size:11px;color:var(--success);font-weight:700;text-align:right;margin-top:4px;font-family:var(--f-mono)">+${Math.round(total)}⚡ méritos</div></div>`;
+    <div style="font-size:11px;color:var(--success);font-weight:700;text-align:right;margin-top:4px;font-family:var(--f-mono)">+${Math.round(total)}⚡ méritos</div>
+    <div class="step-buttons" style="flex-direction:column;gap:10px;margin-top:16px">
+      <button class="step-btn" data-action="build-add-go">Adicionar e ir pra Sacola 🛒</button>
+      <button class="step-btn-back" style="width:100%;flex:1" data-action="build-add-continue">Adicionar e montar outro 🔄</button>
+    </div></div>`;
   setHtml("stepContent", body);
 }
 
@@ -98,13 +104,22 @@ function toggleItem(stepId, idx) {
   renderStepContent();
 }
 
-function buildAddToCart() {
+// Adiciona o lanche montado à sacola e reseta o wizard para um novo lanche.
+function addBuildToCart() {
   let total = BUILD_BASE_PRICE;
   const parts = [];
   BUILD_STEPS.forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
   store.cartAdd({ custom: true, name: "Monte Seu Lanche", icon: "🔧", price: total, qty: 1, desc: parts.join(", ") });
   toast("success", "🔧", `Lanche personalizado adicionado! ${money(total)}`);
   selections = defaultSelections(); currentStep = 0; renderWizard();
+}
+
+// Adiciona e volta ao início para montar outro lanche.
+function buildAddAndContinue() { addBuildToCart(); }
+
+// Adiciona e segue para a sacola.
+function buildAddAndGoToCart() {
+  addBuildToCart();
   import("../app/router.js").then((m) => m.navigate("sacola"));
 }
 
@@ -248,7 +263,8 @@ export function initCardapio() {
   onAction("build-toggle", (el) => toggleItem(el.dataset.step, +el.dataset.idx));
   onAction("build-next", () => { if (currentStep < BUILD_STEPS.length - 1) { currentStep++; renderWizard(); } });
   onAction("build-prev", () => { if (currentStep > 0) { currentStep--; renderWizard(); } });
-  onAction("build-add", () => buildAddToCart());
+  onAction("build-add-continue", () => buildAddAndContinue());
+  onAction("build-add-go", () => buildAddAndGoToCart());
   onAction("add-product", (el) => addProduct(el.dataset.id));
   onAction("buy-points", (el) => buyWithPoints(el.dataset.id));
   store.subscribe("products", renderCategories);
