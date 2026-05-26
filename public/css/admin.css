@@ -256,3 +256,26 @@ body.admin { max-width: none; margin: 0; }
 .moto-kpi-lbl { font-size: 10px; letter-spacing: 1px; color: var(--t2); margin-top: 4px; text-transform: uppercase; }
 .moto-card { display: flex; gap: 12px; align-items: stretch; }
 .moto-card .admin-item-actions a { text-decoration: none; text-align: center; }
+
+/* ═══ LOADER "Verificando acesso…" (admin = radar / motoboy = entrega) ═══ */
+.access-loader { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: var(--bg); }
+.al-text { font-family: var(--f-display); letter-spacing: 0.18em; color: var(--tx); font-size: 14px; }
+.al-sub { font-family: var(--f-mono); font-size: 9px; letter-spacing: 0.4em; color: var(--G); opacity: .8; }
+
+/* Admin — radar dourado varrendo */
+.al-radar { width: 96px; height: 96px; border-radius: 50%; border: 1px solid var(--bd2); position: relative; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 24px rgba(201,168,76,.08); }
+.al-radar::before { content: ""; position: absolute; inset: 14px; border-radius: 50%; border: 1px dashed var(--bd); }
+.al-radar::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0%, var(--ok-soft) 6%, color-mix(in srgb, var(--G) 45%, transparent) 14%, transparent 22%); animation: alSweep 1.8s linear infinite; }
+.al-radar .al-emoji { font-size: 30px; z-index: 1; animation: alPulse 1.8s ease-in-out infinite; filter: drop-shadow(0 0 10px rgba(201,168,76,.5)); }
+@keyframes alSweep { to { transform: rotate(360deg); } }
+@keyframes alPulse { 0%,100% { transform: scale(1); opacity: .9; } 50% { transform: scale(1.12); opacity: 1; } }
+
+/* Motoboy — entrega: moto correndo na estrada até o agente */
+.al-road { position: relative; width: 240px; height: 56px; overflow: hidden; }
+.al-road::after { content: ""; position: absolute; left: 0; right: 0; bottom: 8px; height: 2px; background: repeating-linear-gradient(90deg, var(--bd2) 0 10px, transparent 10px 20px); animation: alRoad .35s linear infinite; }
+.al-agent { position: absolute; right: 2px; bottom: 12px; font-size: 26px; animation: alBob 1.6s ease-in-out infinite; }
+.al-moto { position: absolute; bottom: 12px; font-size: 28px; animation: alDrive 2.2s cubic-bezier(.45,0,.55,1) infinite; }
+.al-pack { font-size: 16px; }
+@keyframes alRoad { to { background-position: -20px 0; } }
+@keyframes alDrive { 0% { left: -34px; transform: translateY(0); } 80% { left: 190px; transform: translateY(0); } 85% { transform: translateY(-4px); } 100% { left: 190px; transform: translateY(0); opacity: 0; } }
+@keyframes alBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }

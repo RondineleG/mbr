@@ -7,7 +7,7 @@
 <script>
   try { document.documentElement.setAttribute("data-theme", localStorage.getItem("admin-theme") === "light" ? "light" : "dark"); } catch (e) {}
 </script>
-<link rel="icon" type="image/png" href="/favicon-flame.png?v=130">
+<link rel="icon" type="image/png" href="/favicon-flame.png?v=131">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -18,7 +18,14 @@
 </head>
 <body class="admin">
 
-<div id="motoLoading" style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--t2)">Verificando acesso…</div>
+<div id="motoLoading" class="access-loader">
+  <div class="al-road">
+    <span class="al-moto">🛵<span class="al-pack">📦</span></span>
+    <span class="al-agent">🕵️</span>
+  </div>
+  <div class="al-text">Verificando acesso…</div>
+  <div class="al-sub">CENTRAL DE ENTREGAS</div>
+</div>
 
 <div id="motoShell" style="display:none">
   <header class="admin-topbar">
