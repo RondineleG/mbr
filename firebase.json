@@ -29,6 +29,12 @@
           { "key": "Cache-Control", "value": "no-cache, max-age=0" },
           { "key": "Service-Worker-Allowed", "value": "/" }
         ]
+      },
+      {
+        "source": "/manifest.json",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, max-age=0" }
+        ]
       }
     ]
   },
