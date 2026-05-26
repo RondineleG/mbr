@@ -4,6 +4,7 @@
 import { modalCustom } from "./modal.js";
 import { escapeHtml } from "../utils/dom.js";
 import { sendMessage, watchMessages } from "../services/chat.service.js";
+import { markRead } from "./chat-notifier.js";
 
 const roleOf = (me) => me.role === "admin" ? "admin" : (me.motoboy ? "motoboy" : "cliente");
 
@@ -22,7 +23,9 @@ export function openChat(orderId, me, title = "Chat da entrega") {
   const input = dialog.el.querySelector("#chatInput");
   const role = roleOf(me);
 
+  markRead(orderId); // ao abrir, zera não-lidas
   const unsub = watchMessages(orderId, (msgs) => {
+    markRead(orderId); // enquanto aberto, mantém lido
     box.innerHTML = msgs.length ? msgs.map((m) => {
       const mine = m.from === me.uid;
       return `<div class="chat-bubble ${mine ? "mine" : "theirs"}">

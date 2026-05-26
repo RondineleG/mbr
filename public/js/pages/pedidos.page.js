@@ -5,6 +5,7 @@
 import { setHtml, escapeHtml, onAction } from "../utils/dom.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
 import { openChat } from "../components/chat.js";
+import { getUnread, onUnreadChange, markRead } from "../components/chat-notifier.js";
 import * as store from "../app/state.js";
 import { money, dateShort } from "../utils/format.js";
 import { ORDER_STATUS_LABELS, cancelOrder } from "../services/order.service.js";
@@ -115,7 +116,7 @@ function orderCard(o) {
     ${(canRepeat || (o.agenteResponsavel && o.status !== "cancelado")) ? `
       <div class="order-actions">
         ${canRepeat ? `<button class="order-repeat-btn" data-action="repeat-order" data-order-id="${o.id}">🔄 Repetir Pedido</button>` : ""}
-        ${(o.agenteResponsavel && o.status !== "cancelado") ? `<button class="order-repeat-btn" data-action="order-chat" data-order-id="${o.id}">💬 Falar com entregador</button>` : ""}
+        ${(o.agenteResponsavel && o.status !== "cancelado") ? `<button class="order-repeat-btn" data-action="order-chat" data-order-id="${o.id}">💬 Falar com entregador${getUnread(o.id) ? ` <span class="chat-badge">${getUnread(o.id)}</span>` : ""}</button>` : ""}
       </div>
     ` : ""}
   </div>`;
@@ -164,8 +165,12 @@ export function initPedidos() {
   // Chat com o entregador (motoboy) do pedido.
   onAction("order-chat", (el) => {
     const profile = store.get("profile");
+    markRead(el.dataset.orderId);
     if (profile) openChat(el.dataset.orderId, profile, "Entregador");
   });
+
+  // Atualiza os badges de não-lidas ao vivo.
+  onUnreadChange(() => { if (store.get("page") === "pedidos") renderPedidos(); });
   
   // Handler para repetir pedido
   document.addEventListener('click', (e) => {

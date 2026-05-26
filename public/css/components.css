@@ -374,3 +374,6 @@
 .chat-text { color: var(--tx); }
 .chat-input-row { display: flex; gap: 8px; align-items: center; }
 .chat-input-row .modal-input { flex: 1; margin: 0; }
+
+/* ── Badge de não-lidas no botão de chat ── */
+.chat-badge { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 4px; border-radius: 999px; background: var(--er); color: #fff; font-size: 10px; font-weight: 800; font-family: var(--f-mono); line-height: 1; vertical-align: middle; }

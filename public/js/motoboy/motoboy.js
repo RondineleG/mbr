@@ -9,7 +9,7 @@ import { watchAgentOrders, updateStatus, ORDER_STATUS, ORDER_STATUS_LABELS } fro
 import { updateDoc } from "../firebase/db.service.js";
 import { adjustPoints } from "../services/points.service.js";
 import { openChat } from "../components/chat.js";
-import { syncChatNotifiers } from "../components/chat-notifier.js";
+import { syncChatNotifiers, getUnread, onUnreadChange } from "../components/chat-notifier.js";
 import { money } from "../utils/format.js";
 import { DELIVERY_MERITOS, DELIVERY_FEE } from "../utils/constants.js";
 import { toast, toastError } from "../components/toast.js";
@@ -45,7 +45,7 @@ function card(o) {
       </div>
       <div class="admin-item-actions" style="flex-direction:column;gap:8px">
         <a class="admin-btn sm ghost" href="${mapUrl(o.address)}" target="_blank" rel="noopener">🗺️ Rota</a>
-        <button class="admin-btn sm ghost" data-action="moto-chat" data-id="${o.id}">💬 Chat</button>
+        <button class="admin-btn sm ghost" data-action="moto-chat" data-id="${o.id}">💬 Chat${getUnread(o.id) ? ` <span class="chat-badge">${getUnread(o.id)}</span>` : ""}</button>
         ${action}
       </div>
     </div>`;
@@ -109,6 +109,7 @@ function enter(profile) {
 onAction("moto-sent", (el) => setStatus(el.dataset.id, ORDER_STATUS.SENT));
 onAction("moto-delivered", (el) => setStatus(el.dataset.id, ORDER_STATUS.DELIVERED));
 onAction("moto-chat", (el) => { if (me) openChat(el.dataset.id, me, "Cliente"); });
+onUnreadChange(() => render()); // atualiza os badges de não-lidas ao vivo
 onAction("moto-logout", async () => { await auth.signOut(); window.location.replace("/"); });
 onAction("moto-theme", () => {
   const cur = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";
