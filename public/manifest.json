@@ -107,13 +107,6 @@
       ]
     }
   ],
-  "prefer_related_applications": false,
-  "related_applications": [
-    {
-      "platform": "webapp",
-      "url": "https://trabalhohowx.web.app/manifest.json"
-    }
-  ],
   "id": "/",
   "launch_handler": {
     "client_mode": "focus-existing"

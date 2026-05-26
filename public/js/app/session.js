@@ -96,18 +96,33 @@ async function rewardPwaInstall() {
 
 async function triggerPwaInstall() {
   // Usa o prompt capturado cedo no <head> (window.__deferredPrompt).
-  const dp = window.__deferredPrompt || deferredPrompt;
+  let dp = window.__deferredPrompt || deferredPrompt;
+  // Logo após limpar dados/instalar, o evento pode ainda não ter chegado:
+  // espera até ~3s por ele antes de cair nas instruções.
+  if (!dp) {
+    dp = await new Promise((resolve) => {
+      let done = false;
+      const finish = (v) => { if (!done) { done = true; resolve(v); } };
+      const t = setTimeout(() => finish(window.__deferredPrompt || null), 3000);
+      document.addEventListener("pwa-installable", () => { clearTimeout(t); finish(window.__deferredPrompt); }, { once: true });
+    });
+  }
   if (dp) {
-    dp.prompt();
-    const { outcome } = await dp.userChoice;
-    console.log('PWA: instalação', outcome);
-    window.__deferredPrompt = null;
-    deferredPrompt = null;
-    if (outcome === 'accepted') {
-      const installBtn = $("#sidemenuInstallBtn");
-      if (installBtn) installBtn.style.display = "none";
+    try {
+      dp.prompt();
+      const { outcome } = await dp.userChoice;
+      console.log('PWA: instalação', outcome);
+      window.__deferredPrompt = null;
+      deferredPrompt = null;
+      if (outcome === 'accepted') {
+        const installBtn = $("#sidemenuInstallBtn");
+        if (installBtn) installBtn.style.display = "none";
+      }
+      return;
+    } catch (err) {
+      console.warn("prompt() falhou (gesto perdido?):", err?.message || err);
+      // cai nas instruções abaixo
     }
-    return;
   }
 
   // Sem prompt (iOS, já instalado, ou navegador sem suporte a instalação): instruções.
