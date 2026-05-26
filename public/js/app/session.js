@@ -95,15 +95,22 @@ async function rewardPwaInstall() {
 }
 
 async function triggerPwaInstall() {
-  if (!deferredPrompt) return;
-  
+  // Sem prompt nativo (iOS, já instalado, ou navegador sem suporte): instruções.
+  if (!deferredPrompt) {
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+    await modalConfirm({
+      title: "📲 Instalar o MrBur",
+      message: isIOS
+        ? "No iPhone/iPad: toque em Compartilhar (⎙) e depois em 'Adicionar à Tela de Início'."
+        : "No menu do navegador (⋮) escolha 'Instalar app'. Se já estiver instalado, abra pelo ícone na sua tela inicial.",
+      confirmText: "Entendi",
+    });
+    return;
+  }
+
   deferredPrompt.prompt();
   const { outcome } = await deferredPrompt.userChoice;
-  if (outcome === 'accepted') {
-    console.log('PWA: Usuário aceitou a instalação');
-  } else {
-    console.log('PWA: Usuário recusou a instalação');
-  }
+  console.log('PWA: instalação', outcome);
   deferredPrompt = null;
   const installBtn = $("#sidemenuInstallBtn");
   if (installBtn) installBtn.style.display = "none";
@@ -255,9 +262,10 @@ export async function enterApp(profile) {
   navigate("home");
   userSvc.touchLogin(profile.uid);
 
-  // Pós-login: sugere instalar o app (ou abrir, se já instalado). No app
-  // standalone não faz nada. Esconde o botão de instalar quando já está no app.
-  if (isStandalone()) { const b = $("#sidemenuInstallBtn"); if (b) b.style.display = "none"; }
+  // Pós-login: o botão "Instalar app" fica sempre acessível no navegador
+  // (oculto só quando já está rodando como app instalado). E sugere instalar/abrir.
+  const installBtn = $("#sidemenuInstallBtn");
+  if (installBtn) installBtn.style.display = isStandalone() ? "none" : "flex";
   pwaSuggest();
 }
 
