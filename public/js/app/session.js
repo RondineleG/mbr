@@ -95,25 +95,30 @@ async function rewardPwaInstall() {
 }
 
 async function triggerPwaInstall() {
-  // Sem prompt nativo (iOS, já instalado, ou navegador sem suporte): instruções.
-  if (!deferredPrompt) {
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-    await modalConfirm({
-      title: "📲 Instalar o MrBur",
-      message: isIOS
-        ? "No iPhone/iPad: toque em Compartilhar (⎙) e depois em 'Adicionar à Tela de Início'."
-        : "No menu do navegador (⋮) escolha 'Instalar app'. Se já estiver instalado, abra pelo ícone na sua tela inicial.",
-      confirmText: "Entendi",
-    });
+  // Usa o prompt capturado cedo no <head> (window.__deferredPrompt).
+  const dp = window.__deferredPrompt || deferredPrompt;
+  if (dp) {
+    dp.prompt();
+    const { outcome } = await dp.userChoice;
+    console.log('PWA: instalação', outcome);
+    window.__deferredPrompt = null;
+    deferredPrompt = null;
+    if (outcome === 'accepted') {
+      const installBtn = $("#sidemenuInstallBtn");
+      if (installBtn) installBtn.style.display = "none";
+    }
     return;
   }
 
-  deferredPrompt.prompt();
-  const { outcome } = await deferredPrompt.userChoice;
-  console.log('PWA: instalação', outcome);
-  deferredPrompt = null;
-  const installBtn = $("#sidemenuInstallBtn");
-  if (installBtn) installBtn.style.display = "none";
+  // Sem prompt (iOS, já instalado, ou navegador sem suporte a instalação): instruções.
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  await modalConfirm({
+    title: "📲 Instalar o MrBur",
+    message: isIOS
+      ? "No iPhone/iPad: toque em Compartilhar (⎙) e depois em 'Adicionar à Tela de Início'."
+      : "Este navegador já tem o app instalado ou não suporta instalação direta. Se já instalou, abra pelo ícone; senão, tente pelo menu (⋮) → 'Instalar app'.",
+    confirmText: "Entendi",
+  });
 }
 
 let pwaSuggested = false;

@@ -20,6 +20,17 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MrBur">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<script>
+  /* Captura o prompt de instalação ANTES dos módulos carregarem (o evento
+     dispara cedo e só uma vez; senão é perdido e a instalação direta falha). */
+  window.__deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    window.__deferredPrompt = e;
+    document.dispatchEvent(new Event('pwa-installable'));
+  });
+  window.addEventListener('appinstalled', function () { window.__deferredPrompt = null; });
+</script>
 <!-- Animação de boot consolidada (satélite → agentes → entrega) -->
 <style>
 .boot { position: fixed; inset: 0; z-index: 9999; background: #030201; overflow: hidden; opacity: 1; transition: opacity 0.65s ease; }
