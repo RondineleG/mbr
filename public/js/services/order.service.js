@@ -164,6 +164,29 @@ export async function updateStatus(orderId, status, observacao = "") {
   }
 }
 
+// Pedidos sendo creditados agora (evita corrida/duplo-crédito no realtime).
+const _awarding = new Set();
+
+/**
+ * Reconciliação de méritos: credita o dono quando um pedido foi entregue mas
+ * ficou sem crédito (ex.: quem finalizou foi o motoboy, que não pode escrever
+ * no doc do cliente). Só o próprio dono roda isto (tem permissão no seu doc).
+ */
+export async function reconcileOrderPoints(order, currentUid) {
+  if (!order || order.status !== ORDER_STATUS.DELIVERED) return;
+  if (order.pointsAwarded || !order.userId || order.userId !== currentUid) return;
+  if (_awarding.has(order.id)) return;
+  _awarding.add(order.id);
+  try {
+    await adjustPoints(order.userId, order.pointsEarned || 0, "Pedido entregue", order.id);
+    await updateDoc(`orders/${order.id}`, { pointsAwarded: true });
+  } catch (err) {
+    console.warn("[order] reconciliação de méritos falhou:", err?.message || err);
+  } finally {
+    _awarding.delete(order.id);
+  }
+}
+
 /**
  * Adiciona observação interna ao pedido (admin)
  */
