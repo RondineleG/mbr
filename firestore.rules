@@ -63,11 +63,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // Convites: leitura pública para validação, escrita por autenticados
+    // Convites: leitura pública por código (validação no cadastro). Apenas o
+    // admin cria convites; o update (consumir/marcar usado) fica liberado para
+    // autenticados pois o cadastro consome o convite antes do papel existir.
     match /invites/{code} {
       allow get: if true;
       allow list: if signedIn();
-      allow create: if signedIn();
+      allow create: if isAdmin();
       allow update: if signedIn();
       allow delete: if isAdmin();
     }

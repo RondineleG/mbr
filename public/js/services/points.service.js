@@ -41,5 +41,15 @@ const toMillis = (v) =>
 export async function getHistory(uid) {
   // Só `where` (sem orderBy) p/ não exigir índice composto; ordena no cliente.
   const rows = await getCollection("pointsHistory", { where: [["userId", "==", uid]] });
-  return rows.sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt)).slice(0, 50);
+  return rows
+    // Normaliza os dois schemas existentes: adjustPoints grava {reason, delta};
+    // mission.service grava {description, amount}. Sem isto, linhas de missão
+    // renderizam "undefined" no extrato.
+    .map((r) => ({
+      ...r,
+      reason: r.reason ?? r.description ?? "Transação",
+      delta: r.delta ?? r.amount ?? 0,
+    }))
+    .sort((a, b) => toMillis(b.createdAt) - toMillis(a.createdAt))
+    .slice(0, 50);
 }

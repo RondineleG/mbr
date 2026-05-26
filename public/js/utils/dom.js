@@ -70,3 +70,30 @@ export function onChange(name, handler) {
 
 /** Lê todos os data-* de um elemento como objeto simples. */
 export const dataset = (el) => ({ ...el.dataset });
+
+/**
+ * Habilita arrastar-para-rolar (horizontal) num container com overflow-x.
+ * Usa Pointer Events (mouse + touch) e cancela o clique se houve arrasto,
+ * para não disparar ações (ex.: RESGATAR) ao soltar após mover.
+ */
+export function enableDragScroll(el) {
+  if (!el || el.dataset.dragScroll) return;
+  el.dataset.dragScroll = "1";
+  let down = false, startX = 0, startLeft = 0, moved = false;
+  el.addEventListener("pointerdown", (e) => {
+    down = true; moved = false;
+    startX = e.pageX; startLeft = el.scrollLeft;
+  });
+  el.addEventListener("pointermove", (e) => {
+    if (!down) return;
+    const dx = e.pageX - startX;
+    if (Math.abs(dx) > 4) moved = true;
+    el.scrollLeft = startLeft - dx;
+  });
+  const end = () => { down = false; };
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointerleave", end);
+  el.addEventListener("click", (e) => {
+    if (moved) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+}

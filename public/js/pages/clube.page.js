@@ -2,7 +2,7 @@
    CLUBE PAGE — recompensas (resgate), missões, ranking e extrato
    Sistema real de gamificação com progresso dinâmico
    ═══════════════════════════════════════════════════════════════ */
-import { $, onAction, setHtml, escapeHtml } from "../utils/dom.js";
+import { $, $$, onAction, setHtml, escapeHtml, enableDragScroll } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { redeem, listRewards } from "../services/reward.service.js";
 import { getHistory } from "../services/points.service.js";
@@ -202,6 +202,9 @@ function renderRewardsTab() {
     <div class="rewards-scroll">${rewardsContent}</div>
     <div class="section-title">Missões Ativas</div>
     ${renderMissions()}`);
+
+  // Arrastar-para-o-lado na loja (mostra todos os itens, não só os 2 visíveis).
+  enableDragScroll($(".rewards-scroll"));
 }
 
 export function renderClube() {
@@ -290,11 +293,25 @@ async function doClaimMission(missionId) {
   }
 }
 
+// Marca a aba ativa nos botões do topo do Clube.
+function setActiveTab(name) {
+  $$(".clube-action").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+}
+
 export function initClube() {
   onAction("clube-tab", (el) => {
     tab = el.dataset.tab;
+    setActiveTab(tab);
     renderClube();
     // Carrega missões sob demanda (no init o profile ainda pode não existir).
+    if ((tab === "missoes" || tab === "recompensas") && !missions.length) loadMissions();
+  });
+  // Abre o Clube já numa aba específica (usado pela sidebar e atalhos da Home,
+  // p/ que "Missões" leve sempre ao mesmo lugar que o menu interno).
+  onAction("clube-open", (el) => {
+    tab = el.dataset.tab || "recompensas";
+    setActiveTab(tab);
+    import("../app/router.js").then((m) => m.navigate("clube"));
     if ((tab === "missoes" || tab === "recompensas") && !missions.length) loadMissions();
   });
   onAction("redeem", (el) => doRedeem(el.dataset.id));

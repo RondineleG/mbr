@@ -125,8 +125,9 @@ async function loadInvites() {
   if (!profile) return;
   
   isLoading = true;
+  applyRoleUi();
   renderInviteList();
-  
+
   try {
     invites = await listInvites(profile.role === "admin" ? {} : { createdBy: profile.uid });
     stats = await getInviteStats(profile.role === "admin" ? null : profile.uid);
@@ -144,7 +145,8 @@ async function loadInvites() {
 async function createNewInvite() {
   const profile = store.get("profile");
   if (!profile) return;
-  
+  if (profile.role !== "admin") { toastError("Apenas o admin pode criar convites"); return; }
+
   const code = await modalPrompt({
     title: "Criar Novo Convite",
     label: "CÓDIGO (opcional)",
@@ -211,7 +213,21 @@ function setFilter(filter) {
   renderInviteList();
 }
 
+// Convites são gestão do admin: usuário comum não cria convites nem vê o
+// dashboard agregado — só a própria lista (filtrada por createdBy em loadInvites).
+function applyRoleUi() {
+  const profile = store.get("profile");
+  const isAdmin = profile?.role === "admin";
+  const page = document.getElementById("page-convites");
+  if (!page) return;
+  show(page.querySelector(".convites-stats"), isAdmin);
+  show(page.querySelector('[data-action="create-invite"]'), isAdmin);
+  const title = page.querySelector(".section-title");
+  if (title) title.textContent = isAdmin ? "Gestão de Convites" : "Meus Convites";
+}
+
 export function renderConvites() {
+  applyRoleUi();
   renderStats();
   renderInviteList();
 }
