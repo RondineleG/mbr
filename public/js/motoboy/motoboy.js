@@ -6,7 +6,11 @@ import { $, onAction, setHtml, escapeHtml } from "./../utils/dom.js";
 import * as auth from "../firebase/auth.service.js";
 import { getProfile } from "../services/user.service.js";
 import { watchAgentOrders, updateStatus, ORDER_STATUS, ORDER_STATUS_LABELS } from "../services/order.service.js";
+import { updateDoc } from "../firebase/db.service.js";
+import { adjustPoints } from "../services/points.service.js";
+import { openChat } from "../components/chat.js";
 import { money } from "../utils/format.js";
+import { DELIVERY_MERITOS } from "../utils/constants.js";
 import { toast, toastError } from "../components/toast.js";
 
 let me = null;
@@ -40,6 +44,7 @@ function card(o) {
       </div>
       <div class="admin-item-actions" style="flex-direction:column;gap:8px">
         <a class="admin-btn sm ghost" href="${mapUrl(o.address)}" target="_blank" rel="noopener">🗺️ Rota</a>
+        <button class="admin-btn sm ghost" data-action="moto-chat" data-id="${o.id}">💬 Chat</button>
         ${action}
       </div>
     </div>`;
@@ -61,9 +66,23 @@ function render() {
   setHtml("motoDone", done.length ? done.map(card).join("") : '<div class="admin-empty">Nada concluído ainda.</div>');
 }
 
+// Entrega concluída credita méritos ao MOTOBOY (missão especial), uma única vez.
+async function rewardMotoboy(id) {
+  const o = orders.find((x) => x.id === id);
+  if (!o || o.motoboyRewarded) return;
+  try {
+    await adjustPoints(me.uid, DELIVERY_MERITOS, "Entrega concluída", id);
+    await updateDoc(`orders/${id}`, { motoboyRewarded: true });
+    toast("success", "⚡", `+${DELIVERY_MERITOS} méritos pela entrega`);
+  } catch (err) {
+    console.warn("Recompensa do motoboy adiada:", err?.message || err);
+  }
+}
+
 async function setStatus(id, status) {
   try {
     await updateStatus(id, status);
+    if (status === ORDER_STATUS.DELIVERED) await rewardMotoboy(id);
     toast("success", status === ORDER_STATUS.DELIVERED ? "✅" : "🛵", "Status atualizado");
   } catch (err) {
     console.error(err);
@@ -82,6 +101,7 @@ function enter(profile) {
 
 onAction("moto-sent", (el) => setStatus(el.dataset.id, ORDER_STATUS.SENT));
 onAction("moto-delivered", (el) => setStatus(el.dataset.id, ORDER_STATUS.DELIVERED));
+onAction("moto-chat", (el) => { if (me) openChat(el.dataset.id, me, "Cliente"); });
 onAction("moto-logout", async () => { await auth.signOut(); window.location.replace("/"); });
 onAction("moto-theme", () => {
   const cur = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";

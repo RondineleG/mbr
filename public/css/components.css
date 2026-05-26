@@ -363,3 +363,14 @@
 .history-delta { font-size: 14px; font-weight: 800; font-family: var(--f-mono); }
 .history-delta.pos { color: var(--success); }
 .history-delta.neg { color: var(--danger); }
+
+/* ── Chat de pedido (motoboy ↔ cliente) ── */
+.chat-msgs { max-height: 46vh; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 8px 2px; margin: 8px 0; }
+.chat-empty { text-align: center; color: var(--t2); font-size: 12px; padding: 24px 0; }
+.chat-bubble { max-width: 80%; padding: 8px 12px; border-radius: 14px; font-size: 13px; line-height: 1.35; display: flex; flex-direction: column; gap: 2px; }
+.chat-bubble.mine { align-self: flex-end; background: var(--gw); border: 1px solid var(--bd2); border-bottom-right-radius: 4px; }
+.chat-bubble.theirs { align-self: flex-start; background: var(--bg3); border: 1px solid var(--bd); border-bottom-left-radius: 4px; }
+.chat-who { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--t2); }
+.chat-text { color: var(--tx); }
+.chat-input-row { display: flex; gap: 8px; align-items: center; }
+.chat-input-row .modal-input { flex: 1; margin: 0; }

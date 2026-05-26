@@ -81,5 +81,12 @@ service cloud.firestore {
       allow read: if signedIn() && request.auth.uid == uid;
       allow write: if signedIn() && request.auth.uid == uid;
     }
+
+    // Chat de pedidos (motoboy ↔ cliente): autenticados leem e criam; imutável.
+    match /orderMessages/{id} {
+      allow read: if signedIn();
+      allow create: if signedIn();
+      allow update, delete: if false;
+    }
   }
 }

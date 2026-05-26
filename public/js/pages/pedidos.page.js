@@ -2,8 +2,9 @@
    PEDIDOS PAGE — histórico + rastreamento realtime (timeline)
    Alimentado por store.orders (watchUserOrders em session.js).
    ═══════════════════════════════════════════════════════════════ */
-import { setHtml, escapeHtml } from "../utils/dom.js";
+import { setHtml, escapeHtml, onAction } from "../utils/dom.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
+import { openChat } from "../components/chat.js";
 import * as store from "../app/state.js";
 import { money, dateShort } from "../utils/format.js";
 import { ORDER_STATUS_LABELS, cancelOrder } from "../services/order.service.js";
@@ -111,11 +112,10 @@ function orderCard(o) {
     <div class="order-items-line">${escapeHtml(itemsLine)}</div>
     ${cancelBlock}
     ${showTimeline ? timeline(o) : ""}
-    ${canRepeat ? `
+    ${(canRepeat || (o.agenteResponsavel && o.status !== "cancelado")) ? `
       <div class="order-actions">
-        <button class="order-repeat-btn" data-action="repeat-order" data-order-id="${o.id}">
-          🔄 Repetir Pedido
-        </button>
+        ${canRepeat ? `<button class="order-repeat-btn" data-action="repeat-order" data-order-id="${o.id}">🔄 Repetir Pedido</button>` : ""}
+        ${(o.agenteResponsavel && o.status !== "cancelado") ? `<button class="order-repeat-btn" data-action="order-chat" data-order-id="${o.id}">💬 Falar com entregador</button>` : ""}
       </div>
     ` : ""}
   </div>`;
@@ -160,6 +160,12 @@ export async function renderPedidos() {
 export function initPedidos() {
   // Realtime: qualquer mudança em orders re-renderiza (inclui troca de status pelo admin).
   store.subscribe("orders", renderPedidos);
+
+  // Chat com o entregador (motoboy) do pedido.
+  onAction("order-chat", (el) => {
+    const profile = store.get("profile");
+    if (profile) openChat(el.dataset.orderId, profile, "Entregador");
+  });
   
   // Handler para repetir pedido
   document.addEventListener('click', (e) => {

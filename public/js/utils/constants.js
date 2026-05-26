@@ -84,3 +84,6 @@ export const DELIVERY_FEE = 8.0;
 
 /** Janela (ms) em que o cliente pode cancelar e o admin precisa esperar p/ aceitar. */
 export const CANCEL_WINDOW_MS = 120000;
+
+/** Méritos creditados ao motoboy por entrega concluída (missão especial). */
+export const DELIVERY_MERITOS = 50;
