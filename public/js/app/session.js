@@ -14,7 +14,7 @@ import { listProducts } from "../services/product.service.js";
 import { listRewards } from "../services/reward.service.js";
 import { renderTopbar } from "../components/topbar.js";
 import * as missionService from "../services/mission.service.js";
-import { modalConfirm } from "../components/modal.js";
+import { modalConfirm, modalCustom } from "../components/modal.js";
 import { toastSuccess } from "../components/toast.js";
 
 let unsubProfile = null;
@@ -135,51 +135,51 @@ async function isPwaInstalled() {
  * não tem, ou ABRIR pelo app se já existe instalação. Roda uma vez por sessão
  * e respeita uma dispensa de 7 dias.
  */
+const snoozePwa = () => localStorage.setItem("pwaModalSnoozeAt", String(Date.now()));
+
+/** Mostra instruções de como abrir o app já instalado (não dá p/ abrir via JS). */
+function openInstalledHint() {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  return modalConfirm({
+    title: "📲 Abrir o app",
+    message: isIOS
+      ? "Abra o MrBur pelo ícone na sua Tela de Início."
+      : "Abra o MrBur pelo ícone instalado (tela inicial do celular ou lista de apps do computador).",
+    confirmText: "Entendi",
+  });
+}
+
+/** Nosso modal próprio: instalar, abrir o app instalado, ou seguir no navegador. */
+function openPwaModal() {
+  const dlg = modalCustom(`
+    <div class="modal-title">📲 App do MrBur</div>
+    <div class="modal-message">Você está no navegador. Como prefere usar o MrBur?</div>
+    <div class="modal-actions" style="flex-direction:column;gap:10px;margin-top:8px">
+      <button class="modal-btn primary" id="pwaInstall">Instalar o app</button>
+      <button class="modal-btn" id="pwaOpen">Já instalei — abrir o app</button>
+      <button class="modal-btn ghost" id="pwaBrowser">Continuar no navegador</button>
+    </div>`);
+  dlg.el.querySelector("#pwaInstall").onclick = () => { dlg.close(); triggerPwaInstall(); };
+  dlg.el.querySelector("#pwaOpen").onclick = () => { dlg.close(); openInstalledHint(); };
+  dlg.el.querySelector("#pwaBrowser").onclick = () => { snoozePwa(); dlg.close(); };
+}
+
+/**
+ * Pós-login (só no navegador, não no app instalado): abre nosso modal com as
+ * opções instalar / abrir / continuar. Uma vez por sessão; "continuar" adia 24h.
+ */
 async function pwaSuggest() {
-  if (pwaSuggested || pwaBusy || isStandalone()) return; // no app instalado: nada a sugerir
-  const dismissed = +(localStorage.getItem("pwaDismissedAt") || 0);
-  if (Date.now() - dismissed < 7 * 86400000) return; // dispensado há < 7 dias
-  const snooze = () => localStorage.setItem("pwaDismissedAt", String(Date.now()));
+  if (pwaSuggested || pwaBusy || isStandalone()) return;
+  const snoozedAt = +(localStorage.getItem("pwaModalSnoozeAt") || 0);
+  if (Date.now() - snoozedAt < 86400000) return; // adiado nas últimas 24h
 
   pwaBusy = true;
   await new Promise((r) => setTimeout(r, 1500)); // não competir com a entrada
   pwaBusy = false;
   if (!entered || isStandalone() || pwaSuggested) return;
 
-  if (await isPwaInstalled()) {
-    pwaSuggested = true;
-    await modalConfirm({
-      title: "📲 Abra pelo app",
-      message: "Você já tem o MrBur instalado. Abra pelo ícone na tela inicial para notificações e acesso rápido.",
-      confirmText: "Entendi",
-    });
-    snooze();
-    return;
-  }
-
-  if (deferredPrompt) {
-    pwaSuggested = true;
-    const ok = await modalConfirm({
-      title: "📲 Instalar o MrBur",
-      message: "Instale o app para acesso rápido, uso offline e missões. É grátis e ocupa quase nada.",
-      confirmText: "Instalar agora",
-    });
-    if (ok) triggerPwaInstall(); else snooze();
-    return;
-  }
-
-  // iOS Safari não dispara beforeinstallprompt: instrução manual.
-  if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream) {
-    pwaSuggested = true;
-    await modalConfirm({
-      title: "📲 Adicionar à Tela de Início",
-      message: "Toque em Compartilhar e depois em 'Adicionar à Tela de Início' para instalar o MrBur.",
-      confirmText: "Entendi",
-    });
-    snooze();
-  }
-  // Sem prompt/instalação/iOS: não marca como sugerido — o beforeinstallprompt
-  // pode chegar depois e reativar a sugestão.
+  pwaSuggested = true;
+  openPwaModal();
 }
 
 function stopWatchers() {
