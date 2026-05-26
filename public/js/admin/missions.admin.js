@@ -104,7 +104,7 @@ function form(m = {}) {
     <div class="modal-label">NOME</div><input class="modal-input" id="f-name" value="${escapeHtml(m.name || "")}">
     <div class="modal-label">DESCRIÇÃO</div><input class="modal-input" id="f-desc" value="${escapeHtml(m.description || "")}">
     <div class="modal-label">ÍCONE (emoji)</div><input class="modal-input" id="f-icon" value="${escapeHtml(m.icon || "🎯")}">
-    <div class="modal-label">RECOMPENSA (pontos)</div><input class="modal-input" id="f-reward" type="number" value="${m.reward ?? 50}">
+    <div class="modal-label">RECOMPENSA (méritos)</div><input class="modal-input" id="f-reward" type="number" value="${m.reward ?? 50}">
     <div class="modal-label">TIPO</div>
     <select class="modal-select" id="f-type">${TYPES.map(([v, l]) => `<option value="${v}" ${m.type === v ? "selected" : ""}>${l}</option>`).join("")}</select>
     <div class="modal-label">META (opcional)</div><input class="modal-input" id="f-target" type="number" value="${m.target ?? ""}">

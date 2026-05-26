@@ -33,7 +33,7 @@ export function renderMissions() {
       <div class="mission-summary-card">
         <div class="mission-summary-icon">⚡</div>
         <div class="mission-summary-value" id="totalRewards">0</div>
-        <div class="mission-summary-label">Pontos Ganhos</div>
+        <div class="mission-summary-label">Méritos Ganhos</div>
       </div>
       <div class="mission-summary-card">
         <div class="mission-summary-icon">✅</div>
@@ -166,7 +166,7 @@ function renderMissionCard(mission, tab) {
       <div class="mission-reward">
         <span class="mission-reward-icon">⚡</span>
         <span class="mission-reward-value">+${mission.reward}</span>
-        <span class="mission-reward-label">pontos</span>
+        <span class="mission-reward-label">méritos</span>
       </div>
       
       ${actionButton}
@@ -202,7 +202,7 @@ export function initMissions() {
       
       if (result.success) {
         claimedMissions.add(missionId);
-        toastSuccess(`+${result.reward} pontos resgatados!`);
+        toastSuccess(`+${result.reward} méritos resgatados!`);
         
         // Reload missions
         loadMissions(profile.uid, 'completed');

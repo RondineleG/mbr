@@ -58,3 +58,9 @@ button { cursor: pointer; color: inherit; }
     min-height: calc(100vh - 24px);
   }
 }
+
+/* ── Acessibilidade: foco visível por teclado + cursor consistente ── */
+button, [data-action], [role="button"] { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--G); outline-offset: 2px; border-radius: 4px; }
+/* Não mostra o anel no clique de mouse, só na navegação por teclado. */
+:focus:not(:focus-visible) { outline: none; }

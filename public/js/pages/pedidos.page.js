@@ -209,7 +209,7 @@ export function initPedidos() {
     const ok = await modalConfirm({ title: "Cancelar pedido", message: "Tem certeza? Esta ação não pode ser desfeita.", confirmText: "Cancelar pedido", danger: true });
     if (!ok) return;
     btn.disabled = true;
-    try { await cancelOrder(orderId); toast("success", "✓", "Pedido cancelado"); }
+    try { await cancelOrder(orderId); toast("success", "✅", "Pedido cancelado"); }
     catch (err) { console.error("Erro ao cancelar:", err); toastError("Não foi possível cancelar"); btn.disabled = false; }
   });
 

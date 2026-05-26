@@ -16,7 +16,7 @@
   --gw:rgba(201,168,76,.22);--glow:rgba(201,168,76,.5);
   --bd:rgba(201,168,76,.12);--bd2:rgba(201,168,76,.22);
   --sf:rgba(255,255,255,.025);
-  --tx:#EDE0C4;--t2:rgba(237,224,196,.38);--t3:rgba(237,224,196,.14);
+  --tx:#EDE0C4;--t2:rgba(237,224,196,.55);--t3:rgba(237,224,196,.32);
   --ok:#4FAE74;--er:#D15B52;--info:#5DA9E9;--warning:#E0A23C;
   --card-shadow:0 40px 100px rgba(0,0,0,.7),0 8px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(201,168,76,.08);
   /* aliases admin.css (design system antigo) */
@@ -33,7 +33,7 @@
   --gw:rgba(138,85,0,.14);--glow:rgba(138,85,0,.4);
   --bd:rgba(138,85,0,.16);--bd2:rgba(138,85,0,.28);
   --sf:rgba(138,85,0,.035);
-  --tx:#160900;--t2:rgba(22,9,0,.45);--t3:rgba(22,9,0,.16);
+  --tx:#160900;--t2:rgba(22,9,0,.6);--t3:rgba(22,9,0,.34);
   --ok:#295E28;--er:#882020;--info:#1C6CB0;--warning:#9C6A12;
   --card-shadow:0 20px 60px rgba(80,40,0,.14),0 4px 16px rgba(80,40,0,.08),inset 0 1px 0 rgba(255,255,255,.7);
   /* aliases admin.css (design system antigo) */
@@ -61,4 +61,9 @@
   --info-line:color-mix(in srgb, var(--info) 34%, transparent);
   --warning-soft:color-mix(in srgb, var(--warning) 14%, transparent);
   --warning-line:color-mix(in srgb, var(--warning) 34%, transparent);
+
+  /* Acento de categoria MBox (antes roxo avulso #a855f7). */
+  --mbox:#A855F7;
+  --mbox-soft:color-mix(in srgb, var(--mbox) 12%, transparent);
+  --mbox-line:color-mix(in srgb, var(--mbox) 28%, transparent);
 }

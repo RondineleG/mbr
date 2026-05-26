@@ -52,9 +52,9 @@ export function renderSacola() {
             <div class="sacola-item-name">${escapeHtml(it.name)}</div>
             ${it.desc ? `<div class="sacola-item-desc">${escapeHtml(it.desc)}</div>` : ""}
             <div class="qty" style="margin-top:6px">
-              <button class="qty-btn" data-action="qty" data-key="${it.key}" data-delta="-1">−</button>
+              <button class="qty-btn" data-action="qty" data-key="${it.key}" data-delta="-1" aria-label="Diminuir">−</button>
               <span class="qty-val">${it.qty}</span>
-              <button class="qty-btn" data-action="qty" data-key="${it.key}" data-delta="1">+</button>
+              <button class="qty-btn" data-action="qty" data-key="${it.key}" data-delta="1" aria-label="Aumentar">+</button>
             </div>
           </div>
           <span class="sacola-item-price">${money(it.price * it.qty)}</span>

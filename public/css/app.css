@@ -322,7 +322,7 @@
 .pronto-tag { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; padding: 3px 10px; border-radius: 4px; position: absolute; top: 12px; right: 12px; }
 .pronto-tag.limitado { background: var(--er-soft); color: var(--danger); border: 1px solid var(--er-line); }
 .pronto-tag.exclusivo { background: var(--gold-glow); color: var(--gold); border: 1px solid var(--gold-border); }
-.pronto-tag.sabado { background: rgba(163,85,247,0.1); color: #a855f7; border: 1px solid rgba(163,85,247,0.2); }
+.pronto-tag.sabado { background: var(--mbox-soft); color: var(--mbox); border: 1px solid var(--mbox-line); }
 
 /* ── CLUBE ── */
 .clube-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 16px; margin-bottom: 8px; }

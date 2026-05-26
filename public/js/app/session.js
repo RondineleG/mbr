@@ -127,7 +127,7 @@ async function checkPwaInstallPrompt() {
 
     const confirmed = await modalPrompt({
       title: "📱 App da Ordem",
-      message: "Instale o app do MrBur para acesso rápido, notificações e ganhe **100 pontos de mérito**!",
+      message: "Instale o app do MrBur para acesso rápido, notificações e ganhe **100 méritos**!",
       confirmText: "INSTALAR AGORA",
       cancelText: "MAIS TARDE"
     });
