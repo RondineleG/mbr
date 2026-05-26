@@ -142,30 +142,18 @@ async function isPwaInstalled() {
  */
 const snoozePwa = () => localStorage.setItem("pwaModalSnoozeAt", String(Date.now()));
 
-/** Mostra instruções de como abrir o app já instalado (não dá p/ abrir via JS). */
-function openInstalledHint() {
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
-  return modalConfirm({
-    title: "📲 Abrir o app",
-    message: isIOS
-      ? "Abra o MrBur pelo ícone na sua Tela de Início."
-      : "Abra o MrBur pelo ícone instalado (tela inicial do celular ou lista de apps do computador).",
-    confirmText: "Entendi",
-  });
-}
-
-/** Nosso modal próprio: instalar, abrir o app instalado, ou seguir no navegador. */
+/** Nosso modal próprio: instalar o app ou seguir no navegador.
+    (Não existe "abrir o app" via JS — navegadores não permitem lançar um PWA
+    instalado a partir de uma página, por segurança.) */
 function openPwaModal() {
   const dlg = modalCustom(`
-    <div class="modal-title">📲 App do MrBur</div>
-    <div class="modal-message">Você está no navegador. Como prefere usar o MrBur?</div>
+    <div class="modal-title">📲 Instalar o MrBur</div>
+    <div class="modal-message">Tenha acesso rápido, uso offline e missões. Instale em segundos.</div>
     <div class="modal-actions" style="flex-direction:column;gap:10px;margin-top:8px">
       <button class="modal-btn primary" id="pwaInstall">Instalar o app</button>
-      <button class="modal-btn" id="pwaOpen">Já instalei — abrir o app</button>
       <button class="modal-btn ghost" id="pwaBrowser">Continuar no navegador</button>
     </div>`);
   dlg.el.querySelector("#pwaInstall").onclick = () => { dlg.close(); triggerPwaInstall(); };
-  dlg.el.querySelector("#pwaOpen").onclick = () => { dlg.close(); openInstalledHint(); };
   dlg.el.querySelector("#pwaBrowser").onclick = () => { snoozePwa(); dlg.close(); };
 }
 
