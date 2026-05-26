@@ -14,7 +14,7 @@ import { listProducts } from "../services/product.service.js";
 import { listRewards } from "../services/reward.service.js";
 import { renderTopbar } from "../components/topbar.js";
 import * as missionService from "../services/mission.service.js";
-import { modalPrompt } from "../components/modal.js";
+import { modalConfirm } from "../components/modal.js";
 import { toastSuccess } from "../components/toast.js";
 
 let unsubProfile = null;
@@ -59,7 +59,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
 
   // Se o usuário já estiver logado e no app, mostra o modal
   if (entered) {
-    checkPwaInstallPrompt();
+    pwaSuggest();
   }
 });
 
@@ -109,33 +109,70 @@ async function triggerPwaInstall() {
   if (installBtn) installBtn.style.display = "none";
 }
 
-async function checkPwaInstallPrompt() {
-  // Se não temos o prompt ou já instalou, ignora
-  if (!deferredPrompt) return;
-  
-  // Verifica se já ganhou a recompensa para não incomodar
-  const progress = store.get("missionProgress");
-  if (progress?.completed?.includes('pwa_install')) return;
+let pwaSuggested = false;
+let pwaBusy = false;
 
-  // Se o botão lateral já estiver visível, talvez não precise do modal agressivo
-  // Mas vamos manter o modal como incentivo inicial
-
-  // Pequeno delay para não aparecer de cara no login
-  setTimeout(async () => {
-    // Re-checar deferredPrompt pois pode ter sido usado/limpo no intervalo
-    if (!deferredPrompt || !entered) return;
-
-    const confirmed = await modalPrompt({
-      title: "📱 App da Ordem",
-      message: "Instale o app do MrBur para acesso rápido, notificações e ganhe **100 méritos**!",
-      confirmText: "INSTALAR AGORA",
-      cancelText: "MAIS TARDE"
-    });
-
-    if (confirmed) {
-      triggerPwaInstall();
+/** Detecta se o PWA já está instalado (Chrome/Android via related_applications). */
+async function isPwaInstalled() {
+  try {
+    if (navigator.getInstalledRelatedApps) {
+      const apps = await navigator.getInstalledRelatedApps();
+      return Array.isArray(apps) && apps.length > 0;
     }
-  }, 2000);
+  } catch {}
+  return false;
+}
+
+/**
+ * Após o login (no navegador, não no app instalado): sugere INSTALAR se ainda
+ * não tem, ou ABRIR pelo app se já existe instalação. Roda uma vez por sessão
+ * e respeita uma dispensa de 7 dias.
+ */
+async function pwaSuggest() {
+  if (pwaSuggested || pwaBusy || isStandalone()) return; // no app instalado: nada a sugerir
+  const dismissed = +(localStorage.getItem("pwaDismissedAt") || 0);
+  if (Date.now() - dismissed < 7 * 86400000) return; // dispensado há < 7 dias
+  const snooze = () => localStorage.setItem("pwaDismissedAt", String(Date.now()));
+
+  pwaBusy = true;
+  await new Promise((r) => setTimeout(r, 1500)); // não competir com a entrada
+  pwaBusy = false;
+  if (!entered || isStandalone() || pwaSuggested) return;
+
+  if (await isPwaInstalled()) {
+    pwaSuggested = true;
+    await modalConfirm({
+      title: "📲 Abra pelo app",
+      message: "Você já tem o MrBur instalado. Abra pelo ícone na tela inicial para notificações e acesso rápido.",
+      confirmText: "Entendi",
+    });
+    snooze();
+    return;
+  }
+
+  if (deferredPrompt) {
+    pwaSuggested = true;
+    const ok = await modalConfirm({
+      title: "📲 Instalar o MrBur",
+      message: "Instale o app para acesso rápido, uso offline e missões. É grátis e ocupa quase nada.",
+      confirmText: "Instalar agora",
+    });
+    if (ok) triggerPwaInstall(); else snooze();
+    return;
+  }
+
+  // iOS Safari não dispara beforeinstallprompt: instrução manual.
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream) {
+    pwaSuggested = true;
+    await modalConfirm({
+      title: "📲 Adicionar à Tela de Início",
+      message: "Toque em Compartilhar e depois em 'Adicionar à Tela de Início' para instalar o MrBur.",
+      confirmText: "Entendi",
+    });
+    snooze();
+  }
+  // Sem prompt/instalação/iOS: não marca como sugerido — o beforeinstallprompt
+  // pode chegar depois e reativar a sugestão.
 }
 
 function stopWatchers() {
@@ -203,7 +240,7 @@ export async function enterApp(profile) {
   unsubMissions = missionService.watchMissionProgress(profile.uid, (progress) => {
     store.set("missionProgress", progress);
     // Após carregar missões, verifica se deve mostrar o prompt de instalação
-    checkPwaInstallPrompt();
+    pwaSuggest();
   });
 
   // Catálogo + recompensas (uma vez).
@@ -217,6 +254,11 @@ export async function enterApp(profile) {
   renderTopbar();
   navigate("home");
   userSvc.touchLogin(profile.uid);
+
+  // Pós-login: sugere instalar o app (ou abrir, se já instalado). No app
+  // standalone não faz nada. Esconde o botão de instalar quando já está no app.
+  if (isStandalone()) { const b = $("#sidemenuInstallBtn"); if (b) b.style.display = "none"; }
+  pwaSuggest();
 }
 
 /** Atualiza as informações do usuário no sidebar */

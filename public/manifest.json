@@ -4,7 +4,11 @@
   "description": "App de pedidos da MrBur — A Ordem",
   "start_url": "/",
   "display": "standalone",
-  "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "window-controls-overlay",
+    "minimal-ui"
+  ],
   "background_color": "#060503",
   "theme_color": "#C9A84C",
   "orientation": "portrait-primary",
@@ -59,7 +63,11 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": ["food", "delivery", "lifestyle"],
+  "categories": [
+    "food",
+    "delivery",
+    "lifestyle"
+  ],
   "screenshots": [],
   "shortcuts": [
     {
@@ -67,21 +75,43 @@
       "short_name": "Cardápio",
       "description": "Acesse o cardápio e faça seu pedido",
       "url": "/?page=cardapio",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Meus Pedidos",
       "short_name": "Pedidos",
       "description": "Veja seus pedidos ativos e histórico",
       "url": "/?page=pedidos",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     },
     {
       "name": "Clube",
       "short_name": "Clube",
       "description": "Acesse o clube e missões",
       "url": "/?page=clube",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://trabalhohowx.web.app/manifest.json"
     }
   ]
 }
