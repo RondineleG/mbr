@@ -403,6 +403,6 @@
   font-size: 11px; border: 2px solid var(--bd); background: var(--bg3); color: transparent;
   border-radius: 50%; flex-shrink: 0; margin-top: 2px;
 }
-.timeline-entry .timeline-dot.done { background: var(--ok); border-color: var(--ok); color: var(--bg); }
+.timeline-entry .timeline-dot.done { background: var(--GL); border-color: var(--GL); color: var(--bg); }
 .timeline-entry .timeline-dot.active { background: var(--G); border-color: var(--G); color: var(--bg); box-shadow: 0 0 8px var(--glow); }
 .timeline-total { font-family: var(--f-mono); font-weight: 800; color: var(--G); }
