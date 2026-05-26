@@ -6,6 +6,7 @@ import { $, $$, show, onAction } from "../utils/dom.js";
 import * as store from "./state.js";
 import { navigate } from "./router.js";
 import { loadFeatures, watchFeatures, isEnabled } from "../services/features.service.js";
+import { syncChatNotifiers, stopChatNotifiers } from "../components/chat-notifier.js";
 import * as auth from "../firebase/auth.service.js";
 import * as userSvc from "../services/user.service.js";
 import { watchUserOrders } from "../services/order.service.js";
@@ -142,6 +143,7 @@ function stopWatchers() {
   unsubOrders?.(); unsubOrders = null;
   unsubMissions?.(); unsubMissions = null;
   unsubFeatures?.(); unsubFeatures = null;
+  stopChatNotifiers();
 }
 
 /** Aplica o tema salvo ao <body>. */
@@ -189,7 +191,12 @@ export async function enterApp(profile) {
       updateSidemenuUser(p);
     }
   });
-  unsubOrders = watchUserOrders(profile.uid, (orders) => store.set("orders", orders));
+  unsubOrders = watchUserOrders(profile.uid, (orders) => {
+    store.set("orders", orders);
+    // Avisa o cliente de novas mensagens nos pedidos com entregador atribuído.
+    const ids = (orders || []).filter((o) => o.agenteResponsavel && o.status !== "cancelado").map((o) => o.id);
+    syncChatNotifiers(ids, profile.uid);
+  });
   unsubMissions = missionService.watchMissionProgress(profile.uid, (progress) => {
     store.set("missionProgress", progress);
     // Após carregar missões, verifica se deve mostrar o prompt de instalação

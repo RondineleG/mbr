@@ -9,6 +9,7 @@ import { watchAgentOrders, updateStatus, ORDER_STATUS, ORDER_STATUS_LABELS } fro
 import { updateDoc } from "../firebase/db.service.js";
 import { adjustPoints } from "../services/points.service.js";
 import { openChat } from "../components/chat.js";
+import { syncChatNotifiers } from "../components/chat-notifier.js";
 import { money } from "../utils/format.js";
 import { DELIVERY_MERITOS, DELIVERY_FEE } from "../utils/constants.js";
 import { toast, toastError } from "../components/toast.js";
@@ -97,7 +98,12 @@ function enter(profile) {
   $("#motoShell").style.display = "block";
   $("#motoWho").textContent = profile.codename || profile.email;
   unsub?.();
-  unsub = watchAgentOrders(profile.uid, (list) => { orders = list || []; render(); });
+  unsub = watchAgentOrders(profile.uid, (list) => {
+    orders = list || [];
+    render();
+    // Avisa o motoboy de novas mensagens dos clientes nas entregas atribuídas.
+    syncChatNotifiers(orders.filter((o) => o.status !== "cancelado").map((o) => o.id), profile.uid);
+  });
 }
 
 onAction("moto-sent", (el) => setStatus(el.dataset.id, ORDER_STATUS.SENT));
