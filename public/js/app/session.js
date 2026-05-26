@@ -259,11 +259,16 @@ export function startSessionObserver() {
     if (!user) { showLogin(); return; }
 
     const profile = await userSvc.getProfile(user.uid);
-    if (profile) {
-      enterApp(profile);
-    } else if (!entered) {
+    if (!profile) {
       // Conta sem perfil (ex.: cadastro interrompido). Volta ao login.
-      showLogin();
+      if (!entered) showLogin();
+      return;
     }
+
+    // Login único centralizado: redireciona conforme o acesso.
+    if (profile.role === "admin") { window.location.replace("/admin.html"); return; }
+    if (profile.motoboy) { window.location.replace("/motoboy.html"); return; }
+
+    enterApp(profile);
   });
 }

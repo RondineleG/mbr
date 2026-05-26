@@ -113,6 +113,11 @@ export function watchAllOrders(cb) {
   return watchCollection("orders", { orderBy: ["criadoEm", "desc"] }, cb);
 }
 
+/** Atribui (ou remove) o motoboy/agente responsável pela entrega do pedido. */
+export async function assignAgent(orderId, agentId) {
+  await updateDoc(`orders/${orderId}`, { agenteResponsavel: agentId || null, atualizadoEm: Date.now() });
+}
+
 // Só `where` (sem orderBy) p/ não exigir índice composto; ordena no cliente por criadoEm desc.
 const byCriadoEmDesc = (a, b) => (b.criadoEm || 0) - (a.criadoEm || 0);
 
@@ -146,8 +151,15 @@ export async function updateStatus(orderId, status, observacao = "") {
 
   if (status === ORDER_STATUS.DELIVERED) {
     if (!order.pointsAwarded && order.userId) {
-      await adjustPoints(order.userId, order.pointsEarned || 0, "Pedido entregue", orderId);
-      await updateDoc(`orders/${orderId}`, { pointsAwarded: true });
+      // Crédito de méritos ao cliente. Pode falhar se quem entrega for o motoboy
+      // (sem permissão de escrever no doc do cliente) — não deve quebrar a baixa
+      // do status. O admin (ou a Fase 2) reconcilia o crédito.
+      try {
+        await adjustPoints(order.userId, order.pointsEarned || 0, "Pedido entregue", orderId);
+        await updateDoc(`orders/${orderId}`, { pointsAwarded: true });
+      } catch (err) {
+        console.warn("[order] status atualizado, mas crédito de méritos adiado:", err?.message || err);
+      }
     }
   }
 }

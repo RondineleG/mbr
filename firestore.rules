@@ -31,11 +31,13 @@ service cloud.firestore {
     match /rewards/{id}   { allow read: if true; allow write: if signedIn(); }
     match /missions/{id}  { allow read: if true; allow write: if signedIn(); }
 
-    // Pedidos: usuários autenticados podem criar e ler seus próprios
+    // Pedidos: dono, admin ou o motoboy/agente responsável pela entrega podem atualizar.
     match /orders/{id} {
       allow read: if signedIn();
       allow create: if signedIn();
-      allow update: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow update: if isAdmin()
+        || (signedIn() && resource.data.userId == request.auth.uid)
+        || (signedIn() && resource.data.agenteResponsavel == request.auth.uid);
       allow delete: if isAdmin();
     }
 

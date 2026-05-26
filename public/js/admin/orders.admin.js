@@ -4,7 +4,8 @@
    ═══════════════════════════════════════════════════════════════ */
 import { onAction, onChange, setHtml, escapeHtml } from "../utils/dom.js";
 import { getOrders, subscribeOrders, startOrdersWatch } from "./admin-store.js";
-import { updateStatus, ORDER_STATUS, ORDER_STATUS_LABELS } from "../services/order.service.js";
+import { updateStatus, assignAgent, ORDER_STATUS, ORDER_STATUS_LABELS } from "../services/order.service.js";
+import { listAgents } from "../services/user.service.js";
 import { money, dateShort, toDate } from "../utils/format.js";
 import { modalCustom } from "../components/modal.js";
 import { toastSuccess, toastError, toastInfo } from "../components/toast.js";
@@ -89,9 +90,12 @@ export function renderOrders() {
   setHtml("ordersList", html);
 }
 
-function viewOrder(id) {
+async function viewOrder(id) {
   const o = getOrders().find((x) => x.id === id);
   if (!o) return;
+  const motoboys = (await listAgents()).filter((a) => a.motoboy);
+  const motoOpts = `<option value="">— não atribuído —</option>` + motoboys.map((m) =>
+    `<option value="${m.uid}" ${o.agenteResponsavel === m.uid ? "selected" : ""}>${escapeHtml(m.codename || m.email)}</option>`).join("");
   const items = (o.items || []).map((i) => {
     // desc = ingredientes do "Monte Seu Lanche" (ou descrição do produto).
     const ing = i.desc ? `<div style="font-size:11px;color:var(--text-muted);margin-top:3px;line-height:1.4">🧩 ${escapeHtml(i.desc)}</div>` : "";
@@ -102,12 +106,20 @@ function viewOrder(id) {
       </div>${ing}</div>`;
   }).join("");
   const addr = [o.address?.street, o.address?.number, o.address?.neighborhood].filter(Boolean).join(", ");
-  modalCustom(`
+  const m = modalCustom(`
     <div class="modal-title">Pedido #${(o.id || "").slice(-6).toUpperCase()}</div>
     <div class="modal-message">Cliente: <b>${escapeHtml(o.cliente || o.codename || "—")}</b><br>Endereço: ${escapeHtml(addr || "—")}</div>
     <div style="margin:12px 0">${items}</div>
     <div style="display:flex;justify-content:space-between;font-weight:800;color:var(--gold);font-family:var(--f-mono)"><span>TOTAL</span><span>${money(o.total)}</span></div>
-    <div class="modal-actions"><button class="modal-btn primary" id="vclose">Fechar</button></div>`).el.querySelector("#vclose").onclick = () => document.querySelector(".modal-overlay").classList.remove("show");
+    <div class="modal-label" style="margin-top:14px">MOTOBOY / ENTREGA</div>
+    <select class="modal-select" id="moto-assign">${motoOpts}</select>
+    ${motoboys.length ? "" : '<div style="font-size:11px;color:var(--text-dim);margin-top:6px">Nenhum motoboy cadastrado. Promova um agente em "Agentes".</div>'}
+    <div class="modal-actions"><button class="modal-btn primary" id="vclose">Fechar</button></div>`);
+  m.el.querySelector("#moto-assign").onchange = async (e) => {
+    try { await assignAgent(o.id, e.target.value); toastSuccess(e.target.value ? "Motoboy atribuído" : "Atribuição removida"); }
+    catch { toastError("Falha ao atribuir motoboy"); }
+  };
+  m.el.querySelector("#vclose").onclick = () => document.querySelector(".modal-overlay").classList.remove("show");
 }
 
 export function initOrders() {

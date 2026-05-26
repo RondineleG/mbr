@@ -2,7 +2,8 @@
    ADMIN · CLIENTES — ranking, pontos e histórico do agente
    ═══════════════════════════════════════════════════════════════ */
 import { onAction, setHtml, escapeHtml } from "../utils/dom.js";
-import { listAgents } from "../services/user.service.js";
+import { listAgents, updateProfile } from "../services/user.service.js";
+import { toastSuccess, toastError } from "../components/toast.js";
 import { getHistory } from "../services/points.service.js";
 import { listUserOrders } from "../services/order.service.js";
 import { codenameInitials, rankLabel, money, dateShort } from "../utils/format.js";
@@ -29,11 +30,13 @@ async function load() {
             <span class="admin-tag">${rankLabel(a.points)}</span>
             <span class="admin-tag">⚡ ${a.points || 0}</span>
             <span class="admin-tag">🎫 ${a.invitesAvailable || 0}</span>
+            ${a.motoboy ? '<span class="admin-tag" style="color:var(--G)">🛵 Motoboy</span>' : ""}
           </div>
         </div>
       </div>
       <div class="admin-item-actions">
         <button class="admin-btn sm" data-action="cust-view" data-id="${a.uid}">Dossiê</button>
+        <button class="admin-btn sm ghost" data-action="cust-moto" data-id="${a.uid}" data-on="${a.motoboy ? "1" : "0"}">${a.motoboy ? "🛵 Remover entregas" : "🛵 Tornar motoboy"}</button>
       </div>
     </div>`).join("") : '<div class="admin-empty">🕵️ Nenhum agente encontrado</div>');
 }
@@ -95,5 +98,19 @@ async function viewCustomer(uid) {
   m.el.querySelector("#cclose").onclick = () => document.querySelector(".modal-overlay").classList.remove("show");
 }
 
+async function toggleMotoboy(uid, turnOn) {
+  try {
+    await updateProfile(uid, { motoboy: turnOn });
+    toastSuccess(turnOn ? "Agente promovido a motoboy" : "Motoboy removido");
+    load();
+  } catch (err) {
+    console.error("Erro ao alternar motoboy:", err);
+    toastError("Não foi possível atualizar");
+  }
+}
+
 export function renderCustomers() { load(); }
-export function initCustomers() { onAction("cust-view", (el) => viewCustomer(el.dataset.id)); }
+export function initCustomers() {
+  onAction("cust-view", (el) => viewCustomer(el.dataset.id));
+  onAction("cust-moto", (el) => toggleMotoboy(el.dataset.id, el.dataset.on !== "1"));
+}

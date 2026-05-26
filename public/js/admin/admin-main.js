@@ -112,29 +112,18 @@ async function boot() {
   onAction("admin-login", () => doAdminLogin());
   onAction("admin-logout", async () => {
     await auth.signOut();
-    // Sem location.reload(): o onAuthChanged abaixo já mostra o gate.
-    // Evita o flash branco + delay do recarregamento completo.
-    $("#adminShell").style.display = "none";
-    $("#adminGate").classList.remove("hidden");
-    gateError("");
+    window.location.replace("/"); // login único: volta para a tela padrão
   });
   onAction("admin-theme-toggle", () => toggleAdminTheme());
   ["adminEmail", "adminPass"].forEach((id) =>
     $("#" + id)?.addEventListener("keydown", (e) => { if (e.key === "Enter") doAdminLogin(); }));
 
   auth.onAuthChanged(async (user) => {
-    if (!user) {
-      $("#adminGate").classList.remove("hidden");
-      $("#adminShell").style.display = "none";
-      return;
-    }
+    // Login único: sem sessão → volta para a tela de login padrão do app.
+    if (!user) { window.location.replace("/"); return; }
     const profile = await getProfile(user.uid);
     if (profile?.role === "admin") enterAdmin(profile);
-    else { 
-      $("#adminGate").classList.remove("hidden"); 
-      $("#adminShell").style.display = "none";
-      gateError("Acesso restrito ao Comando.");
-    }
+    else window.location.replace("/"); // logado mas sem permissão de Comando
   });
 }
 

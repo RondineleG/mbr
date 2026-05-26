@@ -247,3 +247,12 @@ body.admin { max-width: none; margin: 0; }
 .feat-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--t2); transition: all var(--transition); }
 .feat-toggle:checked { background: var(--gw); border-color: var(--G); }
 .feat-toggle:checked::after { left: 20px; background: var(--G); }
+
+/* ── Central de Entregas (motoboy) ── */
+.admin-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--bd); background: var(--card); position: sticky; top: 0; z-index: 10; }
+.moto-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 8px 0 4px; }
+.moto-kpi { background: var(--card); border: 1px solid var(--bd); border-radius: var(--radius); padding: 14px; text-align: center; }
+.moto-kpi-val { font-family: var(--f-mono); font-size: 20px; font-weight: 800; color: var(--tx); }
+.moto-kpi-lbl { font-size: 10px; letter-spacing: 1px; color: var(--t2); margin-top: 4px; text-transform: uppercase; }
+.moto-card { display: flex; gap: 12px; align-items: stretch; }
+.moto-card .admin-item-actions a { text-decoration: none; text-align: center; }
