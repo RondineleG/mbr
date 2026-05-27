@@ -64,6 +64,8 @@
     <button class="admin-navbtn" data-action="admin-nav" data-section="pedidos"><span class="admin-navbtn-icon">📥</span> Pedidos</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="produtos"><span class="admin-navbtn-icon">🍔</span> Produtos</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="montar"><span class="admin-navbtn-icon">🔧</span> Monte Seu Lanche</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="lanchedia"><span class="admin-navbtn-icon">📅</span> Lanche do Dia</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="mbox"><span class="admin-navbtn-icon">📦</span> MBox</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="clientes"><span class="admin-navbtn-icon">🕵️</span> Agentes</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="missoes"><span class="admin-navbtn-icon">🎯</span> Missões</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="recompensas"><span class="admin-navbtn-icon">🎁</span> Recompensas</button>
@@ -138,6 +140,26 @@
       </div>
       <div class="admin-title-sub" style="padding:0 4px 12px">Cadastre, edite ou remova os ingredientes de cada etapa. Preço 0 = incluído no preço-base.</div>
       <div id="montarPanel"></div>
+    </section>
+
+    <!-- Lanche do Dia -->
+    <section class="admin-section" id="section-lanchedia">
+      <div class="admin-head">
+        <div><div class="admin-title">Lanche do Dia</div><div class="admin-title-sub">UM COMBO POR DIA · SEG A SÁB</div></div>
+        <button class="admin-btn" data-action="spec-dia-save">💾 Salvar</button>
+      </div>
+      <div class="admin-title-sub" style="padding:0 4px 12px">Monte o lanche de cada dia escolhendo os ingredientes. Preço fixo, sem acréscimo, e não credita méritos. O cliente vê só o lanche de hoje.</div>
+      <div id="lancheDiaPanel"></div>
+    </section>
+
+    <!-- MBox -->
+    <section class="admin-section" id="section-mbox">
+      <div class="admin-head">
+        <div><div class="admin-title">MBox</div><div class="admin-title-sub">CAIXA SURPRESA · ENTREGA AOS SÁBADOS</div></div>
+        <button class="admin-btn" data-action="spec-mbox-save">💾 Salvar</button>
+      </div>
+      <div class="admin-title-sub" style="padding:0 4px 12px">Monte o conteúdo da MBox. O cliente NÃO vê os itens até fechar o pedido. Pedidos até sexta 22h entram para o sábado; depois, sábado seguinte. Credita méritos normalmente.</div>
+      <div id="mboxPanel"></div>
     </section>
 
     <!-- Clientes -->

@@ -5,6 +5,7 @@ import { $, $$, onAction, setHtml, show, escapeHtml } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { BUILD_STEPS, BUILD_BASE_PRICE } from "../utils/constants.js";
 import { watchBuildSteps } from "../services/buildsteps.service.js";
+import { watchLancheDia, dailyForToday, watchMbox } from "../services/specials.service.js";
 import { money } from "../utils/format.js";
 import { skeletonList } from "../components/skeleton.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
@@ -30,6 +31,8 @@ function defaultSelections() {
 }
 let selections = defaultSelections(); // stepId -> [items]
 let cat = "monte";
+let lancheDiaCfg = null; // config do Lanche do Dia (admin)
+let mboxCfg = null;      // config da MBox (admin)
 
 /* ─── Wizard ─── */
 function renderStepTabs() {
@@ -169,6 +172,41 @@ function menuItem(p) {
   </div>`;
 }
 
+// Card do Lanche do Dia (somente o de HOJE). Preço fixo, sem méritos.
+function dailyCard() {
+  const d = lancheDiaCfg ? dailyForToday(lancheDiaCfg) : null;
+  if (!d) return "";
+  const comp = (d.composicao || []).map((c) => `${c.icon || ""} ${escapeHtml(c.name)}`).join(" · ");
+  return `<div class="pronto-card daily">
+    <div class="pronto-tag limitado">HOJE</div>
+    <div class="pronto-top">
+      <div class="pronto-emoji">${d.icon || "🍔"}</div>
+      <div class="pronto-info"><div class="pronto-name">${escapeHtml(d.name || "Lanche do Dia")}</div><div class="pronto-desc">${escapeHtml(d.desc || "")}</div></div>
+    </div>
+    <div class="pronto-comp">${comp}</div>
+    <div class="pronto-footer">
+      <div><div class="pronto-price">${money(d.price)}</div><div class="pronto-merits dim">sem méritos</div></div>
+      <button class="pronto-add-btn" data-action="add-daily">ADICIONAR</button>
+    </div></div>`;
+}
+
+// Card da MBox — teaser: o conteúdo NÃO é revelado até fechar o pedido.
+function mboxCard() {
+  const m = mboxCfg;
+  if (!m || !m.composicao?.length) return "";
+  return `<div class="pronto-card mbox">
+    <div class="pronto-tag sabado">SÁBADO</div>
+    <div class="pronto-top">
+      <div class="pronto-emoji">${m.icon || "📦"}</div>
+      <div class="pronto-info"><div class="pronto-name">${escapeHtml(m.name || "MBox")}</div><div class="pronto-desc">${escapeHtml(m.desc || "Surpresa do chef — você descobre ao receber!")}</div></div>
+    </div>
+    <div class="pronto-comp dim">🔒 Conteúdo revelado só ao fechar o pedido</div>
+    <div class="pronto-footer">
+      <div><div class="pronto-price">${money(m.price)}</div><div class="pronto-merits">+${Math.round(m.price)}⚡ méritos</div></div>
+      <button class="pronto-add-btn" data-action="add-mbox">ADICIONAR</button>
+    </div></div>`;
+}
+
 function renderCategories() {
   const products = store.get("products");
   const profile = store.get("profile");
@@ -180,8 +218,10 @@ function renderCategories() {
     p.category === c && p.active !== false && (meritosOn || !p.exclusiveToPoints));
   const loading = products.length === 0;
 
-  setHtml("catDia", loading ? skeletonList(2) : byCat("dia").map(prontoCard).join("") || '<div class="empty-state">📋</div>');
-  setHtml("catMbox", loading ? skeletonList(2) : byCat("mbox").map(prontoCard).join("") || '<div class="empty-state">📦</div>');
+  const diaHtml = dailyCard() + byCat("dia").map(prontoCard).join("");
+  setHtml("catDia", loading ? skeletonList(2) : (diaHtml || '<div class="empty-state">📋 Sem lanche do dia hoje</div>'));
+  const mboxHtml = mboxCard() + byCat("mbox").map(prontoCard).join("");
+  setHtml("catMbox", loading ? skeletonList(2) : (mboxHtml || '<div class="empty-state">📦</div>'));
   setHtml("catAcomp", loading ? skeletonList(3) : `<div class="menu-items">${byCat("acomp").map(menuItem).join("")}</div>`);
   setHtml("catBebidas", loading ? skeletonList(3) : `<div class="menu-items">${byCat("bebidas").map(menuItem).join("")}</div>`);
   setHtml("catSobremesas", loading ? skeletonList(3) : `<div class="menu-items">${byCat("sobremesas").map(menuItem).join("")}</div>`);
@@ -210,6 +250,22 @@ export function showCat(next) {
   ["monte", "dia", "mbox", "acomp", "bebidas", "sobremesas", "exclusivos"].forEach((c) =>
     show($("#cat-" + c), c === next));
   $$(".cat-btn").forEach((b) => b.classList.toggle("active", b.dataset.cat === next));
+}
+
+function addDaily() {
+  const d = lancheDiaCfg ? dailyForToday(lancheDiaCfg) : null;
+  if (!d) return;
+  const desc = (d.composicao || []).map((c) => c.name).join(", ");
+  store.cartAdd({ name: `${d.name || "Lanche do Dia"} (Lanche do Dia)`, icon: d.icon || "🍔", price: d.price, qty: 1, desc, noMeritos: true });
+  toastInfo(d.icon || "🍔", `${d.name || "Lanche do Dia"} adicionado à sacola`);
+}
+
+function addMbox() {
+  const m = mboxCfg;
+  if (!m || !m.composicao?.length) return;
+  // composição vai junto, mas fica oculta até o pedido ser fechado.
+  store.cartAdd({ name: m.name || "MBox", icon: m.icon || "📦", price: m.price, qty: 1, desc: m.desc || "Caixa surpresa", mbox: true, composicao: m.composicao });
+  toastInfo(m.icon || "📦", `${m.name || "MBox"} adicionada à sacola · entrega no sábado`);
 }
 
 function addProduct(id) {
@@ -306,6 +362,8 @@ export function initCardapio() {
   onAction("build-add-continue", () => buildAddAndContinue());
   onAction("build-add-go", () => buildAddAndGoToCart());
   onAction("add-product", (el) => addProduct(el.dataset.id));
+  onAction("add-daily", () => addDaily());
+  onAction("add-mbox", () => addMbox());
   onAction("buy-points", (el) => buyWithPoints(el.dataset.id));
   store.subscribe("products", renderCategories);
   store.subscribe("missionProgress", () => {
@@ -324,4 +382,8 @@ export function initCardapio() {
     currentStep = 0;
     if (store.get("page") === "cardapio") renderWizard();
   });
+
+  // Lanche do Dia e MBox (configurados pelo admin) — ao vivo.
+  watchLancheDia((cfg) => { lancheDiaCfg = cfg; if (store.get("page") === "cardapio") renderCategories(); });
+  watchMbox((cfg) => { mboxCfg = cfg; if (store.get("page") === "cardapio") renderCategories(); });
 }

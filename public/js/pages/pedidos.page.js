@@ -13,7 +13,7 @@ import { getOrderStats } from "../services/order.service.js";
 import { emptyState, withEmpty } from "../utils/loading.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
-import { DELIVERY_WINDOW, ORDER_CUTOFF_HOUR } from "../utils/constants.js";
+import { DELIVERY_WINDOW, ORDER_CUTOFF_HOUR, MBOX_CUTOFF_HOUR } from "../utils/constants.js";
 
 // criadoEm pode ser número (Date.now) ou Timestamp do Firestore.
 const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
@@ -94,13 +94,19 @@ function orderCard(o) {
   const showTimeline = o.status !== "cancelado";
   const canRepeat = o.status !== "cancelado" && o.items && o.items.length > 0;
 
-  // Cancelamento/alteração: permitido até as 13h do dia de produção.
+  // MBox: revela a composição (oculta antes do pedido) já que o pedido foi fechado.
+  const mboxItem = (o.items || []).find((it) => it.mbox && it.composicao?.length);
+  const mboxReveal = mboxItem ? `
+    <div class="order-mbox-reveal">📦 <b>Conteúdo da ${escapeHtml(mboxItem.name)}:</b> ${mboxItem.composicao.map((c) => `${c.icon || ""} ${escapeHtml(c.name)}`).join(" · ")}</div>` : "";
+
+  // Cancelamento/alteração: até as 13h do dia de produção (ou sexta 22h p/ MBox).
   const podeCancelar = canCancelOrder(o);
+  const limiteHora = o.tipo === "mbox" ? MBOX_CUTOFF_HOUR : ORDER_CUTOFF_HOUR;
   const cancelBlock = podeCancelar ? `
     <div class="order-cancel">
       <button class="order-cancel-btn" data-action="cancel-order" data-order-id="${o.id}">✕ Cancelar</button>
       <button class="order-repeat-btn" data-action="edit-order" data-order-id="${o.id}" style="width:auto;padding:9px 14px">✎ Alterar</button>
-      <span class="order-cancel-timer">Até <b>${ORDER_CUTOFF_HOUR}h de ${diaLabel(o.cancelavelAte)}</b></span>
+      <span class="order-cancel-timer">Até <b>${limiteHora}h de ${diaLabel(o.cancelavelAte)}</b></span>
     </div>` : (o.status !== "cancelado" && o.status !== "entregue" ? `
     <div class="order-cancel"><span class="order-cancel-locked">🔒 Prazo encerrado · pedido em produção (tudo fresco do dia)</span></div>` : "");
 
@@ -120,6 +126,7 @@ function orderCard(o) {
       </div>
     </div>
     <div class="order-items-line">${escapeHtml(itemsLine)}</div>
+    ${mboxReveal}
     ${cancelBlock}
     ${showTimeline ? timeline(o) : ""}
     ${(canRepeat || (o.agenteResponsavel && o.status !== "cancelado")) ? `

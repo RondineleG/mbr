@@ -163,7 +163,7 @@ async function checkout(btn) {
   try {
     const fee = deliveryFeeFor(profile.address);
     const novoTotal = store.cartSubtotal() + fee;
-    const items = cart.map(({ name, icon, price, qty, desc }) => ({ name, icon, price, qty, desc }));
+    const items = cart.map(({ name, icon, price, qty, desc, noMeritos, mbox, composicao }) => ({ name, icon, price, qty, desc, noMeritos, mbox, composicao }));
     const editId = store.get("editingOrderId");
 
     if (editId) {
@@ -196,7 +196,9 @@ async function checkout(btn) {
     });
     if (pay.metodo === "meritos") await adjustPoints(profile.uid, -pay.meritos, "Pagamento com méritos", order.id);
     store.cartClear();
-    const quando = order.agendado ? "agendado para amanhã · entrega 18h–22h" : "entrega hoje · 18h–22h";
+    const quando = order.tipo === "mbox"
+      ? `entrega sábado ${new Date(order.dataEntrega).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`
+      : (order.agendado ? "agendado para amanhã · entrega 18h–22h" : "entrega hoje · 18h–22h");
     toast("success", "🎉", `Pedido pago! ${money(order.total)} · ${quando}`);
     navigate("pedidos");
   } catch (err) {

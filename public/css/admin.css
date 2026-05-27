@@ -122,6 +122,16 @@ body.admin { max-width: none; margin: 0; }
 .orders-day { display: flex; justify-content: space-between; align-items: center; margin: 20px 2px 10px; font-family: var(--f-mono); font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-muted); border-bottom: 1px solid var(--border); padding-bottom: 6px; }
 .orders-day:first-child { margin-top: 4px; }
 .orders-day b { color: var(--gold); font-weight: 700; }
+.spec-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.spec-tab { padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-weight: 700; font-size: 13px; cursor: pointer; transition: all var(--transition); }
+.spec-tab.active { border-color: var(--gold); background: var(--gold-soft, rgba(201,168,76,.12)); color: var(--gold); }
+.spec-summary { padding: 10px 14px; margin: 10px 0; border: 1px dashed var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); }
+.spec-step { margin-bottom: 14px; }
+.spec-step-title { font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-dim); font-weight: 800; margin-bottom: 8px; }
+.spec-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.spec-chip { padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text); font-size: 13px; cursor: pointer; transition: all var(--transition); }
+.spec-chip:hover { border-color: var(--gold-border); }
+.spec-chip.on { border-color: var(--gold); background: var(--gold); color: #1a1407; font-weight: 700; }
 .data-group { margin-bottom: 20px; }
 .data-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 4px; margin-bottom: 6px; border-bottom: 1px solid var(--border); }
 .data-group-title { font-size: 14px; font-weight: 800; color: var(--text); }

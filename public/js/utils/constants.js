@@ -93,6 +93,25 @@ export const ORDER_CUTOFF_HOUR = 13;
 /** Janela de entrega exibida ao cliente. */
 export const DELIVERY_WINDOW = "18h–22h";
 
+/** Dias do "Lanche do Dia" (chave → rótulo). getDay(): 1=seg … 6=sáb. */
+export const WEEKDAYS = [
+  { key: "seg", label: "Segunda", day: 1 },
+  { key: "ter", label: "Terça", day: 2 },
+  { key: "qua", label: "Quarta", day: 3 },
+  { key: "qui", label: "Quinta", day: 4 },
+  { key: "sex", label: "Sexta", day: 5 },
+  { key: "sab", label: "Sábado", day: 6 },
+];
+
+/** Preço fixo padrão do Lanche do Dia (admin pode sobrescrever). */
+export const LANCHE_DIA_PRICE = 29.9;
+
+/** MBox: corte para o sábado da semana — sexta-feira às 22h. */
+export const MBOX_CUTOFF_DAY = 5;   // sexta
+export const MBOX_CUTOFF_HOUR = 22; // 22:00
+/** Preço padrão da MBox (admin pode sobrescrever). */
+export const MBOX_PRICE = 59.9;
+
 /** Sede do MrBur (origem das rotas e cálculo de frete). */
 export const STORE = {
   cep: "13660-030", numero: "560B", logradouro: "Av. da Ordem",

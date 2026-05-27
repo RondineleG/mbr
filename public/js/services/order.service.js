@@ -8,6 +8,18 @@ import { adjustPoints } from "./points.service.js";
 import { updateMissionProgress, calculateUserStats } from "./mission.service.js";
 import { DELIVERY_FEE, POINTS_PER_BRL, ORDER_CUTOFF_HOUR } from "../utils/constants.js";
 import { deliveryFeeFor } from "../utils/geo.js";
+import { mboxSchedule } from "./specials.service.js";
+
+// Normaliza um item do carrinho para persistência (omite flags ausentes —
+// Firestore rejeita undefined). Carrega méritos-off (Lanche do Dia) e a MBox.
+function normItem(it) {
+  const o = { name: String(it.name || ""), icon: String(it.icon || ""), price: Number(it.price) || 0, qty: Number(it.qty) || 1, desc: String(it.desc || "") };
+  if (it.noMeritos) o.noMeritos = true;
+  if (it.mbox) { o.mbox = true; o.composicao = it.composicao || []; }
+  return o;
+}
+// Subtotal elegível a méritos (exclui itens noMeritos, como o Lanche do Dia).
+const meritEligible = (items) => items.reduce((a, it) => a + (it.noMeritos ? 0 : (Number(it.price) || 0) * (it.qty || 1)), 0);
 
 /**
  * Regra de negócio: pedidos aceitos até as 13h são produzidos/entregues no mesmo
@@ -74,7 +86,11 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
   const fee = deliveryFeeFor(address);          // R$5 + R$0,50/km da sede ao cliente
   const total = subtotal + fee;
   const numeroPedido = generateOrderNumber();
-  const { agendado, dataEntrega, cancelavelAte } = productionInfo();
+  // MBox tem agendamento próprio (sábado, corte sexta 22h); demais seguem o corte das 13h.
+  const hasMbox = items.some((it) => it.mbox);
+  const { agendado, dataEntrega, cancelavelAte } = hasMbox ? mboxSchedule() : productionInfo();
+  // Méritos só sobre o que é elegível (exclui Lanche do Dia) e nunca se pago com méritos.
+  const pointsEarned = payment?.metodo === "meritos" ? 0 : Math.round(meritEligible(items) * POINTS_PER_BRL);
 
   const order = {
     numeroPedido,
@@ -82,21 +98,15 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
     cliente: codename || "",
     agenteResponsavel: agenteResponsavel || null,
     status: ORDER_STATUS.RECEIVED,
-    items: items.map(it => ({
-      name: String(it.name || ""),
-      icon: String(it.icon || ""),
-      price: Number(it.price) || 0,
-      qty: Number(it.qty) || 1,
-      desc: String(it.desc || "")
-    })),
+    items: items.map(normItem),
+    tipo: hasMbox ? "mbox" : "normal",
     subtotal,
     deliveryFee: fee,
     total,
-    // Pagando com méritos não se ganham méritos de volta (evita loop).
-    pointsEarned: payment?.metodo === "meritos" ? 0 : Math.round(total * POINTS_PER_BRL),
+    pointsEarned,
     pointsAwarded: false,
     address: address || {},
-    // Agendamento conforme o corte das 13h.
+    // Agendamento (corte das 13h, ou regra da MBox aos sábados).
     agendado,
     dataEntrega,
     cancelavelAte,
@@ -139,9 +149,9 @@ export async function updateOrderItems(orderId, items, payment = null) {
   const fee = deliveryFeeFor(order.address);
   const total = subtotal + fee;
   const update = {
-    items: items.map((it) => ({ name: String(it.name || ""), icon: String(it.icon || ""), price: Number(it.price) || 0, qty: Number(it.qty) || 1, desc: String(it.desc || "") })),
+    items: items.map(normItem),
     subtotal, deliveryFee: fee, total,
-    pointsEarned: Math.round(total * POINTS_PER_BRL),
+    pointsEarned: order.pagamento?.metodo === "meritos" ? 0 : Math.round(meritEligible(items) * POINTS_PER_BRL),
     pagamento: payment
       ? { metodo: payment.metodo, status: "pago", valor: total, pagoEm: Date.now() }
       : { ...(order.pagamento || {}), valor: total },
