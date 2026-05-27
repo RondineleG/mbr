@@ -9,7 +9,7 @@ import { watchLancheDia, dailyForToday, watchMbox, mboxRemainingForNext } from "
 import { money } from "../utils/format.js";
 import { skeletonList } from "../components/skeleton.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
-import { isEnabled } from "../services/features.service.js";
+import { isEnabled, watchMenuTabs, isTabEnabled } from "../services/features.service.js";
 
 // Ingredientes e preço-base do montador: começam com o padrão e são
 // substituídos ao vivo pelo que o admin cadastra (config/montar no Firestore).
@@ -34,6 +34,7 @@ let cat = "monte";
 let lancheDiaCfg = null; // config do Lanche do Dia (admin)
 let mboxCfg = null;      // config da MBox (admin)
 let mboxStock = null;    // { sat, remaining, total } — estoque do próximo sábado
+let menuTabsCfg = {};    // abas do cardápio ligadas/desligadas (admin)
 
 /* ─── Wizard ─── */
 function renderStepTabs() {
@@ -147,7 +148,7 @@ function prontoCard(p) {
       <div class="pronto-info"><div class="pronto-name">${escapeHtml(p.name)}</div><div class="pronto-desc">${escapeHtml(p.description || "")}</div></div>
     </div>
     <div class="pronto-footer">
-      <div><div class="pronto-price">${money(p.price)}</div><div class="pronto-merits">+${Math.round(p.price)}⚡ méritos</div></div>
+      <div><div class="pronto-price">${money(p.price)}</div><div class="pronto-merits${p.noMeritos ? " dim" : ""}">${p.noMeritos ? "sem méritos" : `+${Math.round(p.price)}⚡ méritos`}</div></div>
       <button class="pronto-add-btn" data-action="add-product" data-id="${p.id}">ADICIONAR</button>
     </div></div>`;
 }
@@ -259,11 +260,9 @@ function renderCategories() {
 }
 
 export function showCat(next) {
-  if (next === "monte" && !monteEnabled()) next = "dia";
-  if (next === "exclusivos" && !meritosEnabled()) next = "dia";
+  if (!tabVisible(next)) next = ALL_CATS.find(tabVisible) || "dia";
   cat = next;
-  ["monte", "dia", "mbox", "acomp", "bebidas", "sobremesas", "exclusivos"].forEach((c) =>
-    show($("#cat-" + c), c === next));
+  ALL_CATS.forEach((c) => show($("#cat-" + c), c === next));
   $$(".cat-btn").forEach((b) => b.classList.toggle("active", b.dataset.cat === next));
 }
 
@@ -362,18 +361,26 @@ function meritosEnabled() {
   return isEnabled(store.get("features") || {}, profile?.role || "agent", "lojaMeritos");
 }
 
-/** Esconde abas indisponíveis (Monte, Exclusivos) e troca a atual se preciso. */
+const ALL_CATS = ["monte", "dia", "mbox", "acomp", "bebidas", "sobremesas", "exclusivos"];
+
+/** Uma aba está visível? Combina o toggle de abas (admin) com os gates de papel. */
+function tabVisible(c) {
+  if (!isTabEnabled(menuTabsCfg, c)) return false;   // desligada pelo admin (config/menuTabs)
+  if (c === "monte") return monteEnabled();           // ainda respeita o feature flag por papel
+  if (c === "exclusivos") return meritosEnabled();    // exclusivos depende da loja de méritos
+  return true;
+}
+
+/** Esconde abas desativadas (admin) ou bloqueadas por papel; troca a atual se preciso. */
 function applyCardapioGates() {
-  const monte = monteEnabled();
-  const btnMonte = document.querySelector('[data-cat="monte"]');
-  if (btnMonte) btnMonte.style.display = monte ? "" : "none";
-
-  const exclusivos = meritosEnabled();
-  const btnEx = document.querySelector('[data-cat="exclusivos"]');
-  if (btnEx) btnEx.style.display = exclusivos ? "" : "none";
-
-  if (!monte && cat === "monte") showCat("dia");
-  if (!exclusivos && cat === "exclusivos") showCat("dia");
+  ALL_CATS.forEach((c) => {
+    const btn = document.querySelector(`[data-cat="${c}"]`);
+    if (btn) btn.style.display = tabVisible(c) ? "" : "none";
+  });
+  if (!tabVisible(cat)) {
+    const first = ALL_CATS.find(tabVisible);
+    if (first) showCat(first);
+  }
 }
 
 export function renderCardapio() { renderWizard(); renderCategories(); applyCardapioGates(); refreshMboxStock(); }
@@ -413,4 +420,10 @@ export function initCardapio() {
   watchMbox((cfg) => { mboxCfg = cfg; if (store.get("page") === "cardapio") renderCategories(); });
   // Estoque do sábado muda quando pedidos mudam (novo/cancelado).
   store.subscribe("orders", () => { if (store.get("page") === "cardapio") refreshMboxStock(); });
+
+  // Abas do cardápio ligadas/desligadas pelo admin (ao vivo).
+  watchMenuTabs((cfg) => {
+    menuTabsCfg = cfg;
+    if (store.get("page") === "cardapio") applyCardapioGates();
+  });
 }

@@ -46,6 +46,28 @@ export async function saveFeatures(data) {
   return setDoc(PATH, data);
 }
 
+// ── Abas do Cardápio (admin) — liga/desliga cada categoria em config/menuTabs ──
+/** Abas controláveis (categorias do cardápio). Ausente ⇒ habilitada. */
+export const MENU_TABS = [
+  { key: "monte", label: "Monte Seu Lanche", icon: "🔧" },
+  { key: "dia", label: "Lanche do Dia", icon: "📋" },
+  { key: "mbox", label: "MBox", icon: "📦" },
+  { key: "acomp", label: "Acompanhamentos", icon: "🍟" },
+  { key: "bebidas", label: "Bebidas", icon: "🥤" },
+  { key: "sobremesas", label: "Sobremesas", icon: "🍫" },
+];
+const TABS_PATH = "config/menuTabs";
+/** Lê o estado das abas (ou {} = todas habilitadas). */
+export async function loadMenuTabs() {
+  try { return (await getDoc(TABS_PATH)) || {}; } catch { return {}; }
+}
+/** Observa as abas em tempo real. */
+export function watchMenuTabs(cb) { return watchDoc(TABS_PATH, (d) => cb(d || {})); }
+/** Persiste o objeto completo de abas. */
+export async function saveMenuTabs(data) { return setDoc(TABS_PATH, data); }
+/** A aba está habilitada? (padrão: sim) */
+export function isTabEnabled(tabs, key) { return tabs?.[key] !== false; }
+
 // ── Página Web/Desktop (admin-only) — liga/desliga em config/webPage ──
 const WEB_PATH = "config/webPage";
 /** A Versão Web/Desktop está habilitada? (padrão: habilitada). */
