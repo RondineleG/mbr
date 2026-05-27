@@ -9,7 +9,7 @@ body {
   color: var(--tx);
   background-image:
     radial-gradient(ellipse 60% 40% at 50% 0%, var(--gw), transparent 70%),
-    radial-gradient(circle at 1px 1px, var(--t3) 1px, transparent 0);
+    radial-gradient(circle at 1px 1px, rgba(201,168,76,0.05) 1px, transparent 0);
   background-size: 100% 100%, 24px 24px;
   background-attachment: fixed;
   max-width: 480px;
@@ -48,28 +48,15 @@ button { cursor: pointer; color: inherit; }
 .divider { height: 8px; }
 .text-center { text-align: center; }
 
-/* Desktop / tablet: o app (coluna mobile) flutua emoldurado sobre um fundo
-   premium, em vez de uma coluna estreita perdida num vazio preto. */
+/* Desktop / tablet: realça a "moldura" mobile premium (versão sóbria). */
 @media (min-width: 600px) {
-  html {
-    background-color: var(--bg2);
-    background-image:
-      radial-gradient(ellipse 46% 38% at 50% -6%, color-mix(in srgb, var(--G) 15%, transparent), transparent 70%),
-      radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--G) 9%, transparent) 1px, transparent 0);
-    background-size: 100% 100%, 26px 26px;
-    background-attachment: fixed;
-    min-height: 100vh;
-  }
   body {
-    box-shadow: 0 0 0 1px var(--bd2), 0 40px 120px rgba(0,0,0,0.6), 0 0 60px color-mix(in srgb, var(--G) 8%, transparent);
-    border-radius: 22px;
-    margin-top: 24px;
-    margin-bottom: 24px;
-    min-height: calc(100vh - 48px);
-    overflow: hidden;
+    box-shadow: 0 0 0 1px var(--bd), 0 30px 80px rgba(0,0,0,0.5);
+    border-radius: 4px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    min-height: calc(100vh - 24px);
   }
-  /* A barra inferior acompanha a coluna emoldurada (cantos arredondados). */
-  .bottomnav { bottom: 24px; border-radius: 0 0 22px 22px; overflow: hidden; }
 }
 
 /* ── Acessibilidade: foco visível por teclado + cursor consistente ── */
