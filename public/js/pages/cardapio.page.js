@@ -15,11 +15,13 @@ import { isEnabled } from "../services/features.service.js";
 let STEPS = BUILD_STEPS;
 let basePrice = BUILD_BASE_PRICE;
 let currentStep = 0;
+// Etapas visíveis ao cliente: ignora as desativadas pelo admin (a revisão fica).
+const visible = () => STEPS.filter((s) => !s.disabled);
 // Itens inclusos já vêm pré-selecionados: Pão (Brioche), Carne (Smash 90g),
 // Extra (Cheddar) e Molho (Molho Secreto). Salada é toda adicional (não vem marcada).
 function defaultSelections() {
   const sel = {};
-  const first = (id) => STEPS.find((s) => s.id === id)?.items?.[0];
+  const first = (id) => { const s = STEPS.find((s) => s.id === id); return s && !s.disabled ? s.items?.[0] : null; };
   for (const id of ["pao", "carnes", "queijos", "molhos"]) {
     const it = first(id);
     if (it) sel[id] = [it];
@@ -31,26 +33,27 @@ let cat = "monte";
 
 /* ─── Wizard ─── */
 function renderStepTabs() {
-  setHtml("stepTabs", STEPS.map((s, i) =>
+  const V = visible();
+  setHtml("stepTabs", V.map((s, i) =>
     `<button class="step-tab ${i === currentStep ? "active" : ""}" data-action="build-step" data-step="${i}">
       <span class="step-tab-icon">${s.icon}</span><span class="step-tab-label">${s.label}</span>
     </button>`).join(""));
-  setHtml("stepDots", STEPS.map((_, i) => {
+  setHtml("stepDots", V.map((_, i) => {
     let cls = "step-dot"; if (i === currentStep) cls += " active"; else if (i < currentStep) cls += " completed";
     return `<div class="${cls}" data-action="build-step" data-step="${i}"></div>`;
   }).join(""));
   show($("#stepBackBtn"), currentStep > 0);
   // Na revisão, as ações ficam dentro do resumo (montar outro / ir pra sacola);
   // o botão do rodapé some para não duplicar.
-  const isReview = currentStep === STEPS.length - 1;
+  const isReview = currentStep === V.length - 1;
   show($("#stepBtn"), !isReview);
   if (!isReview) { $("#stepBtn").textContent = "Próximo →"; $("#stepBtn").dataset.action = "build-next"; }
   $(".step-tab.active")?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
 }
 
 function renderStepContent() {
-  const step = STEPS[currentStep];
-  if (step.id === "finalizar") return renderReview();
+  const step = visible()[currentStep];
+  if (!step || step.id === "finalizar") return renderReview();
   const sel = selections[step.id] || [];
   setHtml("stepContent", `
     <div class="menu-section-header">
@@ -73,7 +76,7 @@ function renderStepContent() {
 function renderReview() {
   let extras = 0;
   let body = `<div style="padding:16px"><div class="menu-section-header"><div class="menu-section-title">Resumo do seu Lanche</div></div>`;
-  STEPS.forEach((s) => {
+  visible().forEach((s) => {
     if (s.id === "finalizar") return;
     const sel = selections[s.id] || [];
     if (!sel.length) return;
@@ -114,7 +117,7 @@ function toggleItem(stepId, idx) {
 function addBuildToCart() {
   let total = basePrice;
   const parts = [];
-  STEPS.forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
+  visible().forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
   store.cartAdd({ custom: true, name: "Monte Seu Lanche", icon: "🔧", price: total, qty: 1, desc: parts.join(", ") });
   toast("success", "🔧", `Lanche personalizado adicionado! ${money(total)}`);
   selections = defaultSelections(); currentStep = 0; renderWizard();
@@ -298,7 +301,7 @@ export function initCardapio() {
   onAction("cardapio-cat", (el) => showCat(el.dataset.cat));
   onAction("build-step", (el) => { currentStep = +el.dataset.step; renderWizard(); });
   onAction("build-toggle", (el) => toggleItem(el.dataset.step, +el.dataset.idx));
-  onAction("build-next", () => { if (currentStep < STEPS.length - 1) { currentStep++; renderWizard(); } });
+  onAction("build-next", () => { if (currentStep < visible().length - 1) { currentStep++; renderWizard(); } });
   onAction("build-prev", () => { if (currentStep > 0) { currentStep--; renderWizard(); } });
   onAction("build-add-continue", () => buildAddAndContinue());
   onAction("build-add-go", () => buildAddAndGoToCart());
