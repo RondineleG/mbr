@@ -5,7 +5,7 @@ import { $, $$, onAction, setHtml, show, escapeHtml } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { BUILD_STEPS, BUILD_BASE_PRICE } from "../utils/constants.js";
 import { watchBuildSteps } from "../services/buildsteps.service.js";
-import { watchLancheDia, dailyForToday, watchMbox } from "../services/specials.service.js";
+import { watchLancheDia, dailyForToday, watchMbox, mboxRemainingForNext } from "../services/specials.service.js";
 import { money } from "../utils/format.js";
 import { skeletonList } from "../components/skeleton.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
@@ -33,6 +33,7 @@ let selections = defaultSelections(); // stepId -> [items]
 let cat = "monte";
 let lancheDiaCfg = null; // config do Lanche do Dia (admin)
 let mboxCfg = null;      // config da MBox (admin)
+let mboxStock = null;    // { sat, remaining, total } — estoque do próximo sábado
 
 /* ─── Wizard ─── */
 function renderStepTabs() {
@@ -190,10 +191,19 @@ function dailyCard() {
     </div></div>`;
 }
 
+// Estoque do próximo sábado (banner + bloqueio).
+function mboxStockLine() {
+  if (!mboxStock) return "";
+  const dia = new Date(mboxStock.sat).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+  if (mboxStock.remaining <= 0) return `<div class="mbox-stock out">🚫 MBox esgotada para sábado ${dia}</div>`;
+  return `<div class="mbox-stock">🗓️ Sábado ${dia} · <b>${mboxStock.remaining}</b> de ${mboxStock.total} MBox disponíveis</div>`;
+}
+
 // Card da MBox — teaser: o conteúdo NÃO é revelado até fechar o pedido.
 function mboxCard() {
   const m = mboxCfg;
   if (!m || !m.composicao?.length) return "";
+  const sold = mboxStock && mboxStock.remaining <= 0;
   return `<div class="pronto-card mbox">
     <div class="pronto-tag sabado">SÁBADO</div>
     <div class="pronto-top">
@@ -203,8 +213,13 @@ function mboxCard() {
     <div class="pronto-comp dim">🔒 Conteúdo revelado só ao fechar o pedido</div>
     <div class="pronto-footer">
       <div><div class="pronto-price">${money(m.price)}</div><div class="pronto-merits">+${Math.round(m.price)}⚡ méritos</div></div>
-      <button class="pronto-add-btn" data-action="add-mbox">ADICIONAR</button>
+      <button class="pronto-add-btn" data-action="add-mbox" ${sold ? "disabled" : ""}>${sold ? "ESGOTADO" : "ADICIONAR"}</button>
     </div></div>`;
+}
+
+async function refreshMboxStock() {
+  try { mboxStock = await mboxRemainingForNext(); } catch { mboxStock = null; }
+  if (store.get("page") === "cardapio") renderCategories();
 }
 
 function renderCategories() {
@@ -220,7 +235,7 @@ function renderCategories() {
 
   const diaHtml = dailyCard() + byCat("dia").map(prontoCard).join("");
   setHtml("catDia", loading ? skeletonList(2) : (diaHtml || '<div class="empty-state">📋 Sem lanche do dia hoje</div>'));
-  const mboxHtml = mboxCard() + byCat("mbox").map(prontoCard).join("");
+  const mboxHtml = mboxStockLine() + mboxCard() + byCat("mbox").map(prontoCard).join("");
   setHtml("catMbox", loading ? skeletonList(2) : (mboxHtml || '<div class="empty-state">📦</div>'));
   setHtml("catAcomp", loading ? skeletonList(3) : `<div class="menu-items">${byCat("acomp").map(menuItem).join("")}</div>`);
   setHtml("catBebidas", loading ? skeletonList(3) : `<div class="menu-items">${byCat("bebidas").map(menuItem).join("")}</div>`);
@@ -263,8 +278,9 @@ function addDaily() {
 function addMbox() {
   const m = mboxCfg;
   if (!m || !m.composicao?.length) return;
+  if (mboxStock && mboxStock.remaining < 1) return toastError("MBox esgotada para este sábado");
   // composição vai junto, mas fica oculta até o pedido ser fechado.
-  store.cartAdd({ name: m.name || "MBox", icon: m.icon || "📦", price: m.price, qty: 1, desc: m.desc || "Caixa surpresa", mbox: true, composicao: m.composicao });
+  store.cartAdd({ name: m.name || "MBox", icon: m.icon || "📦", price: m.price, qty: 1, desc: m.desc || "Caixa surpresa", mbox: true, mboxUnits: 1, composicao: m.composicao });
   toastInfo(m.icon || "📦", `${m.name || "MBox"} adicionada à sacola · entrega no sábado`);
 }
 
@@ -278,10 +294,15 @@ function addProduct(id) {
     return;
   }
   
+  // Produtos MBox (ex.: Dupla) consomem do estoque do sábado (Dupla = 2 unidades).
+  if (p.agendaMbox) {
+    const need = p.mboxUnits || 1;
+    if (mboxStock && mboxStock.remaining < need) return toastError("MBox esgotada para este sábado");
+  }
   store.cartAdd({
     productId: p.id, name: p.name, icon: p.icon || "🍔", price: p.price, qty: 1, desc: "",
-    ...(p.noMeritos ? { noMeritos: true } : {}),       // combo do dia não credita méritos
-    ...(p.agendaMbox ? { mbox: true } : {}),           // segue o agendamento de sábado da MBox
+    ...(p.noMeritos ? { noMeritos: true } : {}),                   // combo do dia não credita méritos
+    ...(p.agendaMbox ? { mbox: true, mboxUnits: p.mboxUnits || 1 } : {}), // agenda sábado + consome estoque
   });
   toastInfo(p.icon || "🛒", `${p.name} adicionado à sacola`);
 }
@@ -355,7 +376,7 @@ function applyCardapioGates() {
   if (!exclusivos && cat === "exclusivos") showCat("dia");
 }
 
-export function renderCardapio() { renderWizard(); renderCategories(); applyCardapioGates(); }
+export function renderCardapio() { renderWizard(); renderCategories(); applyCardapioGates(); refreshMboxStock(); }
 
 export function initCardapio() {
   onAction("cardapio-cat", (el) => showCat(el.dataset.cat));
@@ -390,4 +411,6 @@ export function initCardapio() {
   // Lanche do Dia e MBox (configurados pelo admin) — ao vivo.
   watchLancheDia((cfg) => { lancheDiaCfg = cfg; if (store.get("page") === "cardapio") renderCategories(); });
   watchMbox((cfg) => { mboxCfg = cfg; if (store.get("page") === "cardapio") renderCategories(); });
+  // Estoque do sábado muda quando pedidos mudam (novo/cancelado).
+  store.subscribe("orders", () => { if (store.get("page") === "cardapio") refreshMboxStock(); });
 }

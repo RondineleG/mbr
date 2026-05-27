@@ -8,7 +8,7 @@ import { adjustPoints } from "./points.service.js";
 import { updateMissionProgress, calculateUserStats } from "./mission.service.js";
 import { DELIVERY_FEE, POINTS_PER_BRL, ORDER_CUTOFF_HOUR } from "../utils/constants.js";
 import { deliveryFeeFor } from "../utils/geo.js";
-import { mboxSchedule } from "./specials.service.js";
+import { mboxSchedule, mboxReservedUnits, mboxUnitsOf, MBOX_STOCK } from "./specials.service.js";
 
 // Normaliza um item do carrinho para persistência (omite flags ausentes —
 // Firestore rejeita undefined). Carrega méritos-off (Lanche do Dia) e a MBox.
@@ -89,6 +89,17 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
   // MBox tem agendamento próprio (sábado, corte sexta 22h); demais seguem o corte das 13h.
   const hasMbox = items.some((it) => it.mbox);
   const { agendado, dataEntrega, cancelavelAte } = hasMbox ? mboxSchedule() : productionInfo();
+
+  // Estoque de MBox por sábado (limite compartilhado MBox + Dupla).
+  if (hasMbox) {
+    const needed = mboxUnitsOf({ items });
+    const reserved = await mboxReservedUnits(dataEntrega);
+    if (reserved + needed > MBOX_STOCK) {
+      const err = new Error("MBOX_SOLD_OUT");
+      err.mboxRemaining = Math.max(0, MBOX_STOCK - reserved);
+      throw err;
+    }
+  }
   // Méritos só sobre o que é elegível (exclui Lanche do Dia) e nunca se pago com méritos.
   const pointsEarned = payment?.metodo === "meritos" ? 0 : Math.round(meritEligible(items) * POINTS_PER_BRL);
 

@@ -314,6 +314,8 @@
 .pronto-info { flex: 1; }
 .pronto-name { font-family: var(--f-display); font-size: 16px; font-weight: 700; margin-bottom: 4px; }
 .pronto-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+.mbox-stock { font-size: 12px; color: var(--text); margin-bottom: 10px; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: rgba(201,168,76,0.06); }
+.mbox-stock.out { color: var(--text-dim); border-style: dashed; }
 .pronto-comp { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 8px 0 12px; padding: 8px 10px; border: 1px dashed var(--border); border-radius: var(--radius-sm); }
 .pronto-comp.dim, .pronto-merits.dim { color: var(--text-dim); }
 .pronto-footer { display: flex; align-items: center; justify-content: space-between; }

@@ -205,7 +205,10 @@ async function checkout(btn) {
     console.error("Erro no checkout:", err);
     const errorMsg = err?.message || err?.code || "";
     
-    if (errorMsg.includes("permission") || errorMsg.includes("PERMISSION")) {
+    if (errorMsg.includes("MBOX_SOLD_OUT")) {
+      const rem = err?.mboxRemaining ?? 0;
+      toastError(rem > 0 ? `Restam só ${rem} MBox para este sábado` : "MBox esgotada para este sábado");
+    } else if (errorMsg.includes("permission") || errorMsg.includes("PERMISSION")) {
       toastError("Erro de permissão. Verifique as regras do Firestore.");
     } else if (errorMsg.includes("network") || errorMsg.includes("NETWORK")) {
       toastError("Erro de conexão. Verifique sua internet.");

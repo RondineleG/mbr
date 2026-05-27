@@ -110,7 +110,9 @@ export const LANCHE_DIA_PRICE = 29.9;
 export const MBOX_CUTOFF_DAY = 5;   // sexta
 export const MBOX_CUTOFF_HOUR = 22; // 22:00
 /** Preço padrão da MBox (admin pode sobrescrever). */
-export const MBOX_PRICE = 59.9;
+export const MBOX_PRICE = 75.0;
+/** Estoque de MBox por sábado (compartilhado entre MBox e MBox Dupla). */
+export const MBOX_STOCK = 50;
 
 /** Sede do MrBur (origem das rotas e cálculo de frete). */
 export const STORE = {

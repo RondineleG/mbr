@@ -6,8 +6,8 @@
    config/lancheDia = { price, dias: { seg:{name,icon,desc,composicao:[{name,icon}]}, ... } }
    config/mbox      = { price, name, icon, desc, composicao:[{name,icon}] }
    ═══════════════════════════════════════════════════════════════ */
-import { getDoc, setDoc, watchDoc } from "../firebase/db.service.js";
-import { WEEKDAYS, LANCHE_DIA_PRICE, MBOX_PRICE, MBOX_CUTOFF_DAY, MBOX_CUTOFF_HOUR } from "../utils/constants.js";
+import { getDoc, setDoc, watchDoc, getCollection } from "../firebase/db.service.js";
+import { WEEKDAYS, LANCHE_DIA_PRICE, MBOX_PRICE, MBOX_CUTOFF_DAY, MBOX_CUTOFF_HOUR, MBOX_STOCK } from "../utils/constants.js";
 
 const DIA_PATH = "config/lancheDia";
 const MBOX_PATH = "config/mbox";
@@ -82,4 +82,23 @@ export function mboxSchedule(now = Date.now()) {
   return { agendado: true, dataEntrega: sat.getTime(), cancelavelAte: cutoff.getTime() };
 }
 
-export { MBOX_CUTOFF_DAY };
+/* ─── Estoque da MBox por sábado ──────────────────────────────────
+   Contagem ao vivo a partir dos pedidos (status != cancelado): MBox = 1
+   unidade, MBox Dupla = 2. Limite compartilhado por sábado. ──────── */
+export const mboxUnitsOf = (order) =>
+  (order.items || []).reduce((a, it) => a + (it.mbox ? (it.qty || 1) * (it.mboxUnits || 1) : 0), 0);
+
+export async function mboxReservedUnits(satTs) {
+  const orders = await getCollection("orders", { where: [["dataEntrega", "==", satTs]] });
+  return orders.reduce((sum, o) => o.status === "cancelado" ? sum : sum + mboxUnitsOf(o), 0);
+}
+
+/** Unidades restantes para o próximo sábado de entrega. */
+export async function mboxRemainingForNext(now = Date.now()) {
+  const { dataEntrega } = mboxSchedule(now);
+  let reserved = 0;
+  try { reserved = await mboxReservedUnits(dataEntrega); } catch { /* sem acesso/offline → assume cheio */ }
+  return { sat: dataEntrega, remaining: Math.max(0, MBOX_STOCK - reserved), reserved, total: MBOX_STOCK };
+}
+
+export { MBOX_CUTOFF_DAY, MBOX_STOCK };

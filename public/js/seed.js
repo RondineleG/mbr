@@ -12,7 +12,7 @@ const PRODUCTS = [
   //              Aqui fica só o combo (sem méritos).
   { id: "p-dia-2", name: "Combo do Dia", description: "Lanche do dia + batata temperada + bebida à escolha.", price: 44.9, category: "dia", icon: "📋", tag: "COMBO", noMeritos: true, active: true },
   // category: mbox — a MBox unitária vem de config/mbox. Aqui só a Dupla.
-  { id: "p-mbox-2", name: "MBox Dupla", description: "2 MBox para compartilhar a experiência secreta com um aliado.", price: 140.0, category: "mbox", icon: "📦", tag: "SÓ SÁBADO", agendaMbox: true, active: true },
+  { id: "p-mbox-2", name: "MBox Dupla", description: "2 MBox para compartilhar a experiência secreta com um aliado.", price: 140.0, category: "mbox", icon: "📦", tag: "SÓ SÁBADO", agendaMbox: true, mboxUnits: 2, active: true },
   // category: acomp
   { id: "p-ac-1", name: "Batata da Ordem", description: "Frita com tempero secreto", price: 18.9, category: "acomp", icon: "🍟", active: true },
   { id: "p-ac-2", name: "Onion Rings Cipher", description: "Empanados com molho ranch", price: 22.9, category: "acomp", icon: "🧅", active: true },
