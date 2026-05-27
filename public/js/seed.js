@@ -8,12 +8,11 @@ import { IS_DEMO } from "../firebase-config.js";
 import { rankFromPoints } from "./utils/format.js";
 
 const PRODUCTS = [
-  // category: dia
-  { id: "p-dia-1", name: "Lanche Classificado", description: "Receita secreta do dia — só descobre quem pedir.", price: 29.9, category: "dia", icon: "🕵️", tag: "LIMITADO · 20/DIA", featured: true, active: true },
-  { id: "p-dia-2", name: "Combo Infiltrado", description: "Lanche do dia + batata temperada + bebida à escolha.", price: 44.9, category: "dia", icon: "📋", tag: "COMBO", active: true },
-  // category: mbox
-  { id: "p-mbox-1", name: "MBox Mistério", description: "Hambúrguer exclusivo + bebida + acompanhamento + sobremesa + colecionável surpresa.", price: 75.0, category: "mbox", icon: "📦", tag: "SÓ SÁBADO · 50 UN.", active: true },
-  { id: "p-mbox-2", name: "MBox Dupla", description: "2 MBox para compartilhar a experiência secreta com um aliado.", price: 140.0, category: "mbox", icon: "📦", tag: "SÓ SÁBADO", active: true },
+  // category: dia — o "Lanche do Dia" em si vem de config/lancheDia (configurável).
+  //              Aqui fica só o combo (sem méritos).
+  { id: "p-dia-2", name: "Combo do Dia", description: "Lanche do dia + batata temperada + bebida à escolha.", price: 44.9, category: "dia", icon: "📋", tag: "COMBO", noMeritos: true, active: true },
+  // category: mbox — a MBox unitária vem de config/mbox. Aqui só a Dupla.
+  { id: "p-mbox-2", name: "MBox Dupla", description: "2 MBox para compartilhar a experiência secreta com um aliado.", price: 140.0, category: "mbox", icon: "📦", tag: "SÓ SÁBADO", agendaMbox: true, active: true },
   // category: acomp
   { id: "p-ac-1", name: "Batata da Ordem", description: "Frita com tempero secreto", price: 18.9, category: "acomp", icon: "🍟", active: true },
   { id: "p-ac-2", name: "Onion Rings Cipher", description: "Empanados com molho ranch", price: 22.9, category: "acomp", icon: "🧅", active: true },
@@ -151,15 +150,15 @@ const BURGER_B = ["Monte Seu Lanche", "🔧", 38.9, 1, "Australiano, Duplo Smash
 const BURGER_C = ["Monte Seu Lanche", "🔧", 40.8, 1, "Sem Pão (alface), Plant-Based 150g, Brie, Rúcula, Tomate, Maionese Trufada"];
 const SAMPLE_ORDERS = [
   { agent: "falcao-dourado", status: "entregue",  daysAgo: 0,  items: [BURGER_A, ["Milkshake Phantom", "🥤", 19.9, 1]] },
-  { agent: "falcao-dourado", status: "entregue",  daysAgo: 2,  items: [["MBox Mistério", "📦", 75.0, 1]] },
+  { agent: "falcao-dourado", status: "entregue",  daysAgo: 2,  items: [["MBox Surpresa", "📦", 75.0, 1]] },
   { agent: "cobra-prime",    status: "enviado",   daysAgo: 0,  items: [BURGER_B, ["Batata da Ordem", "🍟", 18.9, 1]] },
-  { agent: "cobra-prime",    status: "entregue",  daysAgo: 5,  items: [["Combo Infiltrado", "📋", 44.9, 1]] },
+  { agent: "cobra-prime",    status: "entregue",  daysAgo: 5,  items: [["Combo do Dia", "📋", 44.9, 1]] },
   { agent: "lobo-cipher",    status: "producao",  daysAgo: 0,  items: [BURGER_C, ["Soda Classified", "🥫", 7.9, 2]] },
   { agent: "lobo-cipher",    status: "recebido",  daysAgo: 0,  items: [["Brownie Black Ops", "🍫", 16.9, 1], ["Cookie Encrypted", "🍪", 9.9, 2]] },
   { agent: "pantera-negra",  status: "analisando",daysAgo: 0,  items: [["Loaded Fries Intel", "🧀", 28.9, 1], ["Suco Operativo", "🧃", 12.9, 1]] },
-  { agent: "pantera-negra",  status: "entregue",  daysAgo: 8,  items: [["Combo Infiltrado", "📋", 44.9, 2]] },
+  { agent: "pantera-negra",  status: "entregue",  daysAgo: 8,  items: [["Combo do Dia", "📋", 44.9, 2]] },
   { agent: "coruja-stealth", status: "aprovado",  daysAgo: 0,  items: [BURGER_A, ["Água da Fonte", "💧", 4.9, 1]] },
-  { agent: "coruja-stealth", status: "cancelado", daysAgo: 3,  items: [["MBox Mistério", "📦", 75.0, 1]] },
+  { agent: "coruja-stealth", status: "cancelado", daysAgo: 3,  items: [["MBox Surpresa", "📦", 75.0, 1]] },
   { agent: "raposa-zero",    status: "entregue",  daysAgo: 1,  items: [["Onion Rings Cipher", "🧅", 22.9, 1], ["Milkshake Phantom", "🥤", 19.9, 1]] },
   { agent: "raposa-zero",    status: "recebido",  daysAgo: 0,  items: [["Petit Gateau Covert", "🎂", 22.9, 1]] },
 ];

@@ -278,7 +278,11 @@ function addProduct(id) {
     return;
   }
   
-  store.cartAdd({ productId: p.id, name: p.name, icon: p.icon || "🍔", price: p.price, qty: 1, desc: "" });
+  store.cartAdd({
+    productId: p.id, name: p.name, icon: p.icon || "🍔", price: p.price, qty: 1, desc: "",
+    ...(p.noMeritos ? { noMeritos: true } : {}),       // combo do dia não credita méritos
+    ...(p.agendaMbox ? { mbox: true } : {}),           // segue o agendamento de sábado da MBox
+  });
   toastInfo(p.icon || "🛒", `${p.name} adicionado à sacola`);
 }
 
