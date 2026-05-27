@@ -7,6 +7,7 @@ import { addDoc, updateDoc, getDoc, getCollection, watchCollection, tsNow } from
 import { adjustPoints } from "./points.service.js";
 import { updateMissionProgress, calculateUserStats } from "./mission.service.js";
 import { DELIVERY_FEE, POINTS_PER_BRL, ORDER_CUTOFF_HOUR } from "../utils/constants.js";
+import { deliveryFeeFor } from "../utils/geo.js";
 
 /**
  * Regra de negócio: pedidos aceitos até as 13h são produzidos/entregues no mesmo
@@ -70,7 +71,8 @@ function generateOrderNumber() {
  */
 export async function createOrder({ uid, codename, items, address, agenteResponsavel = null, payment = null }) {
   const subtotal = items.reduce((a, it) => a + it.price * (it.qty || 1), 0);
-  const total = subtotal + DELIVERY_FEE;
+  const fee = deliveryFeeFor(address);          // R$5 + R$0,50/km da sede ao cliente
+  const total = subtotal + fee;
   const numeroPedido = generateOrderNumber();
   const { agendado, dataEntrega, cancelavelAte } = productionInfo();
 
@@ -88,7 +90,7 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
       desc: String(it.desc || "")
     })),
     subtotal,
-    deliveryFee: DELIVERY_FEE,
+    deliveryFee: fee,
     total,
     pointsEarned: Math.round(total * POINTS_PER_BRL),
     pointsAwarded: false,
@@ -122,6 +124,31 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
   }
   
   return { id, ...order };
+}
+
+/**
+ * Edição IN-PLACE: altera os itens do pedido (mesmo número), recalcula total e
+ * frete. Se veio `payment`, registra a nova cobrança (diferença paga no checkout).
+ */
+export async function updateOrderItems(orderId, items, payment = null) {
+  const order = await getDoc(`orders/${orderId}`);
+  if (!order) throw new Error("Pedido não encontrado");
+  if (!canCancelOrder(order)) throw new Error("Prazo de alteração encerrado");
+  const subtotal = items.reduce((a, it) => a + (it.price || 0) * (it.qty || 1), 0);
+  const fee = deliveryFeeFor(order.address);
+  const total = subtotal + fee;
+  const update = {
+    items: items.map((it) => ({ name: String(it.name || ""), icon: String(it.icon || ""), price: Number(it.price) || 0, qty: Number(it.qty) || 1, desc: String(it.desc || "") })),
+    subtotal, deliveryFee: fee, total,
+    pointsEarned: Math.round(total * POINTS_PER_BRL),
+    pagamento: payment
+      ? { metodo: payment.metodo, status: "pago", valor: total, pagoEm: Date.now() }
+      : { ...(order.pagamento || {}), valor: total },
+    atualizadoEm: Date.now(),
+    timeline: [...(order.timeline || []), { status: order.status, timestamp: Date.now(), observacao: "Pedido alterado pelo cliente" }],
+  };
+  await updateDoc(`orders/${orderId}`, update);
+  return { id: orderId, ...order, ...update };
 }
 
 /** Pedidos do agente (realtime). */

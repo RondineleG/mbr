@@ -11,12 +11,14 @@ import { adjustPoints } from "../services/points.service.js";
 import { openChat } from "../components/chat.js";
 import { syncChatNotifiers, getUnread, onUnreadChange } from "../components/chat-notifier.js";
 import { money } from "../utils/format.js";
-import { DELIVERY_MERITOS, DELIVERY_FEE } from "../utils/constants.js";
+import { DELIVERY_MERITOS, DELIVERY_FEE, STORE } from "../utils/constants.js";
+import { tspNearestNeighbor } from "../utils/geo.js";
 import { toast, toastError } from "../components/toast.js";
 
 let me = null;
 let unsub = null;
 let orders = [];
+let MAP = null, LAYER = null;
 
 const ACTIVE = ["aprovado", "producao", "enviado"];
 const addrStr = (a) => !a ? "" : [a.street, a.neighborhood, a.city].filter(Boolean).join(", ");
@@ -66,6 +68,50 @@ function render() {
 
   setHtml("motoActive", active.length ? active.map(card).join("") : '<div class="admin-empty">Nenhuma entrega em rota agora.</div>');
   setHtml("motoDone", done.length ? done.map(card).join("") : '<div class="admin-empty">Nada concluído ainda.</div>');
+  renderRoute(active);
+}
+
+// Roteirização (PCV) das entregas ativas: menor trajeto da sede, visitando
+// cada cliente uma vez e voltando à sede. Mapa Leaflet + lista ordenada.
+function renderRoute(active) {
+  const wrap = $("#motoRouteWrap");
+  const L = window.L;
+  const pts = active.filter((o) => o.address && o.address.lat != null)
+    .map((o) => ({ lat: o.address.lat, lng: o.address.lng, o }));
+  if (!pts.length || !L) { if (wrap) wrap.style.display = "none"; return; }
+  wrap.style.display = "";
+
+  const { order, legs, totalKm } = tspNearestNeighbor(STORE, pts.map((p) => ({ lat: p.lat, lng: p.lng })));
+
+  // Lista numerada na ordem do trajeto.
+  const lista = order.map((idx, i) => {
+    const p = pts[idx], o = p.o;
+    const addr = [o.address.street, o.address.number, o.address.neighborhood].filter(Boolean).join(", ");
+    return `<div class="moto-route-item"><span class="moto-route-num">${i + 1}</span>
+      <div><b>${escapeHtml(o.numeroPedido || o.id)}</b> · ${escapeHtml(o.cliente || "")}<br>
+      <small>${escapeHtml(addr || "—")} · ${legs[i]} km</small></div></div>`;
+  }).join("");
+  setHtml("motoRouteList", `<div class="moto-route-total">📍 ${pts.length} entrega(s) · <b>${totalKm} km</b> no total (ida e volta à sede)</div>${lista}`);
+
+  // Mapa Leaflet.
+  if (!MAP) {
+    MAP = L.map("motoMap", { scrollWheelZoom: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: "© OpenStreetMap" }).addTo(MAP);
+  }
+  if (LAYER) LAYER.remove();
+  LAYER = L.layerGroup().addTo(MAP);
+  const pin = (txt, cls) => L.divIcon({ className: "", html: `<div class="moto-pin ${cls}">${txt}</div>`, iconSize: [28, 28] });
+  L.marker([STORE.lat, STORE.lng], { icon: pin("🔥", "store") }).addTo(LAYER).bindPopup("Sede MrBur");
+  const path = [[STORE.lat, STORE.lng]];
+  order.forEach((idx, i) => {
+    const p = pts[idx];
+    path.push([p.lat, p.lng]);
+    L.marker([p.lat, p.lng], { icon: pin(i + 1, "") }).addTo(LAYER).bindPopup(`${i + 1}. ${p.o.cliente || ""}`);
+  });
+  path.push([STORE.lat, STORE.lng]);
+  L.polyline(path, { color: "#C9A84C", weight: 3, opacity: .9 }).addTo(LAYER);
+  MAP.fitBounds(L.latLngBounds(path).pad(0.25));
+  setTimeout(() => MAP.invalidateSize(), 150);
 }
 
 // Entrega concluída credita méritos ao MOTOBOY (missão especial), uma única vez.

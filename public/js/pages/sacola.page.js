@@ -5,7 +5,8 @@ import { onAction, setHtml, escapeHtml } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { money } from "../utils/format.js";
 import { DELIVERY_FEE, POINTS_PER_BRL } from "../utils/constants.js";
-import { createOrder } from "../services/order.service.js";
+import { deliveryFeeFor, kmFromStore } from "../utils/geo.js";
+import { createOrder, updateOrderItems } from "../services/order.service.js";
 import { renderCartBadges } from "../components/topbar.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
@@ -43,8 +44,12 @@ export function renderSacola() {
         </div>`;
     } else {
       const subtotal = store.cartSubtotal();
-      const total = subtotal + DELIVERY_FEE;
+      const addr = store.get("profile")?.address;
+      const fee = deliveryFeeFor(addr);
+      const km = addr?.lat != null ? kmFromStore(addr) : null;
+      const total = subtotal + fee;
       const merits = Math.round(total * POINTS_PER_BRL);
+      const editing = !!store.get("editingOrderId");
 
       contentHtml = cart.map((it) => `
         <div class="sacola-item">
@@ -63,13 +68,13 @@ export function renderSacola() {
         </div>`).join("") +
         `<div class="sacola-total">
           <div class="sacola-total-row"><span class="sacola-total-label">Subtotal</span><span class="sacola-total-val">${money(subtotal)}</span></div>
-          <div class="sacola-total-row"><span class="sacola-total-label">Frete</span><span class="sacola-total-val">${money(DELIVERY_FEE)}</span></div>
+          <div class="sacola-total-row"><span class="sacola-total-label">Frete${km != null ? ` (${km} km)` : ""}</span><span class="sacola-total-val">${money(fee)}</span></div>
           <div class="sacola-total-row final"><span class="sacola-total-label">Total</span><span class="sacola-total-val">${money(total)}</span></div>
         </div>
         <div class="sacola-merits-info">+${merits}⚡ méritos ao receber este pedido</div>
         <div class="sacola-actions">
           <button class="sacola-clear" data-action="cart-clear">🗑 LIMPAR</button>
-          <button class="sacola-checkout" id="checkoutBtn" data-action="checkout">CONFIRMAR PEDIDO →</button>
+          <button class="sacola-checkout" id="checkoutBtn" data-action="checkout">${editing ? "SALVAR ALTERAÇÃO →" : "CONFIRMAR PEDIDO →"}</button>
         </div>`;
     }
   } else {
@@ -155,14 +160,35 @@ async function checkout(btn) {
   if (btn) btn.disabled = true;
 
   try {
-    // Pagamento fake (cartão ou pix) — confirma o pedido ao pagar.
-    const pay = await openPayment(store.cartSubtotal() + DELIVERY_FEE);
-    if (!pay) return; // cancelou o pagamento
+    const fee = deliveryFeeFor(profile.address);
+    const novoTotal = store.cartSubtotal() + fee;
+    const items = cart.map(({ name, icon, price, qty, desc }) => ({ name, icon, price, qty, desc }));
+    const editId = store.get("editingOrderId");
 
+    if (editId) {
+      // ── Edição IN-PLACE: cobra só a DIFERENÇA, mantém o mesmo pedido. ──
+      const original = (store.get("orders") || []).find((o) => o.id === editId);
+      const diff = +(novoTotal - (original?.total || 0)).toFixed(2);
+      let pay = null;
+      if (diff > 0) {
+        pay = await openPayment(diff); // acréscimo → novo pagamento da diferença
+        if (!pay) return;
+      }
+      await updateOrderItems(editId, items, pay);
+      store.set("editingOrderId", null);
+      store.cartClear();
+      toast("success", "✓", diff > 0 ? `Alteração salva · pago +${money(diff)}` : `Alteração salva · total ${money(novoTotal)}`);
+      navigate("pedidos");
+      return;
+    }
+
+    // ── Novo pedido: pagamento fake do total. ──
+    const pay = await openPayment(novoTotal);
+    if (!pay) return;
     const order = await createOrder({
       uid: profile.uid,
       codename: profile.codename,
-      items: cart.map(({ name, icon, price, qty, desc }) => ({ name, icon, price, qty, desc })),
+      items,
       address: profile.address,
       payment: pay,
     });

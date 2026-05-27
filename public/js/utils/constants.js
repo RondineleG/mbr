@@ -92,3 +92,13 @@ export const DELIVERY_MERITOS = 50;
 export const ORDER_CUTOFF_HOUR = 13;
 /** Janela de entrega exibida ao cliente. */
 export const DELIVERY_WINDOW = "18h–22h";
+
+/** Sede do MrBur (origem das rotas e cálculo de frete). */
+export const STORE = {
+  cep: "13660-030", numero: "560B", logradouro: "Av. da Ordem",
+  bairro: "Centro", cidade: "Americana", uf: "SP",
+  lat: -22.73916, lng: -47.33145,
+};
+/** Frete = base + por km da sede até o cliente. */
+export const DELIVERY_BASE = 5.0;     // R$ fixo
+export const DELIVERY_PER_KM = 0.5;   // R$ por km

@@ -15,6 +15,8 @@
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/components.css">
 <link rel="stylesheet" href="css/admin.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body class="admin">
 
@@ -39,7 +41,14 @@
 
   <main style="padding:16px;max-width:760px;margin:0 auto">
     <div class="moto-summary" id="motoSummary"></div>
-    <div class="admin-head" style="margin-top:8px"><div><div class="admin-title">Entregas em rota</div><div class="admin-title-sub">ATUALIZA EM TEMPO REAL</div></div></div>
+
+    <div id="motoRouteWrap" style="display:none">
+      <div class="admin-head" style="margin-top:8px"><div><div class="admin-title">Rota de entrega</div><div class="admin-title-sub">MENOR TRAJETO (PCV) · SAINDO E VOLTANDO À SEDE</div></div></div>
+      <div id="motoMap"></div>
+      <div id="motoRouteList" class="moto-route-list"></div>
+    </div>
+
+    <div class="admin-head" style="margin-top:20px"><div><div class="admin-title">Entregas em rota</div><div class="admin-title-sub">ATUALIZA EM TEMPO REAL</div></div></div>
     <div id="motoActive"></div>
     <div class="admin-head" style="margin-top:20px"><div><div class="admin-title">Concluídas</div><div class="admin-title-sub">HISTÓRICO RECENTE</div></div></div>
     <div id="motoDone"></div>

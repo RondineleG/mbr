@@ -279,3 +279,14 @@ body.admin { max-width: none; margin: 0; }
 @keyframes alRoad { to { background-position: -20px 0; } }
 @keyframes alDrive { 0% { left: -34px; transform: translateY(0); } 80% { left: 190px; transform: translateY(0); } 85% { transform: translateY(-4px); } 100% { left: 190px; transform: translateY(0); opacity: 0; } }
 @keyframes alBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+/* ── Rota do motoboy (Leaflet + PCV) ── */
+#motoMap { height: 320px; border-radius: 14px; overflow: hidden; border: 1px solid var(--bd); }
+.moto-pin { width: 28px; height: 28px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); background: var(--G); color: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 800; font-family: var(--f-mono); font-size: 12px; border: 2px solid #fff3; box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+.moto-pin > * { transform: rotate(45deg); }
+.moto-pin.store { background: #1a1206; color: var(--G); font-size: 14px; }
+.moto-route-list { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.moto-route-total { font-family: var(--f-mono); font-size: 12px; color: var(--G); padding: 8px 0; }
+.moto-route-item { display: flex; gap: 12px; align-items: center; background: var(--card); border: 1px solid var(--bd); border-radius: 12px; padding: 12px 14px; }
+.moto-route-num { width: 26px; height: 26px; flex-shrink: 0; border-radius: 50%; background: var(--gw); color: var(--G); display: flex; align-items: center; justify-content: center; font-weight: 800; font-family: var(--f-mono); }
+.moto-route-item small { color: var(--t2); }

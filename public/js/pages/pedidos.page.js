@@ -232,13 +232,15 @@ export function initPedidos() {
     if (!canCancelOrder(order)) { toastError("Prazo de alteração encerrado"); renderPedidos(); return; }
     const ok = await modalConfirm({
       title: "Alterar pedido",
-      message: "Vamos abrir os itens na sua sacola para ajustar. Ao finalizar, um novo pagamento é gerado e o pedido atual é substituído.",
+      message: "Ajuste os itens na sacola. O MESMO pedido será atualizado; se o total aumentar, você paga apenas a diferença.",
       confirmText: "Alterar pedido",
     });
     if (!ok) return;
+    // Edição in-place: carrega os itens e marca qual pedido está sendo editado.
+    store.cartClear();
     (order.items || []).forEach((it) => store.cartAdd({ key: `${it.name}-${Date.now()}-${Math.random()}`, name: it.name, icon: it.icon || "🍔", price: it.price, qty: it.qty || 1, desc: it.desc || "" }));
-    try { await cancelOrder(order.id); } catch {}
-    toast("success", "✎", "Itens na sacola — ajuste e finalize o novo pedido");
+    store.set("editingOrderId", order.id);
+    toast("success", "✎", "Editando o pedido — ajuste e salve");
     navigate("sacola");
   });
 
