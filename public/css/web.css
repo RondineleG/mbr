@@ -76,3 +76,9 @@ body.web { max-width: none !important; margin: 0 !important; width: 100%; backgr
   .web-side-foot { margin: 0; flex-direction: row; }
   .web-content { padding: 20px; }
 }
+
+/* Atalhos do Início + busca */
+.web-shortcut { cursor: pointer; align-items: center; text-align: center; gap: 10px; font-family: inherit; color: var(--tx); }
+.web-shortcut .web-card-emoji { font-size: 34px; }
+.web-search { width: 100%; max-width: 560px; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--bd2); background: var(--bg3); color: var(--tx); font-size: 15px; font-family: inherit; }
+.web-search:focus { outline: none; border-color: var(--G); }

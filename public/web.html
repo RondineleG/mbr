@@ -35,11 +35,7 @@
 <div id="webApp" class="web-app" style="display:none">
   <aside class="web-side">
     <div class="web-side-brand"><span class="web-flame">🔥</span><div><b>MRBUR</b><small>VERSÃO WEB</small></div></div>
-    <nav class="web-side-nav">
-      <button class="web-navitem active" data-sec="inicio"><span>🏠</span> Início</button>
-      <button class="web-navitem" data-sec="cardapio"><span>📋</span> Cardápio</button>
-      <button class="web-navitem" data-sec="pedidos"><span>📦</span> Meus Pedidos</button>
-    </nav>
+    <nav class="web-side-nav" id="webNav"></nav>
     <div class="web-side-foot">
       <div class="web-side-user"><span class="web-side-avatar" id="webAvatar">A</span><div><b id="webWho">—</b><small id="webRole">agente</small></div></div>
       <a class="web-btn ghost block" id="webAdminLink" href="/admin.html" style="display:none">Painel admin</a>
@@ -49,25 +45,7 @@
 
   <main class="web-content">
     <header class="web-topbar"><h1 id="webTitle">Início</h1><div class="web-top-chip" id="webChip"></div></header>
-
-    <section id="sec-inicio" class="web-sec">
-      <div class="web-hero">
-        <h2>O clube secreto dos melhores lanches</h2>
-        <p>Monte seu lanche, acumule méritos e acompanhe seus pedidos — agora na tela grande.</p>
-      </div>
-      <div class="web-kpis" id="webKpis"></div>
-      <div class="web-section-title">Destaques do cardápio</div>
-      <div id="webDestaques" class="web-grid"></div>
-    </section>
-
-    <section id="sec-cardapio" class="web-sec" style="display:none">
-      <div id="webGrid"></div>
-    </section>
-
-    <section id="sec-pedidos" class="web-sec" style="display:none">
-      <div class="web-section-title">Meus Pedidos</div>
-      <div id="webPedidos" class="web-grid"></div>
-    </section>
+    <div id="webSection"></div>
   </main>
 </div>
 
