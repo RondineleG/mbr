@@ -8,19 +8,26 @@ import { openChat } from "../components/chat.js";
 import { getUnread, onUnreadChange, markRead } from "../components/chat-notifier.js";
 import * as store from "../app/state.js";
 import { money, dateShort } from "../utils/format.js";
-import { ORDER_STATUS_LABELS, cancelOrder } from "../services/order.service.js";
+import { ORDER_STATUS_LABELS, cancelOrder, canCancelOrder } from "../services/order.service.js";
 import { getOrderStats } from "../services/order.service.js";
 import { emptyState, withEmpty } from "../utils/loading.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
-import { CANCEL_WINDOW_MS } from "../utils/constants.js";
+import { DELIVERY_WINDOW, ORDER_CUTOFF_HOUR } from "../utils/constants.js";
 
 // criadoEm pode ser número (Date.now) ou Timestamp do Firestore.
 const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
-const cancelRemaining = (o) => {
-  const created = toMillis(o.criadoEm || o.createdAt);
-  return created ? Math.max(0, created + CANCEL_WINDOW_MS - Date.now()) : 0;
-};
+
+// Rótulo do dia (hoje/amanhã/data) de um timestamp.
+function diaLabel(ts) {
+  if (!ts) return "—";
+  const d = new Date(ts), h = new Date(); h.setHours(0,0,0,0);
+  const dd = new Date(d); dd.setHours(0,0,0,0);
+  const diff = Math.round((dd - h) / 86400000);
+  if (diff === 0) return "hoje";
+  if (diff === 1) return "amanhã";
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
 
 function formatDate(timestamp) {
   if (!timestamp) return "—";
@@ -91,23 +98,25 @@ function orderCard(o) {
   const showTimeline = o.status !== "cancelado";
   const canRepeat = o.status !== "cancelado" && o.items && o.items.length > 0;
 
-  // Janela de cancelamento: só enquanto "recebido" e dentro de CANCEL_WINDOW_MS.
-  const remaining = o.status === "recebido" ? cancelRemaining(o) : 0;
-  const canCancel = remaining > 0;
-  const secs = Math.ceil(remaining / 1000);
-
-  const cancelBlock = canCancel ? `
+  // Cancelamento/alteração: permitido até as 13h do dia de produção.
+  const podeCancelar = canCancelOrder(o);
+  const cancelBlock = podeCancelar ? `
     <div class="order-cancel">
-      <button class="order-cancel-btn" data-action="cancel-order" data-order-id="${o.id}">✕ Cancelar pedido</button>
-      <span class="order-cancel-timer">Cancelável por mais <b id="canceltimer-${o.id}">${secs}s</b></span>
-    </div>` : (o.status === "recebido" ? `
-    <div class="order-cancel"><span class="order-cancel-locked">🔒 Prazo de cancelamento encerrado · pedido em análise</span></div>` : "");
+      <button class="order-cancel-btn" data-action="cancel-order" data-order-id="${o.id}">✕ Cancelar</button>
+      <button class="order-repeat-btn" data-action="edit-order" data-order-id="${o.id}" style="width:auto;padding:9px 14px">✎ Alterar</button>
+      <span class="order-cancel-timer">Até <b>${ORDER_CUTOFF_HOUR}h de ${diaLabel(o.cancelavelAte)}</b></span>
+    </div>` : (o.status !== "cancelado" && o.status !== "entregue" ? `
+    <div class="order-cancel"><span class="order-cancel-locked">🔒 Prazo encerrado · pedido em produção (tudo fresco do dia)</span></div>` : "");
+
+  // Entrega: dia (hoje/amanhã) + janela.
+  const entregaInfo = o.dataEntrega ? `<div class="order-date">🛵 Entrega ${diaLabel(o.dataEntrega)} · ${DELIVERY_WINDOW}${o.agendado ? " · agendado" : ""}</div>` : "";
 
   return `<div class="order-card">
     <div class="order-card-head">
       <div>
         <div class="order-id">${o.numeroPedido || "#" + (o.id || "").slice(-6).toUpperCase()}</div>
         <div class="order-date">${formatDate(o.criadoEm || o.createdAt)}</div>
+        ${entregaInfo}
       </div>
       <div style="text-align:right">
         <div class="order-total">${money(o.total)}</div>
@@ -203,32 +212,36 @@ export function initPedidos() {
     }
   });
 
-  // Cancelar pedido (somente dentro da janela de 120s).
+  // Cancelar pedido (até as 13h do dia de produção).
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-action="cancel-order"]');
     if (!btn) return;
-    const orderId = btn.dataset.orderId;
-    const order = (store.get("orders") || []).find((o) => o.id === orderId);
-    if (!order || cancelRemaining(order) <= 0) { toastError("Prazo de cancelamento encerrado"); renderPedidos(); return; }
-    const ok = await modalConfirm({ title: "Cancelar pedido", message: "Tem certeza? Esta ação não pode ser desfeita.", confirmText: "Cancelar pedido", danger: true });
+    const order = (store.get("orders") || []).find((o) => o.id === btn.dataset.orderId);
+    if (!canCancelOrder(order)) { toastError("Prazo encerrado — o pedido já está em produção"); renderPedidos(); return; }
+    const ok = await modalConfirm({ title: "Cancelar pedido", message: "Tem certeza? Pedidos cancelados não podem ser reativados.", confirmText: "Cancelar pedido", danger: true });
     if (!ok) return;
     btn.disabled = true;
-    try { await cancelOrder(orderId); toast("success", "✅", "Pedido cancelado"); }
+    try { await cancelOrder(order.id); toast("success", "✅", "Pedido cancelado"); }
     catch (err) { console.error("Erro ao cancelar:", err); toastError("Não foi possível cancelar"); btn.disabled = false; }
   });
 
-  // Timer ao vivo: atualiza a contagem e re-renderiza quando a janela expira.
-  setInterval(() => {
-    const orders = store.get("orders") || [];
-    let expired = false;
-    orders.forEach((o) => {
-      if (o.status !== "recebido") return;
-      const span = document.getElementById(`canceltimer-${o.id}`);
-      if (!span) return;
-      const rem = Math.ceil(cancelRemaining(o) / 1000);
-      if (rem > 0) span.textContent = rem + "s";
-      else expired = true;
+  // Alterar pedido: reabre os itens na sacola; o pagamento do novo total é
+  // refeito no checkout e o pedido anterior é substituído (cancelado).
+  onAction("edit-order", async (el) => {
+    const order = (store.get("orders") || []).find((o) => o.id === el.dataset.orderId);
+    if (!canCancelOrder(order)) { toastError("Prazo de alteração encerrado"); renderPedidos(); return; }
+    const ok = await modalConfirm({
+      title: "Alterar pedido",
+      message: "Vamos abrir os itens na sua sacola para ajustar. Ao finalizar, um novo pagamento é gerado e o pedido atual é substituído.",
+      confirmText: "Alterar pedido",
     });
-    if (expired) renderPedidos();
-  }, 1000);
+    if (!ok) return;
+    (order.items || []).forEach((it) => store.cartAdd({ key: `${it.name}-${Date.now()}-${Math.random()}`, name: it.name, icon: it.icon || "🍔", price: it.price, qty: it.qty || 1, desc: it.desc || "" }));
+    try { await cancelOrder(order.id); } catch {}
+    toast("success", "✎", "Itens na sacola — ajuste e finalize o novo pedido");
+    navigate("sacola");
+  });
+
+  // Re-renderiza periodicamente para refletir o corte das 13h (botões somem após o prazo).
+  setInterval(() => { if (store.get("page") === "pedidos") renderPedidos(); }, 30000);
 }

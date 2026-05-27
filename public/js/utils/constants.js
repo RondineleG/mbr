@@ -87,3 +87,8 @@ export const CANCEL_WINDOW_MS = 120000;
 
 /** Méritos creditados ao motoboy por entrega concluída (missão especial). */
 export const DELIVERY_MERITOS = 50;
+
+/** Hora-limite (corte) para aceitar/alterar/cancelar pedidos do dia. */
+export const ORDER_CUTOFF_HOUR = 13;
+/** Janela de entrega exibida ao cliente. */
+export const DELIVERY_WINDOW = "18h–22h";

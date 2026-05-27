@@ -12,11 +12,17 @@ import { toastSuccess, toastError, toastInfo } from "../components/toast.js";
 import { CANCEL_WINDOW_MS } from "../utils/constants.js";
 
 const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
-// ms restantes em que o admin AINDA não pode aceitar (só vale p/ "recebido").
+// O admin só aceita/produz após o corte das 13h (até lá o cliente pode alterar/cancelar).
 function lockRemaining(o) {
   if (o.status !== "recebido") return 0;
-  const created = toMillis(o.criadoEm);
-  return created ? Math.max(0, created + CANCEL_WINDOW_MS - Date.now()) : 0;
+  const limit = o.cancelavelAte || 0; // pedidos antigos sem corte → liberados
+  return limit ? Math.max(0, limit - Date.now()) : 0;
+}
+function diaLabel(ts) {
+  if (!ts) return "";
+  const d = new Date(ts), h = new Date(); h.setHours(0,0,0,0); const dd = new Date(d); dd.setHours(0,0,0,0);
+  const diff = Math.round((dd - h) / 86400000);
+  return diff === 0 ? "hoje" : diff === 1 ? "amanhã" : d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 
 export { startOrdersWatch };
@@ -44,7 +50,7 @@ function row(o) {
   // Durante a janela de 120s o admin não pode aceitar: mostra cadeado + contagem.
   const lock = lockRemaining(o);
   const action = lock > 0
-    ? `<span class="status-lock" id="adminlock-${o.id}">🔒 aceitar em ${Math.ceil(lock / 1000)}s</span>`
+    ? `<span class="status-lock" id="adminlock-${o.id}">🔒 produzir a partir das 13h de ${diaLabel(o.cancelavelAte)}</span>`
     : `<select class="status-select" data-action="order-status" data-id="${o.id}" style="border-color:${color}66;color:${color}">${opts}</select>`;
   return `<div class="data-row">
     <div class="data-thumb" style="background:${color}1f;border-color:${color}55;color:${color};font-size:20px">${icon}</div>
@@ -153,10 +159,10 @@ export function initOrders() {
   });
   onAction("order-view", (el) => viewOrder(el.dataset.id));
   onChange("order-status", async (el) => {
-    // Defesa: não permite aceitar antes da janela de 120s.
+    // Defesa: não produzir antes do corte das 13h (cliente ainda pode alterar/cancelar).
     const o = getOrders().find((x) => x.id === el.dataset.id);
     if (o && lockRemaining(o) > 0) {
-      toastInfo(`Aguarde ${Math.ceil(lockRemaining(o) / 1000)}s para aceitar este pedido`);
+      toastInfo(`Pedido liberado para produção às 13h de ${diaLabel(o.cancelavelAte)}`);
       renderOrders();
       return;
     }
@@ -164,17 +170,9 @@ export function initOrders() {
     catch { toastError("Falha ao atualizar status"); }
   });
 
-  // Timer ao vivo: atualiza a contagem dos cadeados e re-renderiza ao liberar.
+  // Re-renderiza periodicamente para liberar os cadeados quando o corte das 13h passa.
   setInterval(() => {
-    if (!document.getElementById("section-pedidos")?.classList.contains("active")) return;
-    let released = false;
-    getOrders().forEach((o) => {
-      const el = document.getElementById(`adminlock-${o.id}`);
-      if (!el) return;
-      const rem = lockRemaining(o);
-      if (rem > 0) el.textContent = `🔒 aceitar em ${Math.ceil(rem / 1000)}s`;
-      else released = true;
-    });
-    if (released) renderOrders();
-  }, 1000);
+    if (document.getElementById("section-pedidos")?.classList.contains("active") &&
+        getOrders().some((o) => lockRemaining(o) > 0)) renderOrders();
+  }, 30000);
 }

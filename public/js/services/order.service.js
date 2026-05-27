@@ -6,7 +6,30 @@
 import { addDoc, updateDoc, getDoc, getCollection, watchCollection, tsNow } from "../firebase/db.service.js";
 import { adjustPoints } from "./points.service.js";
 import { updateMissionProgress, calculateUserStats } from "./mission.service.js";
-import { DELIVERY_FEE, POINTS_PER_BRL } from "../utils/constants.js";
+import { DELIVERY_FEE, POINTS_PER_BRL, ORDER_CUTOFF_HOUR } from "../utils/constants.js";
+
+/**
+ * Regra de negócio: pedidos aceitos até as 13h são produzidos/entregues no mesmo
+ * dia; após as 13h entram para o PRÓXIMO dia. O cliente pode alterar/cancelar
+ * até as 13h do dia de produção (depois disso já está sendo feito, fresco).
+ */
+export function productionInfo(now = Date.now()) {
+  const d = new Date(now);
+  const cutoffToday = new Date(d); cutoffToday.setHours(ORDER_CUTOFF_HOUR, 0, 0, 0);
+  const agendado = d.getTime() >= cutoffToday.getTime(); // após o corte → próximo dia
+  const prod = new Date(d);
+  if (agendado) prod.setDate(prod.getDate() + 1);
+  prod.setHours(0, 0, 0, 0);
+  const cancelavelAte = new Date(prod); cancelavelAte.setHours(ORDER_CUTOFF_HOUR, 0, 0, 0);
+  return { agendado, dataEntrega: prod.getTime(), cancelavelAte: cancelavelAte.getTime() };
+}
+
+/** O cliente ainda pode alterar/cancelar este pedido? (antes do corte das 13h) */
+export function canCancelOrder(order, now = Date.now()) {
+  if (!order || order.status === "cancelado" || order.status === "entregue") return false;
+  const limit = order.cancelavelAte || 0;
+  return limit ? now < limit : false;
+}
 
 // Status possíveis do pedido
 export const ORDER_STATUS = {
@@ -45,11 +68,12 @@ function generateOrderNumber() {
  * Cria um pedido a partir do carrinho.
  * @param {{uid,codename,items,address,agenteResponsavel}} input  items: [{name,icon,price,qty,desc}]
  */
-export async function createOrder({ uid, codename, items, address, agenteResponsavel = null }) {
+export async function createOrder({ uid, codename, items, address, agenteResponsavel = null, payment = null }) {
   const subtotal = items.reduce((a, it) => a + it.price * (it.qty || 1), 0);
   const total = subtotal + DELIVERY_FEE;
   const numeroPedido = generateOrderNumber();
-  
+  const { agendado, dataEntrega, cancelavelAte } = productionInfo();
+
   const order = {
     numeroPedido,
     userId: uid,
@@ -69,11 +93,13 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
     pointsEarned: Math.round(total * POINTS_PER_BRL),
     pointsAwarded: false,
     address: address || {},
-    pagamento: {
-      metodo: "pendente",
-      status: "pendente",
-      valor: total
-    },
+    // Agendamento conforme o corte das 13h.
+    agendado,
+    dataEntrega,
+    cancelavelAte,
+    pagamento: payment
+      ? { metodo: payment.metodo, status: payment.status || "pago", valor: total, pagoEm: Date.now() }
+      : { metodo: "pendente", status: "pendente", valor: total },
     observacoes: "",
     anexos: [],
     timeline: [{

@@ -406,3 +406,9 @@
 .timeline-entry .timeline-dot.done { background: var(--GL); border-color: var(--GL); color: var(--bg); }
 .timeline-entry .timeline-dot.active { background: var(--G); border-color: var(--G); color: var(--bg); box-shadow: 0 0 8px var(--glow); }
 .timeline-total { font-family: var(--f-mono); font-weight: 800; color: var(--G); }
+
+/* ── Pagamento (fake): abas cartão/pix ── */
+.pay-tabs { display: flex; gap: 8px; margin: 6px 0 12px; }
+.pay-tab { flex: 1; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--bd); background: var(--card); color: var(--t2); font-family: var(--f-mono); font-size: 12px; font-weight: 700; cursor: pointer; transition: all var(--transition); }
+.pay-tab.active { border-color: var(--G); background: var(--gw); color: var(--G); }
+.pay-note { font-size: 10px; color: var(--t3); text-align: center; margin: 12px 0 4px; }

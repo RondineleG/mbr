@@ -9,6 +9,7 @@ import { createOrder } from "../services/order.service.js";
 import { renderCartBadges } from "../components/topbar.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
+import { openPayment } from "../components/payment.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
 
 let currentTab = 'cart'; // 'cart' ou 'orders'
@@ -154,21 +155,20 @@ async function checkout(btn) {
   if (btn) btn.disabled = true;
 
   try {
-    const ok = await modalConfirm({
-      title: "Confirmar pedido",
-      message: `Total ${money(store.cartSubtotal() + DELIVERY_FEE)} · entrega em ${[profile.address?.street, profile.address?.number].filter(Boolean).join(", ") || "seu endereço"}.`,
-      confirmText: "Confirmar",
-    });
-    if (!ok) return;
+    // Pagamento fake (cartão ou pix) — confirma o pedido ao pagar.
+    const pay = await openPayment(store.cartSubtotal() + DELIVERY_FEE);
+    if (!pay) return; // cancelou o pagamento
 
     const order = await createOrder({
       uid: profile.uid,
       codename: profile.codename,
       items: cart.map(({ name, icon, price, qty, desc }) => ({ name, icon, price, qty, desc })),
       address: profile.address,
+      payment: pay,
     });
     store.cartClear();
-    toast("success", "🎉", `Pedido enviado! ${money(order.total)} · +${order.pointsEarned}⚡ ao receber`);
+    const quando = order.agendado ? "agendado para amanhã · entrega 18h–22h" : "entrega hoje · 18h–22h";
+    toast("success", "🎉", `Pedido pago! ${money(order.total)} · ${quando}`);
     navigate("pedidos");
   } catch (err) {
     console.error("Erro no checkout:", err);
