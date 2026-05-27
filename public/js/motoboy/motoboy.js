@@ -12,7 +12,7 @@ import { openChat } from "../components/chat.js";
 import { syncChatNotifiers, getUnread, onUnreadChange } from "../components/chat-notifier.js";
 import { money } from "../utils/format.js";
 import { DELIVERY_MERITOS, DELIVERY_FEE, STORE } from "../utils/constants.js";
-import { tspNearestNeighbor } from "../utils/geo.js";
+import { tspNearestNeighbor, googleMapsRouteUrl } from "../utils/geo.js";
 import { toast, toastError } from "../components/toast.js";
 
 let me = null;
@@ -91,7 +91,11 @@ function renderRoute(active) {
       <div><b>${escapeHtml(o.numeroPedido || o.id)}</b> · ${escapeHtml(o.cliente || "")}<br>
       <small>${escapeHtml(addr || "—")} · ${legs[i]} km</small></div></div>`;
   }).join("");
-  setHtml("motoRouteList", `<div class="moto-route-total">📍 ${pts.length} entrega(s) · <b>${totalKm} km</b> no total (ida e volta à sede)</div>${lista}`);
+  const mapsUrl = googleMapsRouteUrl(STORE, order.map((idx) => ({ lat: pts[idx].lat, lng: pts[idx].lng })));
+  setHtml("motoRouteList",
+    `<div class="moto-route-total">📍 ${pts.length} entrega(s) · <b>${totalKm} km</b> no total (ida e volta à sede)</div>` +
+    `<a class="admin-btn sm" href="${mapsUrl}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-bottom:10px">🧭 Abrir rota no Google Maps</a>` +
+    lista);
 
   // Mapa Leaflet.
   if (!MAP) {
