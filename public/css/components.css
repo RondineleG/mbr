@@ -69,6 +69,7 @@
 .order-badge { font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
 .order-items-line { font-size: 12px; color: var(--t2); margin-bottom: 8px; }
 .order-mbox-reveal { font-size: 12px; color: var(--t1); margin: 0 0 8px; padding: 8px 10px; border: 1px dashed var(--G, #C9A84C); border-radius: var(--radius-sm); background: rgba(201,168,76,0.06); }
+.order-mbox-reveal.locked { color: var(--t2); border-color: var(--line, rgba(255,255,255,0.1)); background: transparent; }
 .order-actions { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bd); }
 .order-repeat-btn { width: 100%; padding: 10px; font-size: 12px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--G); border-radius: 8px; background: var(--gw); color: var(--G); transition: all var(--dur) var(--ease); font-family: 'Share Tech Mono', monospace; }
 .order-repeat-btn:hover { background: var(--G); color: var(--bg); }

@@ -94,10 +94,13 @@ function orderCard(o) {
   const showTimeline = o.status !== "cancelado";
   const canRepeat = o.status !== "cancelado" && o.items && o.items.length > 0;
 
-  // MBox: revela a composição (oculta antes do pedido) já que o pedido foi fechado.
+  // MBox: a composição é SURPRESA — só é revelada após o corte de sexta 22h
+  // (quando o pedido também deixa de ser cancelável). Antes disso, fica oculta.
   const mboxItem = (o.items || []).find((it) => it.mbox && it.composicao?.length);
-  const mboxReveal = mboxItem ? `
-    <div class="order-mbox-reveal">📦 <b>Conteúdo da ${escapeHtml(mboxItem.name)}:</b> ${mboxItem.composicao.map((c) => `${c.icon || ""} ${escapeHtml(c.name)}`).join(" · ")}</div>` : "";
+  const mboxRevealed = mboxItem && o.cancelavelAte && Date.now() >= o.cancelavelAte;
+  const mboxReveal = !mboxItem ? "" : (mboxRevealed
+    ? `<div class="order-mbox-reveal">📦 <b>Conteúdo da ${escapeHtml(mboxItem.name)}:</b> ${mboxItem.composicao.map((c) => `${c.icon || ""} ${escapeHtml(c.name)}`).join(" · ")}</div>`
+    : `<div class="order-mbox-reveal locked">🔒 <b>${escapeHtml(mboxItem.name)} — surpresa!</b> O conteúdo é revelado após sexta 22h (quando o pedido entra em produção).</div>`);
 
   // Cancelamento/alteração: até as 13h do dia de produção (ou sexta 22h p/ MBox).
   const podeCancelar = canCancelOrder(o);

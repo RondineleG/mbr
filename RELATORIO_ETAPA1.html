@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Relatório de Projeto — Etapa 1 — MrBur</title>
+<style>
+  @page { size: A4; margin: 3cm 2cm 2cm 3cm; }
+  * { box-sizing: border-box; }
+  body { font-family: "Times New Roman", Times, serif; font-size: 12pt; line-height: 1.5; color: #000; text-align: justify; margin: 0; }
+  h1, h2, h3 { font-family: "Times New Roman", Times, serif; color: #000; line-height: 1.3; page-break-after: avoid; }
+  h1 { font-size: 14pt; font-weight: bold; margin: 26px 0 12px; text-transform: uppercase; }
+  h2 { font-size: 13pt; font-weight: bold; margin: 20px 0 10px; }
+  h3 { font-size: 12pt; font-weight: bold; margin: 16px 0 8px; }
+  p { margin: 0 0 10px; text-indent: 1.25cm; }
+  p.noindent, li { text-indent: 0; }
+  ul, ol { margin: 0 0 10px 0; padding-left: 1.25cm; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 10.5pt; }
+  th, td { border: 1px solid #000; padding: 6px 8px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  .fig { text-align: center; margin: 14px 0; page-break-inside: avoid; }
+  .fig img { max-width: 95%; border: 1px solid #999; }
+  .fig .cap { font-size: 10pt; text-align: center; text-indent: 0; margin-top: 4px; }
+  .fig .ph { border: 1px dashed #999; padding: 36px; color: #666; font-size: 10pt; background: #fafafa; }
+  .cover { text-align: center; height: 26cm; display: flex; flex-direction: column; justify-content: space-between; page-break-after: always; }
+  .cover .top, .cover .mid, .cover .bot { text-align: center; }
+  .cover h1 { text-transform: none; font-size: 16pt; }
+  .cover p { text-indent: 0; }
+  .muted { color: #b00; }
+  code { font-family: "Courier New", monospace; font-size: 10.5pt; }
+  .toc p { text-indent: 0; margin: 2px 0; }
+  blockquote { margin: 8px 0 8px 4cm; font-size: 10pt; text-align: justify; }
+  @media screen { body { max-width: 800px; margin: 20px auto; padding: 0 16px; } }
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════ CAPA ══════════════╗ -->
+<div class="cover">
+  <div class="top">
+    <p><strong>INSTITUIÇÃO DE ENSINO</strong> <span class="muted">[preencher: nome da faculdade]</span></p>
+    <p><span class="muted">[preencher: curso]</span></p>
+  </div>
+  <div class="mid">
+    <h1>MrBur — A Ordem<br>Plataforma de Fidelização e Pedidos para Comércios de Alimentação Locais</h1>
+    <p style="margin-top:24px"><strong>Relatório de Projeto — Etapa 1 (Parcial)</strong></p>
+    <p>Disciplina: HOW X 2025-2 <span class="muted">[ajustar se necessário]</span></p>
+    <p>Tema: Resolvendo problemas na comunidade em que estamos inseridos</p>
+    <p style="margin-top:24px"><strong>Integrantes do grupo:</strong></p>
+    <p class="muted">[Nome completo — RA]<br>[Nome completo — RA]<br>[Nome completo — RA]</p>
+  </div>
+  <div class="bot">
+    <p>Americana — SP</p>
+    <p>2026</p>
+  </div>
+</div>
+
+<!-- ╔══════════════ SUMÁRIO ══════════════╗ -->
+<div class="toc" style="page-break-after: always;">
+  <h1>Sumário</h1>
+  <p>1 Etapa 1</p>
+  <p>1.1 Introdução</p>
+  <p>1.2 Geração de Ideia</p>
+  <p>1.3 Prova de Conceito</p>
+  <p>1.4 SCRUM Configurado</p>
+  <p>1.4.1 Ferramentas para Gerenciamento Online</p>
+  <p>1.5 CANVAS</p>
+  <p>1.5.1 Criação de Modelo de Negócios</p>
+  <p>1.5.2 Canvas de Proposta de Valor</p>
+  <p>1.5.3 Canvas de Modelo de Negócio (Business Model Canvas)</p>
+  <p>1.5.4 Canvas MVP</p>
+  <p>1.6 MVP – Mínimo Produto Viável</p>
+  <p>1.6.1 Prototipação e Testes do Produto</p>
+  <p>1.6.2 Prototipação</p>
+  <p>1.6.3 Testes de Produtos</p>
+  <p>1.6.4 Estrutura do MVP</p>
+  <p>1.6.5 Implementação do MVP</p>
+  <p>1.7 Análise Paramétrica de Concorrentes</p>
+  <p>1.8 Vídeo de Apresentação</p>
+  <p>2 Etapa 2</p>
+  <p>2.1 Aplicação e Validação do MVP com Usuários Reais</p>
+  <p>2.2 Entrega Técnica: Arquivos-Fonte e Executáveis</p>
+  <p>2.3 Socialização dos Resultados – Seminário Virtual</p>
+  <p>3 Conclusão</p>
+  <p>4 Referências Bibliográficas</p>
+</div>
+
+<!-- ╔══════════════ 1 ETAPA 1 ══════════════╗ -->
+<h1>1 Etapa 1</h1>
+<p>Este capítulo apresenta o desenvolvimento parcial do projeto MrBur, desde a identificação do problema na comunidade até a construção e os testes do Mínimo Produto Viável (MVP). São descritos o processo de geração da ideia, a prova de conceito, a organização do trabalho por meio do framework SCRUM, a modelagem de negócio com a metodologia CANVAS, a estrutura e a implementação do MVP, a análise dos concorrentes e o vídeo de apresentação.</p>
+
+<h2>1.1 Introdução</h2>
+<p>O setor de alimentação fora do lar é um dos pilares econômicos das comunidades urbanas. Em cidades do interior, como Americana (SP), hamburguerias e lanchonetes de pequeno e médio porte representam fonte de renda para famílias e geram empregos diretos e indiretos, incluindo os entregadores. Entretanto, esses comércios enfrentam dificuldades concretas: a dependência de aplicativos de marketplace que cobram comissões elevadas (frequentemente entre 12% e 30% por pedido), a ausência de um canal próprio de relacionamento com o cliente e a informalidade na gestão das entregas locais.</p>
+<p>Diante desse cenário, o presente projeto propõe o MrBur — A Ordem, uma plataforma web progressiva (PWA) de fidelização gamificada e pedidos diretos, voltada a comércios de alimentação locais. A solução busca reduzir a dependência de intermediários caros, fortalecer o vínculo entre o estabelecimento e sua clientela e organizar a operação de entrega com os motoboys da própria comunidade. O presente relatório, de caráter parcial (Etapa 1), documenta a concepção, a prototipação, os testes e a implementação do MVP, evidenciando os resultados já alcançados.</p>
+<p>O documento está organizado conforme as seções a seguir: geração da ideia e prova de conceito; configuração do processo ágil (SCRUM); modelagem de negócio (CANVAS); descrição do MVP, sua estrutura, prototipação, testes e implementação; análise paramétrica dos concorrentes; e o vídeo de apresentação. Ao final, são apresentadas a conclusão parcial e as referências bibliográficas.</p>
+
+<h2>1.2 Geração de Ideia</h2>
+<p>A ideia nasceu da observação direta de um problema recorrente na comunidade: pequenas hamburguerias locais perdem margem de lucro significativa para plataformas de entrega e não conseguem manter um relacionamento direto com seus clientes, ficando reféns dos algoritmos e das taxas desses intermediários. Paralelamente, os entregadores que atuam na região, muitas vezes de forma informal, carecem de organização e de um canal claro de comunicação com o estabelecimento e com o cliente.</p>
+<p>A partir de sessões de brainstorming, o grupo levantou diferentes hipóteses de solução: (i) um cardápio digital simples; (ii) um programa de fidelidade por pontos; e (iii) uma plataforma completa que unisse pedidos, fidelização gamificada e gestão de entregas. Optou-se pela terceira hipótese por entregar maior valor percebido e por endereçar simultaneamente os três atores do problema — o estabelecimento, o cliente e o entregador.</p>
+<p>O conceito escolhido foi o de uma experiência "premium gamificada", na qual o cliente se torna um "agente" de uma ordem secreta, acumula méritos (pontos) a cada compra, cumpre missões, sobe de patente e troca pontos por recompensas. Essa narrativa diferencia a marca e aumenta o engajamento e a recorrência, atacando diretamente o problema de retenção de clientes dos comércios locais.</p>
+
+<h2>1.3 Prova de Conceito</h2>
+<p>A prova de conceito (PoC) teve como objetivo verificar a viabilidade técnica e a aderência da proposta antes do desenvolvimento completo. Foi construído um protótipo de alta fidelidade da interface, com a identidade visual definitiva (tema escuro premium com detalhes em dourado), simulando os principais fluxos: cadastro por convite, montagem de pedido, acúmulo de méritos e resgate de recompensas.</p>
+<p>Em seguida, validou-se a arquitetura tecnológica escolhida — uma aplicação web progressiva (PWA) construída com HTML, CSS e JavaScript puro, apoiada na plataforma Firebase (autenticação, banco de dados Firestore em tempo real, armazenamento e hospedagem). A PoC confirmou que era possível: (i) autenticar usuários e controlar acesso por papéis; (ii) refletir mudanças de estado em tempo real entre o cliente e o painel administrativo; e (iii) instalar a aplicação no dispositivo como um aplicativo nativo. Com a viabilidade comprovada, evoluiu-se o protótipo para um MVP operacional, descrito nas seções seguintes.</p>
+
+<h2>1.4 SCRUM Configurado</h2>
+<p>A condução do projeto adotou o framework ágil SCRUM, adequado a projetos de software com requisitos que evoluem ao longo do tempo. Definiram-se os papéis de Product Owner (responsável por priorizar o backlog e representar a visão do produto), Scrum Master (responsável por remover impedimentos e zelar pelo processo) e Time de Desenvolvimento (responsável pela construção do incremento).</p>
+<p>O trabalho foi organizado em Sprints curtas, com um backlog de produto contendo as funcionalidades priorizadas (autenticação, catálogo, pedidos, gamificação, painel administrativo, entregas e PWA). Ao final de cada Sprint, um incremento funcional foi entregue e publicado, permitindo validação contínua. Reuniões de planejamento, acompanhamento e revisão orientaram a evolução do produto.</p>
+
+<h3>1.4.1 Ferramentas para Gerenciamento Online</h3>
+<p>Para o gerenciamento online do projeto e a colaboração do grupo, foram utilizadas as seguintes ferramentas:</p>
+<ul>
+  <li><strong>GitHub</strong>: versionamento do código-fonte, com histórico de commits semânticos (padrão <code>feat</code>, <code>fix</code>, <code>refactor</code>) que evidencia a evolução do produto. Repositório: <code>github.com/RondineleG/mbr</code>.</li>
+  <li><strong>GitHub Actions (CI/CD)</strong>: integração e entrega contínuas — cada alteração enviada à branch principal dispara automaticamente a publicação da nova versão em produção.</li>
+  <li><strong>Quadro de tarefas (GitHub Projects/Trello)</strong>: organização do backlog e das tarefas da Sprint em colunas (a fazer, em andamento, concluído).</li>
+  <li><strong>Firebase Console</strong>: monitoramento do banco de dados, autenticação e hospedagem.</li>
+</ul>
+
+<h2>1.5 CANVAS</h2>
+<h3>1.5.1 Criação de Modelo de Negócios</h3>
+<p>Para estruturar o modelo de negócios, utilizou-se a metodologia CANVAS, que permite visualizar de forma sistêmica como a solução cria, entrega e captura valor. Foram elaborados três artefatos: o Canvas de Proposta de Valor, o Business Model Canvas e o Canvas do MVP, apresentados a seguir.</p>
+
+<h3>1.5.2 Canvas de Proposta de Valor</h3>
+<p>O Canvas de Proposta de Valor relaciona as dores e os ganhos dos clientes com os produtos e serviços oferecidos. Consideraram-se dois perfis: o estabelecimento (hamburgueria local) e o consumidor final.</p>
+<table>
+  <tr><th>Dores do cliente</th><th>Aliviadores de dor (solução)</th></tr>
+  <tr><td>Altas taxas dos marketplaces; baixa margem.</td><td>Canal de pedidos próprio, sem comissão de intermediário.</td></tr>
+  <tr><td>Baixa fidelização e recorrência.</td><td>Gamificação (méritos, missões, ranks, recompensas).</td></tr>
+  <tr><td>Falta de relação direta com o cliente.</td><td>Base de clientes própria e comunicação direta.</td></tr>
+  <tr><td>Entregas desorganizadas.</td><td>Painel de entregas para o motoboy, com rota e chat.</td></tr>
+</table>
+<table>
+  <tr><th>Ganhos esperados</th><th>Criadores de ganho (solução)</th></tr>
+  <tr><td>Mais recorrência e ticket médio.</td><td>Recompensas e missões incentivam novas compras.</td></tr>
+  <tr><td>Experiência diferenciada.</td><td>Narrativa "agente da Ordem", tema premium, app instalável.</td></tr>
+  <tr><td>Operação organizada e em tempo real.</td><td>Status do pedido atualizado instantaneamente; chat.</td></tr>
+</table>
+
+<h3>1.5.3 Canvas de Modelo de Negócio (Business Model Canvas)</h3>
+<table>
+  <tr><th>Bloco</th><th>Descrição</th></tr>
+  <tr><td>Segmentos de Clientes</td><td>Hamburguerias e lanchonetes locais; consumidores da comunidade; entregadores (motoboys).</td></tr>
+  <tr><td>Proposta de Valor</td><td>Pedidos diretos sem comissão de marketplace, fidelização gamificada e gestão de entregas integrada.</td></tr>
+  <tr><td>Canais</td><td>Aplicativo web progressivo (PWA) instalável; link direto; redes sociais do estabelecimento.</td></tr>
+  <tr><td>Relacionamento</td><td>Automatizado e gamificado (méritos, missões, ranking); chat direto na entrega.</td></tr>
+  <tr><td>Fontes de Receita</td><td>Assinatura mensal do estabelecimento (SaaS); planos por porte; (futuro) taxa simbólica por pedido.</td></tr>
+  <tr><td>Recursos-Chave</td><td>Plataforma (código), infraestrutura Firebase, identidade visual, equipe de desenvolvimento.</td></tr>
+  <tr><td>Atividades-Chave</td><td>Desenvolvimento e manutenção do software, suporte ao estabelecimento, evolução de funcionalidades.</td></tr>
+  <tr><td>Parcerias-Chave</td><td>Estabelecimentos locais, entregadores, provedores de nuvem (Google/Firebase).</td></tr>
+  <tr><td>Estrutura de Custos</td><td>Infraestrutura em nuvem, desenvolvimento, suporte e marketing.</td></tr>
+</table>
+
+<h3>1.5.4 Canvas MVP</h3>
+<p>O Canvas MVP delimita o mínimo necessário para validar a proposta com usuários reais.</p>
+<table>
+  <tr><th>Item</th><th>Definição no MVP</th></tr>
+  <tr><td>Proposta</td><td>Fidelização gamificada + pedidos diretos para uma hamburgueria.</td></tr>
+  <tr><td>Funcionalidades mínimas</td><td>Cadastro por convite, catálogo, carrinho, pedido, méritos/missões, painel admin, entregas.</td></tr>
+  <tr><td>Métricas</td><td>Pedidos realizados, méritos creditados, taxa de conversão de convites, recompensas resgatadas.</td></tr>
+  <tr><td>Hipótese a validar</td><td>A gamificação aumenta a recorrência e a satisfação do cliente do comércio local.</td></tr>
+</table>
+
+<h2>1.6 MVP – Mínimo Produto Viável</h2>
+<p>O MVP do MrBur foi desenvolvido e publicado em ambiente real, acessível em <code>https://trabalhohowx.web.app</code>. Trata-se de uma aplicação web progressiva funcional, com dados reais persistidos em nuvem e atualização em tempo real.</p>
+
+<h3>1.6.1 Prototipação e Testes do Produto</h3>
+<p>O desenvolvimento seguiu um ciclo de prototipação seguida de testes. Partiu-se de um protótipo de alta fidelidade que definiu a identidade visual e os fluxos; em seguida, o protótipo foi transformado em produto operacional, submetido a testes funcionais a cada incremento. Os defeitos identificados foram registrados e corrigidos iterativamente.</p>
+
+<h3>1.6.2 Prototipação</h3>
+<p>A prototipação contemplou as principais telas dos três perfis do sistema: o agente (cliente que faz o pedido), o administrador e o entregador (motoboy). Para a primeira versão de validação, a plataforma foi deliberadamente delimitada, por meio do mecanismo de controle de funcionalidades por papel, ao núcleo essencial do problema: <strong>Cardápio, Monte Seu Lanche, Sacola e Pedidos</strong>. As demais funcionalidades (clube de gamificação, loja de méritos, missões, convites e busca) permanecem desabilitadas para o agente nesta etapa, podendo ser liberadas progressivamente pelo administrador. As figuras a seguir apresentam as telas do MVP em funcionamento.</p>
+<div class="fig"><img src="relatorio-img/01-login.png" alt="Tela do MrBur"><div class="cap">Figura 1 — Tela de acesso do agente.</div></div>
+<div class="fig"><img src="relatorio-img/02-home.png" alt="Tela do MrBur"><div class="cap">Figura 2 — Home do agente: progresso de patente e acesso rápido (versão inicial).</div></div>
+<div class="fig"><img src="relatorio-img/03-cardapio.png" alt="Tela do MrBur"><div class="cap">Figura 3 — Cardápio com o montador "Monte Seu Lanche".</div></div>
+<div class="fig"><img src="relatorio-img/04-pedidos.png" alt="Tela do MrBur"><div class="cap">Figura 4 — Acompanhamento do pedido em tempo real (linha do tempo).</div></div>
+<div class="fig"><img src="relatorio-img/05-admin.png" alt="Tela do MrBur"><div class="cap">Figura 5 — Painel de comando (admin).</div></div>
+<div class="fig"><img src="relatorio-img/06-motoboy.png" alt="Tela do MrBur"><div class="cap">Figura 6 — Central de entregas do motoboy.</div></div>
+<div class="fig"><img src="relatorio-img/13-pagamento.png" alt="Tela do MrBur"><div class="cap">Figura 7 — Pagamento no checkout (cartão de crédito ou Pix; simulado).</div></div>
+<div class="fig"><img src="relatorio-img/15-motoboy-rota.png" alt="Tela do MrBur"><div class="cap">Figura 8 — Roteirização das entregas (mapa + menor trajeto, Problema do Caixeiro Viajante).</div></div>
+<div class="fig"><img src="relatorio-img/16-lanche-dia.png" alt="Tela do MrBur"><div class="cap">Figura 9 — Lanche do Dia: o combo de hoje (preço fixo, sem méritos).</div></div>
+<div class="fig"><img src="relatorio-img/17-mbox-cliente.png" alt="Tela do MrBur"><div class="cap">Figura 10 — MBox (caixa surpresa): conteúdo oculto e estoque limitado por sábado.</div></div>
+<div class="fig"><img src="relatorio-img/18-pagamento-meritos.png" alt="Tela do MrBur"><div class="cap">Figura 11 — Pagamento com méritos (1 real = 1 mérito), além de cartão e Pix.</div></div>
+<div class="fig"><img src="relatorio-img/19-pedido-mbox.png" alt="Tela do MrBur"><div class="cap">Figura 12 — MBox no pedido: conteúdo mantido em surpresa, revelado só após sexta 22h; alteração/cancelamento até esse horário.</div></div>
+<div class="fig"><img src="relatorio-img/20-admin-lanchedia.png" alt="Tela do MrBur"><div class="cap">Figura 13 — Admin: composição do Lanche do Dia por dia da semana (seg–sáb).</div></div>
+<div class="fig"><img src="relatorio-img/21-admin-mbox.png" alt="Tela do MrBur"><div class="cap">Figura 14 — Admin: composição da MBox (oculta do cliente até fechar o pedido).</div></div>
+
+<h3>1.6.3 Testes de Produtos</h3>
+<p>Foram adotadas duas frentes de teste. A primeira, de testes automatizados de ponta a ponta (E2E), utilizando a ferramenta Playwright, exercitando fluxos do cliente e do administrador contra o ambiente real. A segunda, de testes manuais exploratórios, que originaram um relatório de funcionalidades com a catalogação de defeitos por severidade (críticos, médios e menores) e suas respectivas correções. Esse processo elevou a confiabilidade do MVP e validou os fluxos principais: cadastro por convite, criação de pedido, atualização de status em tempo real e crédito de méritos.</p>
+
+<h3>1.6.4 Estrutura do MVP</h3>
+<p>A aplicação adota uma arquitetura modular e organizada, sem dependência de frameworks pesados, priorizando o domínio dos fundamentos. Os principais elementos são:</p>
+<ul>
+  <li><strong>Camada de apresentação</strong>: páginas do cliente, painel administrativo e painel do motoboy, com componentes reutilizáveis (modais, toasts, etc.).</li>
+  <li><strong>Estado central (store)</strong>: um repositório de estado com padrão publicador/assinante; as telas assinam mudanças e se re-renderizam automaticamente.</li>
+  <li><strong>Fachadas de serviço</strong>: uma interface única de acesso a dados que seleciona, por configuração, a implementação real (Firebase) ou de demonstração (armazenamento local) — padrão Adapter.</li>
+  <li><strong>Controle de acesso por papéis</strong>: administrador e agente (sendo o motoboy um agente com capacidade especial de entrega); sistema de "feature flags" que permite ao administrador habilitar ou desabilitar funcionalidades por papel.</li>
+</ul>
+
+<h3>1.6.5 Implementação do MVP</h3>
+<p>O MVP foi implementado com as seguintes tecnologias e funcionalidades:</p>
+<ul>
+  <li><strong>Tecnologias</strong>: HTML5, CSS3 e JavaScript (ES Modules); Firebase (Authentication, Firestore, Storage, Hosting); aplicação web progressiva (PWA) instalável e com funcionamento offline parcial.</li>
+  <li><strong>Funcionalidades entregues</strong>: autenticação real com controle de acesso por convites; cadastro por onboarding; catálogo dinâmico e montador "Monte Seu Lanche"; carrinho e checkout que cria pedidos reais; acompanhamento do pedido em tempo real com linha do tempo; gamificação completa (méritos, ranks, missões, recompensas, ranking); painel administrativo (produtos, pedidos, agentes, recompensas, missões, convites e controle de funcionalidades); painel do motoboy com lista de entregas, valor por entrega e chat com o cliente; convites vinculados a agentes; e instalação como aplicativo (PWA).</li>
+  <li><strong>Pagamento</strong>: fluxo de pagamento no checkout com cartão de crédito (com validação), Pix (copia e cola) e méritos (1 real = 1 mérito), em modo de demonstração; o pedido só é confirmado após o pagamento.</li>
+  <li><strong>Cardápio configurável</strong>: além do montador "Monte Seu Lanche" (cujos ingredientes o administrador cadastra), há o <em>Lanche do Dia</em> — um combo por dia da semana (seg–sáb), composto pelo administrador a partir dos mesmos ingredientes, com preço fixo e sem crédito de méritos, do qual o cliente vê apenas o de hoje — e a <em>MBox</em>, uma caixa surpresa cujo conteúdo é montado pelo administrador e permanece oculto do cliente até o corte de sexta às 22h (quando o pedido entra em produção e deixa de ser cancelável), com entrega aos sábados, estoque limitado a 50 unidades por sábado e crédito normal de méritos.</li>
+  <li><strong>Regras de operação</strong>: pedidos aceitos até as 13h são produzidos no mesmo dia (entrega 18h–22h) e, após esse horário, agendados para o dia seguinte; o cliente pode alterar (edição in-place, pagando apenas a diferença) ou cancelar o pedido até as 13h, pois a produção é feita fresca no dia.</li>
+  <li><strong>Logística e roteirização</strong>: o frete é calculado por distância (R$ 5,00 + R$ 0,50/km da sede ao cliente, via fórmula de Haversine); o painel do motoboy exibe um mapa (Leaflet/OpenStreetMap) com a rota otimizada pelo Problema do Caixeiro Viajante (vizinho-mais-próximo com melhoria 2-opt), saindo e retornando à sede, além de integração com o Google Maps para navegação. Os endereços dos agentes são geocodificados por CEP (ViaCEP + Nominatim).</li>
+  <li><strong>Publicação</strong>: hospedagem no Firebase Hosting com entrega contínua via GitHub Actions; versão pública em <code>https://trabalhohowx.web.app</code>.</li>
+</ul>
+
+<h2>1.7 Análise Paramétrica de Concorrentes</h2>
+<p>Foram analisadas as principais alternativas disponíveis no mercado para os comércios locais, comparadas segundo parâmetros relevantes para o problema. O quadro a seguir sintetiza a análise.</p>
+<table>
+  <tr><th>Parâmetro</th><th>iFood / Rappi (marketplaces)</th><th>Cardápio digital simples</th><th>MrBur (nossa solução)</th></tr>
+  <tr><td>Comissão por pedido</td><td>Alta (12%–30%)</td><td>Baixa/nenhuma</td><td>Nenhuma (modelo por assinatura)</td></tr>
+  <tr><td>Fidelização gamificada</td><td>Limitada/inexistente p/ o lojista</td><td>Inexistente</td><td>Completa (méritos, missões, ranks)</td></tr>
+  <tr><td>Relação direta com o cliente</td><td>Não (dados do marketplace)</td><td>Parcial</td><td>Sim (base própria)</td></tr>
+  <tr><td>Gestão de entregas própria</td><td>Da plataforma</td><td>Não</td><td>Sim (painel do motoboy + chat)</td></tr>
+  <tr><td>Aplicativo instalável (PWA)</td><td>App próprio</td><td>Geralmente não</td><td>Sim</td></tr>
+  <tr><td>Foco no comércio local</td><td>Não</td><td>Parcial</td><td>Sim</td></tr>
+</table>
+<p>A análise evidencia que o MrBur ocupa um espaço pouco explorado: oferece, ao comércio local, autonomia em relação aos marketplaces, fidelização gamificada e gestão de entregas integrada, a um custo previsível por assinatura.</p>
+
+<h2>1.8 Vídeo de Apresentação</h2>
+<p>O vídeo de apresentação demonstra o MVP em funcionamento, percorrendo os fluxos do cliente, do administrador e do entregador, conforme o roteiro elaborado pelo grupo. O vídeo está disponível no seguinte endereço:</p>
+<p class="noindent" style="text-indent:0"><strong>Link do vídeo:</strong> <span class="muted">[inserir link do YouTube/Drive — vídeo não listado]</span></p>
+<p>Aplicação publicada para avaliação: <code>https://trabalhohowx.web.app</code>. Credenciais de teste — Administrador: <code>admin@mrbur.com</code> / <code>mrbur2025</code>; Agente e Motoboy: contas de demonstração informadas no vídeo.</p>
+
+<!-- ╔══════════════ 2 ETAPA 2 ══════════════╗ -->
+<h1>2 Etapa 2</h1>
+<h2>2.1 Aplicação e Validação do MVP com Usuários Reais</h2>
+<h2>2.2 Entrega Técnica: Arquivos-Fonte e Executáveis</h2>
+<h2>2.3 Socialização dos Resultados – Seminário Virtual</h2>
+
+<!-- ╔══════════════ 3 CONCLUSÃO ══════════════╗ -->
+<h1>3 Conclusão</h1>
+<p>Esta etapa parcial demonstrou a viabilidade de uma solução tecnológica voltada a um problema concreto da comunidade: a vulnerabilidade dos comércios de alimentação locais diante dos marketplaces e a informalidade na operação de entregas. A partir da geração da ideia e de uma prova de conceito, o grupo organizou o trabalho com o framework SCRUM, modelou o negócio com a metodologia CANVAS e construiu um MVP funcional, publicado em ambiente real e testado de forma automatizada e manual.</p>
+<p>Os resultados alcançados — uma plataforma operacional com pedidos em tempo real, fidelização gamificada, painel administrativo, gestão de entregas e instalação como aplicativo — confirmam o potencial da proposta de fortalecer o comércio local e organizar a cadeia de entrega da comunidade. Para a Etapa 2, prevê-se a validação do MVP com usuários reais, a entrega técnica dos artefatos e a socialização dos resultados em seminário virtual.</p>
+
+<!-- ╔══════════════ 4 REFERÊNCIAS ══════════════╗ -->
+<h1>4 Referências Bibliográficas</h1>
+<p class="noindent" style="text-indent:0">OSTERWALDER, A.; PIGNEUR, Y. <strong>Business Model Generation: inovação em modelos de negócios</strong>. Rio de Janeiro: Alta Books, 2011.</p>
+<p class="noindent" style="text-indent:0">RIES, E. <strong>A Startup Enxuta</strong>. São Paulo: Lua de Papel, 2012.</p>
+<p class="noindent" style="text-indent:0">SCHWABER, K.; SUTHERLAND, J. <strong>O Guia do Scrum</strong>. 2020. Disponível em: https://scrumguides.org. Acesso em: maio 2026.</p>
+<p class="noindent" style="text-indent:0">GOOGLE. <strong>Documentação do Firebase</strong>. Disponível em: https://firebase.google.com/docs. Acesso em: maio 2026.</p>
+<p class="noindent" style="text-indent:0">MOZILLA. <strong>Progressive Web Apps (MDN Web Docs)</strong>. Disponível em: https://developer.mozilla.org/pt-BR/docs/Web/Progressive_web_apps. Acesso em: maio 2026.</p>
+<p class="noindent" style="text-indent:0">ASSOCIAÇÃO BRASILEIRA DE NORMAS TÉCNICAS. <strong>NBR 14724</strong>: informação e documentação: trabalhos acadêmicos: apresentação. Rio de Janeiro, 2011.</p>
+
+</body>
+</html>
