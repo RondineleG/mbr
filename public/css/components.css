@@ -191,7 +191,7 @@
 .timeline-obs { font-size: 11px; color: var(--t2); line-height: 1.4; }
 
 /* ── Pedidos Stats Dashboard ── */
-.pedidos-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 16px 16px; }
+.pedidos-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 16px 16px; }
 .pedido-stat-card { background: var(--card); border: 1px solid var(--bd); border-radius: 12px; padding: 12px; text-align: center; }
 .pedido-stat-value { font-size: 18px; font-weight: 800; color: var(--G); font-family: 'Share Tech Mono', monospace; margin-bottom: 4px; }
 .pedido-stat-label { font-size: 10px; color: var(--t3); letter-spacing: 1px; }

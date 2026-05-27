@@ -64,10 +64,6 @@ function renderStats(stats) {
       <div class="pedido-stat-value">${stats.recebidos + stats.analisando}</div>
       <div class="pedido-stat-label">Pendentes</div>
     </div>
-    <div class="pedido-stat-card">
-      <div class="pedido-stat-value">${money(stats.valorTotal)}</div>
-      <div class="pedido-stat-label">Valor Total</div>
-    </div>
   </div>`;
 }
 
