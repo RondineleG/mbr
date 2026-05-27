@@ -39,6 +39,13 @@ export function applyFeatureGates() {
     if (!key) return;
     show(el, isEnabled(features, role, key));
   });
+  // Esconde seções do menu lateral que ficaram sem nenhum item visível,
+  // evitando títulos órfãos (ex.: "MINHAS OPERAÇÕES" sem itens embaixo).
+  $$(".sidemenu-section").forEach((sec) => {
+    const visivel = [...sec.querySelectorAll(".sidemenu-item")]
+      .some((it) => it.style.display !== "none");
+    sec.style.display = visivel ? "" : "none";
+  });
 }
 let deferredPrompt = null;
 
