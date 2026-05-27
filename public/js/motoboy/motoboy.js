@@ -88,8 +88,9 @@ function renderRoute(active) {
     const p = pts[idx], o = p.o;
     const addr = [o.address.street, o.address.number, o.address.neighborhood].filter(Boolean).join(", ");
     return `<div class="moto-route-item"><span class="moto-route-num">${i + 1}</span>
-      <div><b>${escapeHtml(o.numeroPedido || o.id)}</b> · ${escapeHtml(o.cliente || "")}<br>
-      <small>${escapeHtml(addr || "—")} · ${legs[i]} km</small></div></div>`;
+      <div style="flex:1"><b>${escapeHtml(o.numeroPedido || o.id)}</b> · ${escapeHtml(o.cliente || "")}<br>
+      <small>${escapeHtml(addr || "—")} · ${legs[i]} km</small></div>
+      <button class="admin-btn sm" data-action="moto-delivered" data-id="${o.id}">✅ Entregue</button></div>`;
   }).join("");
   const mapsUrl = googleMapsRouteUrl(STORE, order.map((idx) => ({ lat: pts[idx].lat, lng: pts[idx].lng })));
   setHtml("motoRouteList",

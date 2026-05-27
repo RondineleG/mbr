@@ -6,6 +6,7 @@ import { onAction, setText, setHtml, show } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { codenameInitials, rankLabel, formatAddress, rankFromPoints } from "../utils/format.js";
 import { updateProfile } from "../services/user.service.js";
+import { lookupCep, geocode } from "../services/geocode.service.js";
 import { listInvites } from "../services/invite.service.js";
 import { renderTopbar } from "../components/topbar.js";
 import { applyTheme, logout } from "../app/session.js";
@@ -124,6 +125,14 @@ const EDITABLE = {
   cep: { label: "CEP", get: (p) => p.address?.cep, apply: (v, p) => ({ address: { ...p.address, cep: v } }) },
 };
 
+// Salva o endereço já geocodificado (lat/lng) — usado p/ frete por km e rotas.
+async function saveAddressWithCoords(p, address) {
+  const coords = await geocode(address).catch(() => null);
+  const full = coords ? { ...address, ...coords } : address;
+  await updateProfile(p.uid, { address: full });
+  toastSuccess(coords ? "Endereço atualizado e localizado no mapa 📍" : "Endereço atualizado (sem coordenadas)");
+}
+
 async function edit(field) {
   const cfg = EDITABLE[field];
   const p = store.get("profile");
@@ -131,9 +140,18 @@ async function edit(field) {
   const value = await modalPrompt({ title: "Editar " + cfg.label, label: cfg.label.toUpperCase(), type: cfg.type || "text", value: cfg.get(p) || "" });
   if (value === null) return;
   try {
-    await updateProfile(p.uid, cfg.apply(value, p));
+    // CEP: autopreenche rua/bairro/cidade (ViaCEP) e geocodifica.
+    if (field === "cep") {
+      const info = await lookupCep(value);
+      const merged = { ...(p.address || {}), ...(info || {}), cep: info?.cep || value };
+      await saveAddressWithCoords(p, merged);
+      return;
+    }
+    const patch = cfg.apply(value, p);
+    // Mudou um campo de endereço → re-geocodifica para atualizar as coordenadas.
+    if (patch.address) { await saveAddressWithCoords(p, patch.address); return; }
+    await updateProfile(p.uid, patch);
     toastSuccess(cfg.label + " atualizado");
-    // watchProfile atualiza o store; renderProfile reage via subscribe.
   } catch {
     toast("error", "⚠", "Não foi possível salvar");
   }
