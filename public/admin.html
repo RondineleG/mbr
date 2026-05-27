@@ -63,6 +63,7 @@
     <button class="admin-navbtn active" data-action="admin-nav" data-section="dashboard"><span class="admin-navbtn-icon">📊</span> Dashboard</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="pedidos"><span class="admin-navbtn-icon">📥</span> Pedidos</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="produtos"><span class="admin-navbtn-icon">🍔</span> Produtos</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="montar"><span class="admin-navbtn-icon">🔧</span> Monte Seu Lanche</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="clientes"><span class="admin-navbtn-icon">🕵️</span> Agentes</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="missoes"><span class="admin-navbtn-icon">🎯</span> Missões</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="recompensas"><span class="admin-navbtn-icon">🎁</span> Recompensas</button>
@@ -123,6 +124,19 @@
     <section class="admin-section" id="section-produtos">
       <div class="admin-head"><div><div class="admin-title">Produtos</div><div class="admin-title-sub">CARDÁPIO DA ORDEM</div></div><button class="admin-btn" data-action="prod-new">+ Novo produto</button></div>
       <div id="productsList"></div>
+    </section>
+
+    <!-- Monte Seu Lanche -->
+    <section class="admin-section" id="section-montar">
+      <div class="admin-head">
+        <div><div class="admin-title">Monte Seu Lanche</div><div class="admin-title-sub">INGREDIENTES DO MONTADOR</div></div>
+        <div style="display:flex;gap:8px">
+          <button class="admin-btn ghost" data-action="montar-reset">↺ Restaurar padrão</button>
+          <button class="admin-btn" data-action="montar-save">💾 Salvar</button>
+        </div>
+      </div>
+      <div class="admin-title-sub" style="padding:0 4px 12px">Cadastre, edite ou remova os ingredientes de cada etapa. Preço 0 = incluído no preço-base.</div>
+      <div id="montarPanel"></div>
     </section>
 
     <!-- Clientes -->

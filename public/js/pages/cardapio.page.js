@@ -4,17 +4,22 @@
 import { $, $$, onAction, setHtml, show, escapeHtml } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { BUILD_STEPS, BUILD_BASE_PRICE } from "../utils/constants.js";
+import { watchBuildSteps } from "../services/buildsteps.service.js";
 import { money } from "../utils/format.js";
 import { skeletonList } from "../components/skeleton.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
 import { isEnabled } from "../services/features.service.js";
 
+// Ingredientes e preço-base do montador: começam com o padrão e são
+// substituídos ao vivo pelo que o admin cadastra (config/montar no Firestore).
+let STEPS = BUILD_STEPS;
+let basePrice = BUILD_BASE_PRICE;
 let currentStep = 0;
 // Itens inclusos já vêm pré-selecionados: Pão (Brioche), Carne (Smash 90g),
 // Extra (Cheddar) e Molho (Molho Secreto). Salada é toda adicional (não vem marcada).
 function defaultSelections() {
   const sel = {};
-  const first = (id) => BUILD_STEPS.find((s) => s.id === id)?.items?.[0];
+  const first = (id) => STEPS.find((s) => s.id === id)?.items?.[0];
   for (const id of ["pao", "carnes", "queijos", "molhos"]) {
     const it = first(id);
     if (it) sel[id] = [it];
@@ -26,25 +31,25 @@ let cat = "monte";
 
 /* ─── Wizard ─── */
 function renderStepTabs() {
-  setHtml("stepTabs", BUILD_STEPS.map((s, i) =>
+  setHtml("stepTabs", STEPS.map((s, i) =>
     `<button class="step-tab ${i === currentStep ? "active" : ""}" data-action="build-step" data-step="${i}">
       <span class="step-tab-icon">${s.icon}</span><span class="step-tab-label">${s.label}</span>
     </button>`).join(""));
-  setHtml("stepDots", BUILD_STEPS.map((_, i) => {
+  setHtml("stepDots", STEPS.map((_, i) => {
     let cls = "step-dot"; if (i === currentStep) cls += " active"; else if (i < currentStep) cls += " completed";
     return `<div class="${cls}" data-action="build-step" data-step="${i}"></div>`;
   }).join(""));
   show($("#stepBackBtn"), currentStep > 0);
   // Na revisão, as ações ficam dentro do resumo (montar outro / ir pra sacola);
   // o botão do rodapé some para não duplicar.
-  const isReview = currentStep === BUILD_STEPS.length - 1;
+  const isReview = currentStep === STEPS.length - 1;
   show($("#stepBtn"), !isReview);
   if (!isReview) { $("#stepBtn").textContent = "Próximo →"; $("#stepBtn").dataset.action = "build-next"; }
   $(".step-tab.active")?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
 }
 
 function renderStepContent() {
-  const step = BUILD_STEPS[currentStep];
+  const step = STEPS[currentStep];
   if (step.id === "finalizar") return renderReview();
   const sel = selections[step.id] || [];
   setHtml("stepContent", `
@@ -68,7 +73,7 @@ function renderStepContent() {
 function renderReview() {
   let extras = 0;
   let body = `<div style="padding:16px"><div class="menu-section-header"><div class="menu-section-title">Resumo do seu Lanche</div></div>`;
-  BUILD_STEPS.forEach((s) => {
+  STEPS.forEach((s) => {
     if (s.id === "finalizar") return;
     const sel = selections[s.id] || [];
     if (!sel.length) return;
@@ -79,7 +84,7 @@ function renderReview() {
     });
     body += `</div>`;
   });
-  const total = BUILD_BASE_PRICE + extras;
+  const total = basePrice + extras;
   body += `<div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:14px;font-weight:700">TOTAL</span>
       <span style="font-size:22px;font-weight:900;color:var(--gold);font-family:var(--f-mono)">${money(total)}</span></div>
@@ -92,7 +97,7 @@ function renderReview() {
 }
 
 function toggleItem(stepId, idx) {
-  const step = BUILD_STEPS.find((s) => s.id === stepId);
+  const step = STEPS.find((s) => s.id === stepId);
   const item = step.items[idx];
   selections[stepId] ||= [];
   const sel = selections[stepId];
@@ -107,9 +112,9 @@ function toggleItem(stepId, idx) {
 
 // Adiciona o lanche montado à sacola e reseta o wizard para um novo lanche.
 function addBuildToCart() {
-  let total = BUILD_BASE_PRICE;
+  let total = basePrice;
   const parts = [];
-  BUILD_STEPS.forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
+  STEPS.forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
   store.cartAdd({ custom: true, name: "Monte Seu Lanche", icon: "🔧", price: total, qty: 1, desc: parts.join(", ") });
   toast("success", "🔧", `Lanche personalizado adicionado! ${money(total)}`);
   selections = defaultSelections(); currentStep = 0; renderWizard();
@@ -293,7 +298,7 @@ export function initCardapio() {
   onAction("cardapio-cat", (el) => showCat(el.dataset.cat));
   onAction("build-step", (el) => { currentStep = +el.dataset.step; renderWizard(); });
   onAction("build-toggle", (el) => toggleItem(el.dataset.step, +el.dataset.idx));
-  onAction("build-next", () => { if (currentStep < BUILD_STEPS.length - 1) { currentStep++; renderWizard(); } });
+  onAction("build-next", () => { if (currentStep < STEPS.length - 1) { currentStep++; renderWizard(); } });
   onAction("build-prev", () => { if (currentStep > 0) { currentStep--; renderWizard(); } });
   onAction("build-add-continue", () => buildAddAndContinue());
   onAction("build-add-go", () => buildAddAndGoToCart());
@@ -305,5 +310,15 @@ export function initCardapio() {
   });
   store.subscribe("features", () => {
     if (store.get("page") === "cardapio") { renderCategories(); applyCardapioGates(); }
+  });
+
+  // Ingredientes vêm do Firestore (cadastrados pelo admin). Ao mudar, reinicia
+  // o wizard com as opções novas e re-renderiza se a página estiver aberta.
+  watchBuildSteps(({ steps, basePrice: bp }) => {
+    STEPS = steps;
+    basePrice = bp;
+    selections = defaultSelections();
+    currentStep = 0;
+    if (store.get("page") === "cardapio") renderWizard();
   });
 }

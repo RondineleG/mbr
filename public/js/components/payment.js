@@ -7,13 +7,17 @@ import { money } from "../utils/format.js";
 
 const PIX_CODE = "00020126MRBUR5204000053039865802BR5909MRBUR LTDA6009AMERICANA62070503***6304A1B2";
 
-export function openPayment(total) {
+export function openPayment(total, opts = {}) {
+  const saldo = Math.max(0, Math.floor(opts.points || 0));
+  const custoMeritos = Math.round(total); // 1 real = 1 mérito
+  const podeMeritos = opts.allowMeritos !== false; // permitir pagar com méritos
   return new Promise((resolve) => {
     const dlg = modalCustom(`
       <div class="modal-title">Pagamento · ${money(total)}</div>
       <div class="pay-tabs">
         <button class="pay-tab active" data-pay="cartao">💳 Cartão</button>
         <button class="pay-tab" data-pay="pix">⚡ Pix</button>
+        ${podeMeritos ? `<button class="pay-tab" data-pay="meritos">🏅 Méritos</button>` : ""}
       </div>
 
       <div id="payCartao">
@@ -35,6 +39,15 @@ export function openPayment(total) {
         <div style="font-size:11px;color:var(--t2);margin-top:8px">Pagamento simulado — clique em "Pagar" para confirmar.</div>
       </div>
 
+      ${podeMeritos ? `
+      <div id="payMeritos" style="display:none;text-align:center">
+        <div style="font-size:48px;line-height:1;margin:6px 0">🏅</div>
+        <div class="pay-meritos-row"><span>Custo</span><b>${custoMeritos} ⚡</b></div>
+        <div class="pay-meritos-row"><span>Seu saldo</span><b style="color:${saldo >= custoMeritos ? "var(--ok)" : "var(--er)"}">${saldo} ⚡</b></div>
+        ${saldo < custoMeritos ? `<div style="font-size:12px;color:var(--er);margin-top:8px">Saldo insuficiente — faltam ${custoMeritos - saldo} ⚡</div>`
+          : `<div style="font-size:11px;color:var(--t2);margin-top:8px">Você ficará com ${saldo - custoMeritos} ⚡ após o pagamento.</div>`}
+      </div>` : ""}
+
       <div class="pay-note">🔒 Pagamento de demonstração. Nenhuma cobrança real é feita.</div>
       <div class="modal-actions">
         <button class="modal-btn ghost" id="payCancel">Cancelar</button>
@@ -45,11 +58,14 @@ export function openPayment(total) {
     let metodo = "cartao";
     const err = (msg) => { const c = el.querySelector("#payConfirm"); c.textContent = msg; setTimeout(() => c.textContent = `Pagar ${money(total)}`, 1600); };
 
+    const confirmBtn = el.querySelector("#payConfirm");
     el.querySelectorAll(".pay-tab").forEach((t) => t.onclick = () => {
       metodo = t.dataset.pay;
       el.querySelectorAll(".pay-tab").forEach((x) => x.classList.toggle("active", x === t));
       el.querySelector("#payCartao").style.display = metodo === "cartao" ? "" : "none";
       el.querySelector("#payPix").style.display = metodo === "pix" ? "" : "none";
+      const mp = el.querySelector("#payMeritos"); if (mp) mp.style.display = metodo === "meritos" ? "" : "none";
+      confirmBtn.textContent = metodo === "meritos" ? `Pagar ${custoMeritos} ⚡` : `Pagar ${money(total)}`;
     });
 
     // máscaras simples
@@ -67,6 +83,11 @@ export function openPayment(total) {
         if (!el.querySelector("#pcName").value.trim()) return err("Informe o nome");
         if (!/^\d{2}\/\d{2}$/.test(exp.value)) return err("Validade MM/AA");
         if (el.querySelector("#pcCvv").value.replace(/\D/g, "").length < 3) return err("CVV inválido");
+      }
+      if (metodo === "meritos") {
+        if (saldo < custoMeritos) return err("Saldo insuficiente");
+        dlg.close();
+        return resolve({ metodo, status: "pago", meritos: custoMeritos });
       }
       dlg.close();
       resolve({ metodo, status: "pago" });

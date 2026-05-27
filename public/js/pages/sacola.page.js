@@ -7,6 +7,7 @@ import { money } from "../utils/format.js";
 import { DELIVERY_FEE, POINTS_PER_BRL } from "../utils/constants.js";
 import { deliveryFeeFor, kmFromStore } from "../utils/geo.js";
 import { createOrder, updateOrderItems } from "../services/order.service.js";
+import { adjustPoints } from "../services/points.service.js";
 import { renderCartBadges } from "../components/topbar.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
@@ -171,10 +172,11 @@ async function checkout(btn) {
       const diff = +(novoTotal - (original?.total || 0)).toFixed(2);
       let pay = null;
       if (diff > 0) {
-        pay = await openPayment(diff); // acréscimo → novo pagamento da diferença
+        pay = await openPayment(diff, { points: profile.points }); // acréscimo → novo pagamento da diferença
         if (!pay) return;
       }
       await updateOrderItems(editId, items, pay);
+      if (pay?.metodo === "meritos") await adjustPoints(profile.uid, -pay.meritos, "Pagamento com méritos (alteração)", editId);
       store.set("editingOrderId", null);
       store.cartClear();
       toast("success", "✓", diff > 0 ? `Alteração salva · pago +${money(diff)}` : `Alteração salva · total ${money(novoTotal)}`);
@@ -182,8 +184,8 @@ async function checkout(btn) {
       return;
     }
 
-    // ── Novo pedido: pagamento fake do total. ──
-    const pay = await openPayment(novoTotal);
+    // ── Novo pedido: pagamento fake do total (dinheiro/pix ou méritos). ──
+    const pay = await openPayment(novoTotal, { points: profile.points });
     if (!pay) return;
     const order = await createOrder({
       uid: profile.uid,
@@ -192,6 +194,7 @@ async function checkout(btn) {
       address: profile.address,
       payment: pay,
     });
+    if (pay.metodo === "meritos") await adjustPoints(profile.uid, -pay.meritos, "Pagamento com méritos", order.id);
     store.cartClear();
     const quando = order.agendado ? "agendado para amanhã · entrega 18h–22h" : "entrega hoje · 18h–22h";
     toast("success", "🎉", `Pedido pago! ${money(order.total)} · ${quando}`);

@@ -92,7 +92,8 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
     subtotal,
     deliveryFee: fee,
     total,
-    pointsEarned: Math.round(total * POINTS_PER_BRL),
+    // Pagando com méritos não se ganham méritos de volta (evita loop).
+    pointsEarned: payment?.metodo === "meritos" ? 0 : Math.round(total * POINTS_PER_BRL),
     pointsAwarded: false,
     address: address || {},
     // Agendamento conforme o corte das 13h.
