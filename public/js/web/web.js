@@ -8,15 +8,17 @@ import * as auth from "../firebase/auth.service.js";
 import { getProfile, listAgents } from "../services/user.service.js";
 import { loadFeatures, isEnabled, loadWebEnabled } from "../services/features.service.js";
 import { listProducts } from "../services/product.service.js";
-import { listUserOrders, ORDER_STATUS_LABELS } from "../services/order.service.js";
+import { createOrder, listUserOrders, ORDER_STATUS_LABELS } from "../services/order.service.js";
 import { listRewards } from "../services/reward.service.js";
-import { getHistory } from "../services/points.service.js";
+import { getHistory, adjustPoints } from "../services/points.service.js";
 import { getMissionsWithProgress } from "../services/mission.service.js";
 import { listInvites, getInviteStats } from "../services/invite.service.js";
 import { loadBuildSteps } from "../services/buildsteps.service.js";
-import { toast } from "../components/toast.js";
+import { openPayment } from "../components/payment.js";
+import { toast, toastError } from "../components/toast.js";
+import { deliveryFeeFor, kmFromStore } from "../utils/geo.js";
 import { money, dateShort, rankFromPoints, codenameInitials } from "../utils/format.js";
-import { BUILD_STEPS, DELIVERY_FEE } from "../utils/constants.js";
+import { BUILD_STEPS, DELIVERY_FEE, POINTS_PER_BRL } from "../utils/constants.js";
 
 const show = (id, on) => { const el = $("#" + id); if (el) el.style.display = on ? "" : "none"; };
 let ME = null, FEATURES = {}, PRODUCTS = [];
@@ -141,15 +143,56 @@ function renderSacola() {
   const cart = store.get("cart") || [];
   if (!cart.length) return '<p style="color:var(--t2)">Sua sacola está vazia. Adicione itens pelo Cardápio ou monte seu lanche.</p>';
   const subtotal = cart.reduce((a, i) => a + (i.price || 0) * (i.qty || 1), 0);
+  const addr = ME?.address;
+  const fee = deliveryFeeFor(addr);
+  const km = addr?.lat != null ? kmFromStore(addr) : null;
+  const total = subtotal + fee;
+  const merits = Math.round(total * POINTS_PER_BRL);
   return `<div class="web-grid">${cart.map(i => `<div class="web-card">
       <div class="web-card-emoji">${i.icon || "🍔"}</div><div class="web-card-name">${i.qty || 1}× ${escapeHtml(i.name)}</div>
       ${i.desc ? `<div class="web-card-desc">${escapeHtml(i.desc)}</div>` : ""}
       <div class="web-card-price">${money((i.price || 0) * (i.qty || 1))}</div>
       <button class="web-btn ghost danger block" data-cart-remove="${i.key}">Remover</button></div>`).join("")}</div>
-    <div class="web-mb-bar" style="margin-top:18px">
-      <div><div class="web-kpi-lbl">Total (com entrega ${money(DELIVERY_FEE)})</div><div class="web-mb-total">${money(subtotal + DELIVERY_FEE)}</div></div>
-      <a class="web-btn" href="/#sacola">Finalizar no app 📱</a></div>
-    <p style="color:var(--t2);font-size:12px;margin-top:12px">O pagamento e o agendamento são concluídos no app mobile (mesma sacola).</p>`;
+    <div class="web-checkout">
+      <div class="web-co-row"><span>Subtotal</span><b>${money(subtotal)}</b></div>
+      <div class="web-co-row"><span>Frete${km != null ? ` (${km} km)` : ""}</span><b>${money(fee)}</b></div>
+      <div class="web-co-row total"><span>Total</span><b>${money(total)}</b></div>
+      <div class="web-co-merits">+${merits}⚡ méritos ao receber</div>
+      <div class="web-co-actions">
+        <button class="web-btn ghost danger" data-cart-clear="1">🗑 Limpar</button>
+        <button class="web-btn" data-checkout="1">Finalizar pedido →</button>
+      </div>
+      <p style="color:var(--t2);font-size:11px;margin:10px 0 0">${addr?.lat != null ? `Entrega para: ${escapeHtml([addr.street, addr.number, addr.neighborhood].filter(Boolean).join(", "))}` : "⚠️ Cadastre seu endereço no Perfil para o frete exato — usando frete padrão."}</p>
+    </div>`;
+}
+
+// Checkout completo na web: pagamento (cartão/pix/méritos) + cria o pedido.
+let webSubmitting = false;
+async function webCheckout() {
+  if (webSubmitting) return;
+  const cart = store.get("cart") || [];
+  if (!ME || !cart.length) return;
+  if (cart.some(i => i.pointsRequired > 0)) { toastError("Itens exclusivos de méritos não vão na sacola — resgate na Loja."); return; }
+  webSubmitting = true;
+  try {
+    const fee = deliveryFeeFor(ME.address);
+    const total = (store.cartSubtotal?.() ?? cart.reduce((a, i) => a + (i.price || 0) * (i.qty || 1), 0)) + fee;
+    const items = cart.map(({ name, icon, price, qty, desc, noMeritos, mbox, composicao }) => ({ name, icon, price, qty, desc, noMeritos, mbox, composicao }));
+    const pay = await openPayment(total, { points: ME.points });
+    if (!pay) return;                                   // cancelou
+    const order = await createOrder({ uid: ME.uid, codename: ME.codename, items, address: ME.address, payment: pay });
+    if (pay.metodo === "meritos") await adjustPoints(ME.uid, -pay.meritos, "Pagamento com méritos", order.id);
+    store.cartClear();
+    updateCartChip();
+    toast("success", "🎉", `Pedido pago! ${money(order.total)}`);
+    go("pedidos");
+  } catch (err) {
+    console.error("Erro no checkout web:", err);
+    const m = err?.message || "";
+    toastError(m.includes("MBOX_SOLD_OUT") ? "MBox esgotada para este sábado" : "Não foi possível enviar o pedido — tente novamente");
+  } finally {
+    webSubmitting = false;
+  }
 }
 
 // Atualiza o chip de méritos e o contador da sacola na navegação.
@@ -301,7 +344,9 @@ async function renderWeb(profile) {
     const ap = e.target.closest("[data-add-prod]");
     if (ap) return addProduct(ap.dataset.addProd);
     const rm = e.target.closest("[data-cart-remove]");
-    if (rm) { store.cartRemove(rm.dataset.cartRemove); updateCartChip(); if (CUR === "sacola") setHtml("webSection", renderSacola()); }
+    if (rm) { store.cartRemove(rm.dataset.cartRemove); updateCartChip(); if (CUR === "sacola") setHtml("webSection", renderSacola()); return; }
+    if (e.target.closest("[data-cart-clear]")) { store.cartClear(); updateCartChip(); if (CUR === "sacola") setHtml("webSection", renderSacola()); return; }
+    if (e.target.closest("[data-checkout]")) return webCheckout();
   });
 
   updateCartChip();
