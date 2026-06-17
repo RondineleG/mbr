@@ -12,6 +12,7 @@ import { renderTopbar } from "../components/topbar.js";
 import { applyTheme, logout } from "../app/session.js";
 import { modalPrompt } from "../components/modal.js";
 import { toast, toastSuccess } from "../components/toast.js";
+import { toggleNotify, notifyEnabled, notifySupported } from "../services/notify.service.js";
 
 export function renderProfile() {
   const p = store.get("profile");
@@ -32,6 +33,24 @@ export function renderProfile() {
   setText("profInvites", (p.invitesAvailable || 0) + " disponíveis");
   setText("profThemeIcon", store.get("theme") === "light" ? "☀️" : "🌙");
   setText("profThemeLabel", store.get("theme") === "light" ? "Modo Claro" : "Modo Escuro");
+  renderNotifyRow();
+}
+
+function renderNotifyRow() {
+  const on = notifyEnabled();
+  setText("profNotifyIcon", on ? "🔔" : "🔕");
+  setText("profNotifyValue", !notifySupported() ? "Não suportado neste navegador"
+    : on ? "Ativadas — avisamos a cada mudança" : "Avisar quando o status mudar");
+}
+
+async function toggleNotifyRow() {
+  if (!notifySupported()) { toast("error", "🔕", "Notificações não suportadas neste navegador"); return; }
+  const on = await toggleNotify();
+  renderNotifyRow();
+  if (on) toastSuccess("Notificações de pedido ativadas 🔔");
+  else if (typeof Notification !== "undefined" && Notification.permission === "denied")
+    toast("error", "🔕", "Permissão bloqueada — libere nas configurações do navegador");
+  else toast("info", "🔕", "Notificações desativadas");
 }
 
 async function showMyInvites() {
@@ -168,6 +187,7 @@ function toggleTheme() {
 export function initPerfil() {
   onAction("edit-field", (el) => edit(el.dataset.field));
   onAction("toggle-theme", () => toggleTheme());
+  onAction("notify-toggle", () => toggleNotifyRow());
   onAction("logout", () => logout());
   onAction("show-my-invites", () => showMyInvites());
   store.subscribe("profile", () => { if (store.get("page") === "perfil") renderProfile(); });
