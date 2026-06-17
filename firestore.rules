@@ -37,6 +37,12 @@ service cloud.firestore {
       allow create, update: if signedIn();
       allow delete: if isAdmin();
     }
+    // Comentários dos lanches (estilo GitHub): leitura pública, criação autenticada.
+    match /lancheComentarios/{id} {
+      allow read: if true;
+      allow create: if signedIn();
+      allow update, delete: if isAdmin();
+    }
 
     // Pedidos: dono, admin ou o motoboy/agente responsável pela entrega podem atualizar.
     match /orders/{id} {
