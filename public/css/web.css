@@ -96,3 +96,12 @@ body.web { max-width: none !important; margin: 0 !important; width: 100%; backgr
 .web-mb-check { width: 16px; color: var(--G); font-weight: 800; }
 .web-mb-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 22px; padding: 16px 20px; border-radius: 14px; background: var(--card); border: 1px solid var(--bd); position: sticky; bottom: 16px; }
 .web-mb-total { font-family: var(--f-mono); font-size: 24px; font-weight: 800; color: var(--G); }
+
+/* ── Checkout (Versão Web) ── */
+.web-checkout { margin-top: 22px; max-width: 460px; padding: 18px 20px; border-radius: 14px; background: var(--card); border: 1px solid var(--bd); }
+.web-co-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; color: var(--t2); }
+.web-co-row b { color: var(--tx); font-family: var(--f-mono); }
+.web-co-row.total { border-top: 1px solid var(--bd); margin-top: 6px; padding-top: 12px; font-size: 16px; color: var(--tx); }
+.web-co-row.total b { color: var(--G); font-size: 20px; }
+.web-co-merits { font-size: 12px; color: var(--ok); text-align: right; margin: 4px 0 14px; font-family: var(--f-mono); }
+.web-co-actions { display: flex; gap: 10px; justify-content: flex-end; }
