@@ -10,6 +10,7 @@ import { money } from "../utils/format.js";
 import { skeletonList } from "../components/skeleton.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
 import { isEnabled, watchMenuTabs, isTabEnabled } from "../services/features.service.js";
+import { gerarNomeLanche } from "../services/lanche.service.js";
 
 // Ingredientes e preço-base do montador: começam com o padrão e são
 // substituídos ao vivo pelo que o admin cadastra (config/montar no Firestore).
@@ -123,8 +124,9 @@ function addBuildToCart() {
   let total = basePrice;
   const parts = [];
   visible().forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
-  store.cartAdd({ custom: true, name: "Monte Seu Lanche", icon: "🔧", price: total, qty: 1, desc: parts.join(", ") });
-  toast("success", "🔧", `Lanche personalizado adicionado! ${money(total)}`);
+  const nome = gerarNomeLanche(parts);
+  store.cartAdd({ custom: true, name: nome, icon: "🔧", price: total, qty: 1, desc: parts.join(", "), combo: parts });
+  toast("success", "🔧", `${nome} adicionado! ${money(total)}`);
   selections = defaultSelections(); currentStep = 0; renderWizard();
 }
 

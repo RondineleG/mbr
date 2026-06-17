@@ -14,6 +14,7 @@ import { getHistory, adjustPoints } from "../services/points.service.js";
 import { getMissionsWithProgress } from "../services/mission.service.js";
 import { listInvites, getInviteStats } from "../services/invite.service.js";
 import { loadBuildSteps } from "../services/buildsteps.service.js";
+import { gerarNomeLanche, registerLanchesFromCart } from "../services/lanche.service.js";
 import { openPayment } from "../components/payment.js";
 import { toast, toastError } from "../components/toast.js";
 import { deliveryFeeFor, kmFromStore } from "../utils/geo.js";
@@ -132,8 +133,9 @@ function mbAddToCart() {
   let total = BUILD?.basePrice ?? 29.9;
   const parts = [];
   buildSteps().forEach(s => (SEL[s.id] || []).forEach(it => { total += it.price || 0; parts.push(it.name); }));
-  store.cartAdd({ custom: true, name: "Monte Seu Lanche", icon: "🔧", price: total, qty: 1, desc: parts.join(", ") });
-  toast("success", "🔧", `Lanche adicionado · ${money(total)}`);
+  const nome = gerarNomeLanche(parts);
+  store.cartAdd({ custom: true, name: nome, icon: "🔧", price: total, qty: 1, desc: parts.join(", "), combo: parts });
+  toast("success", "🔧", `${nome} · ${money(total)}`);
   SEL = defaultSel();
   updateCartChip();
   setHtml("webSection", monteHtml());
@@ -182,6 +184,7 @@ async function webCheckout() {
     if (!pay) return;                                   // cancelou
     const order = await createOrder({ uid: ME.uid, codename: ME.codename, items, address: ME.address, payment: pay });
     if (pay.metodo === "meritos") await adjustPoints(ME.uid, -pay.meritos, "Pagamento com méritos", order.id);
+    await registerLanchesFromCart(cart, ME.uid, order.id);   // dono/forks + méritos do criador
     store.cartClear();
     updateCartChip();
     toast("success", "🎉", `Pedido pago! ${money(order.total)}`);
