@@ -44,6 +44,8 @@ async function renderInvites() {
             <button class="admin-btn sm ghost" data-action="invite-edit" data-id="${i.id}">✏️ Editar</button>
             <button class="admin-btn sm ghost" data-action="invite-revoke" data-id="${i.id}">🚫 Revogar</button>
             <button class="admin-btn sm danger" data-action="invite-delete" data-id="${i.id}">🗑️</button>
+          ` : i.status === 'usado' ? `
+            <span class="admin-tag" title="Convite já utilizado — não pode ser excluído">🔒 utilizado</span>
           ` : `
             <button class="admin-btn sm danger" data-action="invite-delete" data-id="${i.id}">🗑️</button>
           `}
@@ -171,6 +173,9 @@ async function revokeInvite(id) {
 }
 
 async function deleteInvite(id) {
+  // Convite já utilizado é registro de quem se cadastrou — não pode ser excluído.
+  const inv = await getDoc(`invites/${id}`).catch(() => null);
+  if (inv && inv.status === "usado") return toastError("Convite já utilizado não pode ser excluído");
   if (!(await modalConfirm({ title: "Excluir convite", message: "Excluir definitivamente este convite?", confirmText: "Excluir", danger: true }))) return;
   try {
     await deleteDoc(`invites/${id}`);
