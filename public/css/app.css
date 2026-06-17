@@ -501,3 +501,11 @@
 .lc-comment-head small { color: var(--text-dim); font-size: 10px; }
 .lc-comment > div:last-child { font-size: 13px; color: var(--text); margin-top: 3px; }
 .lc-empty { font-size: 12px; color: var(--text-dim); text-align: center; padding: 12px; }
+/* Ranking semanal */
+.lanche-rank { background: var(--gold-soft, #c9a84c14); border: 1px solid var(--gold-line, #c9a84c44); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; }
+.lanche-rank-title { font-family: var(--f-mono); font-size: 11px; letter-spacing: 1px; color: var(--gold); margin-bottom: 8px; }
+.lanche-rank-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13px; }
+.lanche-rank-pos { width: 22px; text-align: center; }
+.lanche-rank-item b { color: var(--gold); font-family: var(--f-mono); }
+.lanche-rank-item small { color: var(--text-dim); flex: 1; }
+.lanche-rank-forks { font-size: 12px; color: var(--text-muted); }

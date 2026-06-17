@@ -9,6 +9,7 @@ import { money, toDate } from "../utils/format.js";
 import { getDoc, setDoc, tsNow } from "../firebase/db.service.js";
 import { APP_VERSION } from "../version.js";
 import { toastSuccess, toastError } from "../components/toast.js";
+import { awardWeeklyChampion, getLastAward } from "../services/lanche.service.js";
 
 // ── Controle de versão do app (config/app no Firestore) ──
 async function loadVersionConfig() {
@@ -93,8 +94,34 @@ export function renderDashboard() {
   setHtml("dashStatus", `<div class="admin-subtitle">PEDIDOS POR STATUS</div><div class="status-chips">${chips}</div>`);
 }
 
+async function loadCampeaoStatus() {
+  const el = document.getElementById("campeaoStatus");
+  if (!el) return;
+  try {
+    const a = await getLastAward();
+    el.textContent = a?.nome
+      ? `Último prêmio: ${a.nome} (${a.criadoPorNome || "agente"}) · ${a.forksWeek || 0} forks · semana ${a.week}`
+      : "Nenhum campeão premiado ainda.";
+  } catch { el.textContent = "—"; }
+}
+
+async function premiarCampeao() {
+  try {
+    const champ = await awardWeeklyChampion();
+    toastSuccess(`🏆 ${champ.nome} premiado: +${champ.bonus}⚡ (${champ.forksWeek} forks)`);
+    loadCampeaoStatus();
+  } catch (err) {
+    const m = String(err?.message || "");
+    if (m.includes("ALREADY_AWARDED")) toastError("Campeão desta semana já foi premiado");
+    else if (m.includes("NO_CHAMPION")) toastError("Nenhum fork nesta semana ainda");
+    else toastError("Não foi possível premiar agora");
+  }
+}
+
 export function initDashboard() {
   subscribeOrders(() => { if (document.getElementById("section-dashboard")?.classList.contains("active")) renderDashboard(); });
   onAction("save-version", () => saveVersionConfig());
+  onAction("premiar-campeao", () => premiarCampeao());
   loadVersionConfig();
+  loadCampeaoStatus();
 }
