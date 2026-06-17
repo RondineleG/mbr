@@ -63,24 +63,29 @@ python3 -m http.server 5000
 
 ---
 
-## 🔐 Acesso (contas de teste)
+## 🔐 Acesso para avaliação
 
-Contas criadas pelo seed de produção (`npm run create-users`) para validar os papéis
-do sistema. Use no **Modo PRODUÇÃO** (Firebase real):
+App em produção: **https://trabalhohowx.web.app** (Modo PRODUÇÃO, Firebase real).
 
-| Papel       | E-mail               | Senha          |
-| ----------- | -------------------- | -------------- |
-| Admin       | `admin@mrbur.com`    | `admin123456`  |
-| Agente 1    | `agente1@mrbur.com`  | `agente123456` |
-| Agente 2    | `agente2@mrbur.com`  | `agente123456` |
-| Agente 3    | `agente3@mrbur.com`  | `agente123456` |
+Contas de teste (criadas por `npm run create-users`) para avaliar cada papel:
 
-> O papel **Motoboy** é atribuído a um agente pelo Admin (painel → Agentes).
-> No **Modo DEMO**, use o convite `MRBUR-GENESIS-X7K9` para cadastrar ou
-> "⚙️ Criar admin demo" em `admin.html` (`admin@mrbur.com` / `ordem2025`).
+| Papel    | E-mail               | Senha          | Onde acessar            |
+| -------- | -------------------- | -------------- | ----------------------- |
+| Admin    | `admin@mrbur.com`    | `admin123456`  | `/admin.html`           |
+| Agente 1 | `agente1@mrbur.com`  | `agente123456` | `/` (app do cliente)    |
+| Agente 2 | `agente2@mrbur.com`  | `agente123456` | `/`                     |
+| Agente 3 | `agente3@mrbur.com`  | `agente123456` | `/`                     |
 
-> ⚠️ **Credenciais de demonstração** — troque todas as senhas antes de qualquer
-> uso real e nunca reutilize estas contas em produção exposta.
+### Roteiro sugerido (avaliação)
+1. **Cliente** — entre em `/` como `agente1@mrbur.com`. Em **Cardápio → Monte Seu Lanche**, monte um lanche, adicione à sacola e finalize o pedido (pagamento de demonstração: cartão / Pix / méritos).
+2. **Admin** — entre em `/admin.html` como `admin@mrbur.com`. Veja o pedido em **Pedidos** (tempo real), mude o status e confira **Dashboard** e **Relatórios**.
+3. **Motoboy** — no Admin → **Agentes**, ative o toggle **motoboy** em `agente1`. Saia e entre em `/motoboy.html` como `agente1@mrbur.com`: marque "Saiu para entrega" e ative **📡 Localização** — o cliente vê o **rastreamento ao vivo** em **Pedidos**.
+4. **Notificações** — no app do cliente, **Perfil → 🔔 Notificações de pedido**; ao mudar o status no Admin, chega a notificação.
+5. **Versão Web/Desktop** — `/web.html?preview=1` (monte → sacola → finalizar pedido).
+
+> **Modo DEMO** (sem Firebase, 100% local): sirva `public/` e use o convite `MRBUR-GENESIS-X7K9` para cadastrar, ou "⚙️ Criar admin demo" em `admin.html`.
+
+> ⚠️ Contas de **avaliação/demonstração** — o pagamento é **simulado** (nenhuma cobrança real). Após a avaliação, troque as senhas (rode `npm run create-users` com novos valores) ou desative as contas.
 
 ---
 
