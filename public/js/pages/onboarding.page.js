@@ -11,10 +11,17 @@ import { createProfile, getProfile } from "../services/user.service.js";
 import { updateMissionProgress } from "../services/mission.service.js";
 import { enterApp } from "../app/session.js";
 import { toastSuccess } from "../components/toast.js";
+import { lookupCep } from "../services/geocode.service.js";
+import { STORE } from "../utils/constants.js";
 
 const TOTAL = 3;
 let step = 0;
 let inviteCode = null;
+// Cadastro restrito à área de atendimento (cidade da sede).
+let cepCity = "", cepUf = "";
+const norm = (s) => (s || "").trim().toLowerCase();
+const isAllowedCity = (city, uf) => norm(city) === norm(STORE.cidade) && (uf || "").toUpperCase() === STORE.uf;
+const CITY_LABEL = `${STORE.cidade}-${STORE.uf}`;
 
 export function setInviteContext(code) { inviteCode = code; step = 0; updateUI(); }
 
@@ -68,6 +75,8 @@ function validate() {
   }
   if (step === 1) {
     if (val("onbCep").replace(/\D/g, "").length < 8) return mark("onbCep"), setError("Informe um CEP válido"), false;
+    // Restrição de área: só CEP da cidade de atendimento (Americana-SP).
+    if (cepCity && !isAllowedCity(cepCity, cepUf)) return mark("onbCep"), setError(`Cadastro disponível apenas para ${CITY_LABEL}`), false;
     if (!val("onbStreet")) return mark("onbStreet"), setError("Informe a rua"), false;
     if (!val("onbNumber")) return mark("onbNumber"), setError("Informe o número"), false;
     if (!val("onbNeighborhood")) return mark("onbNeighborhood"), setError("Informe o bairro"), false;
@@ -110,6 +119,14 @@ async function finish() {
         "EXPIRED": "Convite expirado (validade de 7 dias)"
       };
       setError(messages[inviteCheck.reason] || "Convite inválido");
+      return;
+    }
+
+    // Restrição de área: confere o CEP no ViaCEP antes de criar a conta.
+    const cepInfo = await lookupCep(val("onbCep"));
+    if (!cepInfo || !isAllowedCity(cepInfo.city, cepInfo.uf)) {
+      step = 1; updateUI();
+      setError(`Cadastro disponível apenas para ${CITY_LABEL}. O CEP informado não é de ${CITY_LABEL}.`);
       return;
     }
 
@@ -208,14 +225,21 @@ async function handleCepLookup(e) {
     const data = await resp.json();
 
     if (data.erro) {
+      cepCity = ""; cepUf = "";
       setError("CEP não encontrado. Preencha o endereço manualmente.");
     } else {
+      cepCity = data.localidade || ""; cepUf = data.uf || "";
       if (streetEl) streetEl.value = data.logradouro || "";
       if (neighborhoodEl) neighborhoodEl.value = data.bairro || "";
-      setError(""); // Limpa erro anterior se houver
-      
-      // Focar no número para agilizar a UX
-      $("#onbNumber")?.focus();
+      // Restrição de área: bloqueia CEP fora da cidade de atendimento.
+      if (!isAllowedCity(cepCity, cepUf)) {
+        mark("onbCep");
+        setError(`Cadastro disponível apenas para ${CITY_LABEL} — este CEP é de ${cepCity || "outra cidade"}-${cepUf || "?"}.`);
+      } else {
+        $("#onbCep")?.classList.remove("error");
+        setError(""); // Limpa erro anterior se houver
+        $("#onbNumber")?.focus(); // Focar no número para agilizar a UX
+      }
     }
   } catch (err) {
     console.error("Erro na busca de CEP:", err);
