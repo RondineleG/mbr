@@ -10,6 +10,7 @@ import { syncChatNotifiers, stopChatNotifiers } from "../components/chat-notifie
 import * as auth from "../firebase/auth.service.js";
 import * as userSvc from "../services/user.service.js";
 import { watchUserOrders, reconcileOrderPoints } from "../services/order.service.js";
+import { notifyStatusChange } from "../services/notify.service.js";
 import { listProducts } from "../services/product.service.js";
 import { listRewards } from "../services/reward.service.js";
 import { renderTopbar } from "../components/topbar.js";
@@ -20,6 +21,8 @@ import { toastSuccess } from "../components/toast.js";
 let unsubProfile = null;
 let unsubOrders = null;
 let unsubMissions = null;
+// Último status conhecido por pedido (notifica só nas transições, não no login).
+const _lastOrderStatus = {};
 let unsubFeatures = null;
 let entered = false;
 
@@ -255,9 +258,14 @@ export async function enterApp(profile) {
     // Avisa o cliente de novas mensagens nos pedidos com entregador atribuído.
     const ids = (orders || []).filter((o) => o.agenteResponsavel && o.status !== "cancelado").map((o) => o.id);
     syncChatNotifiers(ids, profile.uid);
-    // Credita méritos de pedidos entregues que ficaram sem crédito (ex.: entregues
-    // pelo motoboy, que não pode escrever no doc do cliente).
-    (orders || []).forEach((o) => reconcileOrderPoints(o, profile.uid));
+    // Notifica mudanças de status do pedido (client-side, sem servidor) e
+    // credita méritos de pedidos entregues que ficaram sem crédito (ex.:
+    // entregues pelo motoboy, que não pode escrever no doc do cliente).
+    (orders || []).forEach((o) => {
+      notifyStatusChange(o, _lastOrderStatus[o.id]);
+      _lastOrderStatus[o.id] = o.status;
+      reconcileOrderPoints(o, profile.uid);
+    });
   });
   unsubMissions = missionService.watchMissionProgress(profile.uid, (progress) => {
     store.set("missionProgress", progress);

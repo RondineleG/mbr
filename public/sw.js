@@ -3,7 +3,7 @@
    Cache de recursos estáticos para funcionar offline
    Estratégia: Cache First para estáticos, Network First para dinâmicos
    ═══════════════════════════════════════════════════════════════ */
-const CACHE_VERSION = '1.4.6';
+const CACHE_VERSION = '1.4.7';
 const CACHE_NAME = `mrbur-${CACHE_VERSION}`;
 
 // Cache de recursos estáticos (app shell)
@@ -77,6 +77,18 @@ self.addEventListener('install', (event) => {
 // Permite que a página peça a ativação imediata do SW novo (auto-update).
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// Clique numa notificação (status do pedido): foca uma aba aberta ou abre o app.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      for (const c of clients) { if ('focus' in c) return c.focus(); }
+      if (self.clients.openWindow) return self.clients.openWindow(url);
+    })
+  );
 });
 
 // Ativação - limpeza de caches antigos
