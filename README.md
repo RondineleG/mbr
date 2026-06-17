@@ -1,4 +1,4 @@
-# 🔥 MrBur — A Ordem
+# <img src="public/icon-192.png" alt="MrBur" width="30" align="top"> MrBur — A Ordem
 
 **Plataforma Gamificada de Fidelização e Pedidos para Hamburguerias Premium.**
 
