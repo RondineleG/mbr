@@ -43,7 +43,7 @@ python3 -m http.server 5000
 > Qualquer servidor estático serve: `npx serve public`, `firebase serve`, etc.
 
 **Fluxos demo:**
-- **Cadastro:** aba 🎫 CONVITE → código `MRBUR-GENESIS-X7K9` → preencha o onboarding.
+- **Cadastro:** aba 🎫 CONVITE → código `MBR-GEN-2025` → preencha o onboarding.
 - **Login:** aba 🔑 AGENTE com o e-mail/senha que você cadastrou.
 - **Admin:** abra `http://localhost:5000/admin.html` → "⚙️ Criar admin demo"
   (cria `admin@mrbur.com` / `ordem2025`). Mude o status de um pedido e veja o
@@ -83,7 +83,7 @@ Contas de teste (criadas por `npm run create-users`) para avaliar cada papel:
 4. **Notificações** — no app do cliente, **Perfil → 🔔 Notificações de pedido**; ao mudar o status no Admin, chega a notificação.
 5. **Versão Web/Desktop** — `/web.html?preview=1` (monte → sacola → finalizar pedido).
 
-> **Modo DEMO** (sem Firebase, 100% local): sirva `public/` e use o convite `MRBUR-GENESIS-X7K9` para cadastrar, ou "⚙️ Criar admin demo" em `admin.html`.
+> **Modo DEMO** (sem Firebase, 100% local): sirva `public/` e use o convite `MBR-GEN-2025` para cadastrar, ou "⚙️ Criar admin demo" em `admin.html`.
 
 > ⚠️ Contas de **avaliação/demonstração** — o pagamento é **simulado** (nenhuma cobrança real). Após a avaliação, troque as senhas (rode `npm run create-users` com novos valores) ou desative as contas.
 
