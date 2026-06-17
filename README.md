@@ -71,7 +71,7 @@ Contas de teste (criadas por `npm run create-users`) para avaliar cada papel:
 
 | Papel    | E-mail               | Senha          | Onde acessar            |
 | -------- | -------------------- | -------------- | ----------------------- |
-| Admin    | `admin@mrbur.com`    | `admin123456`  | `/admin.html`           |
+| Admin    | `admin@mrbur.com`    | `mrbur2025`    | `/admin.html`           |
 | Agente 1 | `agente1@mrbur.com`  | `agente123456` | `/` (app do cliente)    |
 | Agente 2 | `agente2@mrbur.com`  | `agente123456` | `/`                     |
 | Agente 3 | `agente3@mrbur.com`  | `agente123456` | `/`                     |
