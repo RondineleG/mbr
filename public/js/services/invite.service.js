@@ -107,10 +107,12 @@ export async function consumeInvite(code, uid) {
       throw new Error("INVITE_LIMIT_REACHED");
     }
     
-    // Atualizar com campos normalizados
-    tx.update(`invites/${docId}`, { 
-      status: "usado", 
-      usadoPor: uid, 
+    // Multi-uso: só marca "usado" ao ATINGIR o limite; antes disso segue "ativo".
+    // (Antes marcava "usado" no 1º uso, ignorando limiteUso > 1.)
+    const atingiuLimite = totalUsos >= limiteUso;
+    tx.update(`invites/${docId}`, {
+      status: atingiuLimite ? "usado" : "ativo",
+      usadoPor: uid,        // último a usar
       dataUso: tsNow(),
       totalUsos,
       // Atualizar campos antigos também para compatibilidade
