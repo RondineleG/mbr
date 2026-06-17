@@ -8,6 +8,7 @@ import { DELIVERY_FEE, POINTS_PER_BRL } from "../utils/constants.js";
 import { deliveryFeeFor, kmFromStore } from "../utils/geo.js";
 import { createOrder, updateOrderItems } from "../services/order.service.js";
 import { adjustPoints } from "../services/points.service.js";
+import { registerLanchesFromCart } from "../services/lanche.service.js";
 import { renderCartBadges } from "../components/topbar.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
@@ -195,6 +196,7 @@ async function checkout(btn) {
       payment: pay,
     });
     if (pay.metodo === "meritos") await adjustPoints(profile.uid, -pay.meritos, "Pagamento com méritos", order.id);
+    await registerLanchesFromCart(cart, profile.uid, order.id);   // dono/forks + méritos do criador
     store.cartClear();
     const quando = order.tipo === "mbox"
       ? `entrega sábado ${new Date(order.dataEntrega).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`
