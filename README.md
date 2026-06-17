@@ -6,9 +6,6 @@ App mobile-first, dark premium e cinematográfico, com linguagem de agentes/codi
 ranks, méritos (pontos), recompensas, missões e pedidos em tempo real — construído em
 **HTML + CSS + JavaScript Vanilla (ES Modules)** sobre **Firebase**.
 
-> Transformação do protótipo de alta fidelidade (`prototype/index.html`) em um MVP
-> operacional real, mantendo 100% da identidade visual.
-
 ---
 
 ## ✨ Recursos
@@ -26,48 +23,11 @@ ranks, méritos (pontos), recompensas, missões e pedidos em tempo real — cons
 
 ---
 
-## 🚀 Como rodar
-
-### Modo DEMO (sem configurar nada — 100% offline)
-Enquanto `public/firebase-config.js` tiver credenciais placeholder (`XXX...`), o app
-roda sobre `localStorage` com **realtime entre abas** — ideal para demonstração.
-
-```bash
-# A partir da raiz do projeto:
-cd public
-python3 -m http.server 5000
-# abra http://localhost:5000
-```
-
-> Precisa ser servido por HTTP (ES Modules não funcionam via `file://`).
-> Qualquer servidor estático serve: `npx serve public`, `firebase serve`, etc.
-
-**Fluxos demo:**
-- **Cadastro:** aba 🎫 CONVITE → código `MBR-GEN-2025` → preencha o onboarding.
-- **Login:** aba 🔑 AGENTE com o e-mail/senha que você cadastrou.
-- **Admin:** abra `http://localhost:5000/admin.html` → "⚙️ Criar admin demo"
-  (cria `admin@mrbur.com` / `ordem2025`). Mude o status de um pedido e veja o
-  cliente atualizar em tempo real em outra aba.
-
-### Modo PRODUÇÃO (Firebase real)
-1. Crie um projeto em <https://console.firebase.google.com>.
-2. Ative **Authentication → Email/Senha**, **Firestore Database** e **Storage**.
-3. Copie o `firebaseConfig` (Web app) para `public/firebase-config.js`.
-4. Popule o catálogo: abra o app, crie um usuário, promova-o a admin no console
-   (em `users/{uid}` defina `role: "admin"`), entre no `admin.html` e cadastre
-   produtos — ou rode no console do navegador:
-   ```js
-   import("/js/seed.js").then(m => m.seedAll());
-   ```
-5. Crie convites no console (collection `invites`, doc id = código, `{ used:false }`).
-
----
-
 ## 🔐 Acesso para avaliação
 
 App em produção: **https://trabalhohowx.web.app** (Modo PRODUÇÃO, Firebase real).
 
-Contas de teste (criadas por `npm run create-users`) para avaliar cada papel:
+Contas de teste para avaliar cada papel:
 
 | Papel    | E-mail               | Senha          | Onde acessar            |
 | -------- | -------------------- | -------------- | ----------------------- |
@@ -86,19 +46,6 @@ Contas de teste (criadas por `npm run create-users`) para avaliar cada papel:
 > **Modo DEMO** (sem Firebase, 100% local): sirva `public/` e use o convite `MBR-GEN-2025` para cadastrar, ou "⚙️ Criar admin demo" em `admin.html`.
 
 > ⚠️ Contas de **avaliação/demonstração** — o pagamento é **simulado** (nenhuma cobrança real). Após a avaliação, troque as senhas (rode `npm run create-users` com novos valores) ou desative as contas.
-
----
-
-## ☁️ Deploy (Firebase Hosting)
-
-```bash
-npm install -g firebase-tools
-firebase login
-firebase use --add            # selecione seu projeto
-firebase deploy --only hosting,firestore:rules,storage
-```
-
-`firebase.json` já aponta `hosting.public` para `public/` e publica as regras.
 
 ---
 
