@@ -146,6 +146,8 @@ function orderCard(o) {
   const itemsLine = (o.items || []).map((it) => `${it.qty || 1}× ${it.name}`).join(" · ");
   const showTimeline = o.status !== "cancelado";
   const canRepeat = o.status !== "cancelado" && o.items && o.items.length > 0;
+  // Cliente só fala com o entregador depois que o pedido sai para entrega.
+  const canChat = o.agenteResponsavel && (o.status === "enviado" || o.status === "entregue");
 
   // MBox: a composição é SURPRESA — só é revelada após o corte de sexta 22h
   // (quando o pedido também deixa de ser cancelável). Antes disso, fica oculta.
@@ -186,10 +188,10 @@ function orderCard(o) {
     ${cancelBlock}
     ${trackingBlock(o)}
     ${showTimeline ? timeline(o) : ""}
-    ${(canRepeat || (o.agenteResponsavel && o.status !== "cancelado")) ? `
+    ${(canRepeat || canChat) ? `
       <div class="order-actions">
         ${canRepeat ? `<button class="order-repeat-btn" data-action="repeat-order" data-order-id="${o.id}">🔄 Repetir Pedido</button>` : ""}
-        ${(o.agenteResponsavel && o.status !== "cancelado") ? `<button class="order-repeat-btn" data-action="order-chat" data-order-id="${o.id}">💬 Falar com entregador${getUnread(o.id) ? ` <span class="chat-badge">${getUnread(o.id)}</span>` : ""}</button>` : ""}
+        ${canChat ? `<button class="order-repeat-btn" data-action="order-chat" data-order-id="${o.id}">💬 Falar com entregador${getUnread(o.id) ? ` <span class="chat-badge">${getUnread(o.id)}</span>` : ""}</button>` : ""}
       </div>
     ` : ""}
   </div>`;
