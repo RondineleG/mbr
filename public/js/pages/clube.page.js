@@ -14,6 +14,8 @@ import { toast, toastSuccess, toastError } from "../components/toast.js";
 import { skeletonList, skeletonCards, emptyState, withLoading, withEmpty, loadingState } from "../utils/loading.js";
 import { isEnabled } from "../services/features.service.js";
 import { listLanches, getLanche, toggleStar, addLancheComment, listLancheComments, topForkedThisWeek } from "../services/lanche.service.js";
+import { loadBuildSteps } from "../services/buildsteps.service.js";
+import { navigate } from "../app/router.js";
 
 let tab = "recompensas";
 let category = "all"; // all, benefits, physical, experiences, status
@@ -236,7 +238,7 @@ function lancheCard(l) {
     <div class="lanche-stats">
       <button class="lanche-stat ${starred ? "on" : ""}" data-action="lanche-star" data-id="${l.id}">${starred ? "★" : "☆"} ${l.stars || 0}</button>
       <span class="lanche-stat">🍴 ${l.forks || 0} forks</span>
-      <span class="lanche-stat">💬 comentar</span>
+      <button class="lanche-stat fork" data-action="lanche-fork" data-id="${l.id}">🍴 Fork</button>
     </div>
   </div>`;
 }
@@ -263,6 +265,22 @@ async function renderCriacoes() {
 
 const commentHtml = (c) => `<div class="lc-comment"><div class="lc-comment-head"><b>${escapeHtml(c.nome || "agente")}</b> <small>${dateShort(c.criadoEm)}</small></div><div>${escapeHtml(c.texto)}</div></div>`;
 
+// Fork: adiciona o lanche IDÊNTICO à sacola (mesma composição → fork garantido
+// no checkout) e vai para a sacola. Recalcula o preço pelos ingredientes atuais.
+async function forkLanche(l) {
+  let basePrice = 29.9; const priceByName = {};
+  try {
+    const cfg = await loadBuildSteps();
+    basePrice = cfg.basePrice ?? 29.9;
+    (cfg.steps || []).forEach((s) => (s.items || []).forEach((it) => { priceByName[it.name] = it.price || 0; }));
+  } catch { /* usa preço-base padrão */ }
+  let total = basePrice;
+  (l.ingredientes || []).forEach((n) => { total += priceByName[n] || 0; });
+  store.cartAdd({ custom: true, name: l.nome, icon: "🔧", price: total, qty: 1, desc: (l.ingredientes || []).join(", "), combo: l.ingredientes || [] });
+  toastSuccess(`🍴 Fork de ${l.nome} na sacola!`);
+  navigate("sacola");
+}
+
 async function openLancheModal(id) {
   const me = store.get("profile");
   const l = await getLanche(id);
@@ -284,9 +302,10 @@ async function openLancheModal(id) {
       <input class="modal-input" id="lc-input" placeholder="Comentar…" maxlength="500" style="flex:1">
       <button class="modal-btn primary" id="lc-send">Enviar</button>
     </div>
-    <div class="modal-actions"><button class="modal-btn ghost" id="lc-close">Fechar</button></div>`);
+    <div class="modal-actions"><button class="modal-btn ghost" id="lc-close">Fechar</button><button class="modal-btn primary" id="lc-fork">🍴 Fork — pedir este lanche</button></div>`);
   const el = dlg.el;
   el.querySelector("#lc-close").onclick = dlg.close;
+  el.querySelector("#lc-fork").onclick = () => { dlg.close(); forkLanche(l); };
   el.querySelector("#lc-star").onclick = async () => {
     if (!me) return;
     const on = await toggleStar(id, me.uid);
@@ -399,8 +418,12 @@ export function initClube() {
     // Carrega missões sob demanda (no init o profile ainda pode não existir).
     if ((tab === "missoes" || tab === "recompensas") && !missions.length) loadMissions();
   });
-  // Criações: abrir dossiê (modal) e estrelar pelo card.
+  // Criações: abrir dossiê (modal), estrelar e forkar pelo card.
   onAction("lanche-open", (el) => openLancheModal(el.dataset.id));
+  onAction("lanche-fork", async (el) => {
+    const l = await getLanche(el.dataset.id);
+    if (l) forkLanche(l);
+  });
   onAction("lanche-star", async (el) => {
     const me = store.get("profile");
     if (!me) return;
