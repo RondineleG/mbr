@@ -6,10 +6,22 @@
    pedidos a partir de uma combinação existente contam como FORKS.
    Doc: lanches/{id}  (id derivado do hash da composição)
    ═══════════════════════════════════════════════════════════════ */
-import { runTransaction, inc, tsNow, getDoc, getCollection, addDoc, updateDoc } from "../firebase/db.service.js";
+import { runTransaction, inc, tsNow, getDoc, getCollection, addDoc, updateDoc, setDoc } from "../firebase/db.service.js";
 import { adjustPoints } from "./points.service.js";
 
-export const CRIACAO_MERITOS = 50;
+export const CRIACAO_MERITOS = 50;     // bônus do criador da combinação nova
+export const CAMPEAO_MERITOS = 100;    // bônus do campeão semanal (mais forkado)
+
+/** Chave da semana ISO (ex.: "2026-W25"). */
+export function weekKey(ts = Date.now()) {
+  const d = new Date(ts);
+  const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const dayNum = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - dayNum + 3);
+  const firstThu = new Date(Date.UTC(date.getUTCFullYear(), 0, 4));
+  const week = 1 + Math.round(((date - firstThu) / 86400000 - 3 + ((firstThu.getUTCDay() + 6) % 7)) / 7);
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+}
 
 // Substantivos (comida/fogo) com gênero + adjetivos com forma m/f → concordância.
 const NOUN = [
@@ -113,9 +125,48 @@ export async function registerLanchesFromCart(cart, uid, criadorNome, orderId) {
     if (!it?.custom || !it?.combo?.length) continue;
     try {
       const res = await registerLanche({ ingredientes: it.combo, uid, nome: it.name, criadorNome });
-      if (res?.isNew) await adjustPoints(uid, CRIACAO_MERITOS, `Criou o lanche ${res.nome}`, orderId);
+      if (res?.isNew) {
+        await adjustPoints(uid, CRIACAO_MERITOS, `Criou o lanche ${res.nome}`, orderId);
+      } else if (res?.criadoPor && res.criadoPor !== uid) {
+        // Pedido a partir de combinação existente = FORK → registra evento da semana.
+        await addDoc("forkEvents", { lancheId: res.id, lancheNome: res.nome, week: weekKey(), criadoEm: tsNow() });
+      }
     } catch (e) {
       console.warn("[lanche] registro adiado:", e?.message || e);
     }
   }
 }
+
+/** Top criações da semana corrente (mais forkadas), já com dados do lanche. */
+export async function topForkedThisWeek(limit = 5) {
+  const wk = weekKey();
+  let events = [];
+  try { events = await getCollection("forkEvents", { where: [["week", "==", wk]] }); } catch { events = []; }
+  const counts = {};
+  for (const e of events) counts[e.lancheId] = (counts[e.lancheId] || 0) + 1;
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, limit);
+  const out = [];
+  for (const [id, forksWeek] of top) {
+    const l = await getDoc(`lanches/${id}`);
+    if (l) out.push({ ...l, forksWeek });
+  }
+  return out;
+}
+
+/** Prêmio do campeão da semana (admin): credita méritos ao criador do mais forkado. */
+export async function awardWeeklyChampion(bonus = CAMPEAO_MERITOS) {
+  const wk = weekKey();
+  const prev = await getDoc("config/criacoesAward").catch(() => null);
+  if (prev?.week === wk) { const e = new Error("ALREADY_AWARDED"); e.award = prev; throw e; }
+  const top = await topForkedThisWeek(1);
+  if (!top.length) throw new Error("NO_CHAMPION");
+  const champ = top[0];
+  await adjustPoints(champ.criadoPor, bonus, `Campeão das Criações (${wk}): ${champ.nome}`);
+  await setDoc("config/criacoesAward", {
+    week: wk, lancheId: champ.id, nome: champ.nome,
+    criadoPor: champ.criadoPor, criadoPorNome: champ.criadoPorNome || null,
+    forksWeek: champ.forksWeek, bonus, awardedAt: tsNow(),
+  });
+  return { ...champ, bonus };
+}
+export const getLastAward = () => getDoc("config/criacoesAward");

@@ -13,7 +13,7 @@ import { modalConfirm, modalCustom } from "../components/modal.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
 import { skeletonList, skeletonCards, emptyState, withLoading, withEmpty, loadingState } from "../utils/loading.js";
 import { isEnabled } from "../services/features.service.js";
-import { listLanches, getLanche, toggleStar, addLancheComment, listLancheComments } from "../services/lanche.service.js";
+import { listLanches, getLanche, toggleStar, addLancheComment, listLancheComments, topForkedThisWeek } from "../services/lanche.service.js";
 
 let tab = "recompensas";
 let category = "all"; // all, benefits, physical, experiences, status
@@ -243,13 +243,22 @@ function lancheCard(l) {
 
 async function renderCriacoes() {
   setHtml("clubeDynamic", loadingState("Carregando criações..."));
-  let lanches = [];
-  try { lanches = await listLanches(); } catch { lanches = []; }
+  let lanches = [], top = [];
+  try { [lanches, top] = await Promise.all([listLanches(), topForkedThisWeek(3)]); } catch { lanches = []; top = []; }
   if (!lanches.length) {
     setHtml("clubeDynamic", `<div class="section-title">Criações da Ordem</div>${emptyState("🍔", "Nenhuma criação ainda", "Monte um lanche inédito no Cardápio e seja o primeiro a registrá-lo (+50⚡)")}`);
     return;
   }
-  setHtml("clubeDynamic", `<div class="section-title">Criações da Ordem <span class="section-subtitle">MAIS FORKADAS</span></div><div class="lanche-list">${lanches.map(lancheCard).join("")}</div>`);
+  const medal = ["🥇", "🥈", "🥉"];
+  const rank = top.length ? `
+    <div class="lanche-rank">
+      <div class="lanche-rank-title">🏆 Mais forkados da semana</div>
+      ${top.map((l, i) => `<div class="lanche-rank-item">
+        <span class="lanche-rank-pos">${medal[i] || (i + 1) + "º"}</span>
+        <b>${escapeHtml(l.nome)}</b><small>por ${escapeHtml(l.criadoPorNome || "agente")}</small>
+        <span class="lanche-rank-forks">🍴 ${l.forksWeek}</span></div>`).join("")}
+    </div>` : "";
+  setHtml("clubeDynamic", `<div class="section-title">Criações da Ordem</div>${rank}<div class="lanche-list">${lanches.map(lancheCard).join("")}</div>`);
 }
 
 const commentHtml = (c) => `<div class="lc-comment"><div class="lc-comment-head"><b>${escapeHtml(c.nome || "agente")}</b> <small>${dateShort(c.criadoEm)}</small></div><div>${escapeHtml(c.texto)}</div></div>`;
