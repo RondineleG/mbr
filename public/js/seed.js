@@ -6,6 +6,7 @@
 import { getCollection, getDoc, setDoc, tsNow } from "./firebase/db.service.js";
 import { IS_DEMO } from "../firebase-config.js";
 import { rankFromPoints } from "./utils/format.js";
+import { generateInviteCode } from "./services/invite.service.js";
 
 const PRODUCTS = [
   // category: dia — o "Lanche do Dia" em si vem de config/lancheDia (configurável).
@@ -36,7 +37,7 @@ const REWARDS = [
   { id: "r-4", name: "MBox Surpresa", description: "Uma MBox mistério por nossa conta", pointsRequired: 5000, icon: "🎁", active: true, category: "experiences", type: "physical" },
 ];
 
-const DEMO_INVITE = "MRBUR-GENESIS-X7K9";
+const DEMO_INVITE = "MBR-GEN-2025";
 
 const MISSIONS = [
   { id: 'signup', name: 'Agente Recrutado', description: 'Complete seu cadastro na Ordem', icon: '🎖️', reward: 50, type: 'single', condition: 'signup_completed', active: true, order: 1 },
@@ -94,7 +95,7 @@ export async function seedInvite(code = DEMO_INVITE) {
 export async function seedRandomInvites(n = 3) {
   const codes = [];
   for (let i = 0; i < n; i++) {
-    const code = "MRBUR-" + Math.random().toString(36).slice(2, 7).toUpperCase() + "-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+    const code = generateInviteCode();
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await setDoc(`invites/${code}`, {
       id: code,

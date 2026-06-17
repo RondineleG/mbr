@@ -2,8 +2,8 @@
    INVITES ADMIN — gerenciamento de convites (com vínculo a um agente)
    ═══════════════════════════════════════════════════════════════ */
 import { $, onAction, setHtml, escapeHtml } from "../utils/dom.js";
-import { getCollection, updateDoc, deleteDoc } from "../firebase/db.service.js";
-import { createInvite as createInviteSvc } from "../services/invite.service.js";
+import { getCollection, getDoc, updateDoc, deleteDoc } from "../firebase/db.service.js";
+import { createInvite as createInviteSvc, generateInviteCode } from "../services/invite.service.js";
 import { listAgents } from "../services/user.service.js";
 import { modalCustom, modalConfirm } from "../components/modal.js";
 import { toastError, toastSuccess } from "../components/toast.js";
@@ -41,9 +41,11 @@ async function renderInvites() {
         <div class="admin-item-actions">
           ${i.status === 'ativo' ? `
             <button class="admin-btn sm ghost" data-action="invite-copy" data-code="${i.id}">📋 Copiar</button>
-            <button class="admin-btn sm danger" data-action="invite-revoke" data-id="${i.id}">🚫 Revogar</button>
+            <button class="admin-btn sm ghost" data-action="invite-edit" data-id="${i.id}">✏️ Editar</button>
+            <button class="admin-btn sm ghost" data-action="invite-revoke" data-id="${i.id}">🚫 Revogar</button>
+            <button class="admin-btn sm danger" data-action="invite-delete" data-id="${i.id}">🗑️</button>
           ` : `
-            <button class="admin-btn sm ghost" data-action="invite-delete" data-id="${i.id}">🗑️</button>
+            <button class="admin-btn sm danger" data-action="invite-delete" data-id="${i.id}">🗑️</button>
           `}
         </div>
       </div>
@@ -102,6 +104,60 @@ async function createInviteForm() {
   };
 }
 
+// Edita um convite ainda ATIVO (não usado): vínculo, limite e código.
+// "🔄 Gerar novo" troca o código; como o código é o id do doc, regenerar
+// cria um novo doc e remove o antigo.
+async function editInviteForm(id) {
+  await ensureAgents();
+  const inv = await getDoc(`invites/${id}`).catch(() => null);
+  if (!inv) return toastError("Convite não encontrado");
+  if (inv.status !== "ativo") return toastError("Só é possível editar convites ativos (não usados)");
+  const opts = `<option value="">— Admin / Sistema —</option>` +
+    agents.map(a => `<option value="${a.uid}" ${inv.vinculadoA === a.uid ? "selected" : ""}>${escapeHtml(a.codename || a.email)}</option>`).join("");
+
+  const dlg = modalCustom(`
+    <div class="modal-title">Editar convite</div>
+    <div class="modal-label">CÓDIGO</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="modal-input" id="e-code" value="${escapeHtml(inv.id)}" style="flex:1;font-family:var(--f-mono);letter-spacing:1px">
+      <button class="modal-btn ghost" id="e-regen" type="button" style="white-space:nowrap">🔄 Gerar novo</button>
+    </div>
+    <div class="modal-label">VINCULAR AO AGENTE</div>
+    <select class="modal-select" id="e-agent">${opts}</select>
+    <div class="modal-label">LIMITE DE USOS</div>
+    <input class="modal-input" id="e-uses" type="number" min="1" value="${inv.limiteUso || 1}">
+    <div class="modal-actions">
+      <button class="modal-btn ghost" id="e-cancel">Cancelar</button>
+      <button class="modal-btn primary" id="e-save">Salvar</button>
+    </div>`);
+
+  dlg.el.querySelector("#e-cancel").onclick = dlg.close;
+  dlg.el.querySelector("#e-regen").onclick = () => { dlg.el.querySelector("#e-code").value = generateInviteCode(); };
+  dlg.el.querySelector("#e-save").onclick = async () => {
+    const newCode = (dlg.el.querySelector("#e-code").value || "").toUpperCase().trim();
+    const uid = dlg.el.querySelector("#e-agent").value;
+    const agent = agents.find(a => a.uid === uid);
+    const uses = parseInt(dlg.el.querySelector("#e-uses").value) || 1;
+    const vinculadoNome = agent ? (agent.codename || agent.email) : null;
+    try {
+      if (newCode && newCode !== inv.id) {
+        // Regenerou o código → novo doc + remove o antigo.
+        await createInviteSvc({ code: newCode, createdBy: inv.criadoPor || "admin", roleCreator: inv.roleCriador || "admin", vinculadoA: uid || null, vinculadoNome, limiteUso: uses });
+        await deleteDoc(`invites/${id}`);
+        toastSuccess(`Convite atualizado: ${newCode}`);
+      } else {
+        await updateDoc(`invites/${id}`, { vinculadoA: uid || null, vinculadoNome, limiteUso: uses, atualizadoEm: Date.now() });
+        toastSuccess("Convite atualizado");
+      }
+      dlg.close();
+      renderInvites();
+    } catch (e) {
+      console.error("Erro ao salvar convite:", e);
+      toastError("Erro ao salvar convite");
+    }
+  };
+}
+
 async function revokeInvite(id) {
   if (!(await modalConfirm({ title: "Revogar convite", message: "Tem certeza? O código deixa de funcionar.", confirmText: "Revogar", danger: true }))) return;
   try {
@@ -133,6 +189,7 @@ async function copyInviteCode(code) {
 
 export function initInvites() {
   onAction("invite-new", () => createInviteForm());
+  onAction("invite-edit", (el) => editInviteForm(el.dataset.id));
   onAction("invite-revoke", (el) => revokeInvite(el.dataset.id));
   onAction("invite-delete", (el) => deleteInvite(el.dataset.id));
   onAction("invite-copy", (el) => copyInviteCode(el.dataset.code));
