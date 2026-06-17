@@ -143,11 +143,82 @@ async function setStatus(id, status) {
   }
 }
 
+/* ── Compartilhamento de localização em tempo real ──────────────────
+   Publica a posição do motoboy em orders/{id}.tracking para cada entrega
+   "enviado". O cliente já recebe o pedido em realtime e desenha o mapa.
+   Usa GPS real (watchPosition); sem GPS/permissão, simula o trajeto
+   sede → cliente (útil no modo DEMO). Escreve no máximo 1×/4s.        */
+const SHARE_KEY = "moto-share";
+const WRITE_MS = 4000;
+let shareOn = false, geoWatch = null, simTimer = null, lastWrite = 0, simPos = null;
+
+const sentIds = () => orders.filter((o) => o.status === ORDER_STATUS.SENT).map((o) => o.id);
+
+async function pushPos(lat, lng) {
+  if (!shareOn) return;
+  const ids = sentIds();
+  if (!ids.length) return;
+  const now = Date.now();
+  if (now - lastWrite < WRITE_MS) return;
+  lastWrite = now;
+  const tracking = { lat, lng, ts: now };
+  await Promise.all(ids.map((id) => updateDoc(`orders/${id}`, { tracking }).catch(() => {})));
+}
+
+// Fallback sem GPS: avança em direção ao 1º destino "enviado" a cada tick.
+function startSim() {
+  if (simTimer) return;
+  simTimer = setInterval(() => {
+    const o = orders.find((x) => x.status === ORDER_STATUS.SENT && x.address?.lat != null);
+    if (!o) return;
+    if (!simPos) simPos = { lat: STORE.lat, lng: STORE.lng };
+    simPos.lat += (o.address.lat - simPos.lat) * 0.12;
+    simPos.lng += (o.address.lng - simPos.lng) * 0.12;
+    pushPos(simPos.lat, simPos.lng);
+  }, WRITE_MS);
+}
+
+function updateShareBtn() {
+  const btn = $("#motoShareBtn");
+  if (!btn) return;
+  btn.textContent = `📡 Localização: ${shareOn ? "ON" : "OFF"}`;
+  btn.classList.toggle("active", shareOn);
+}
+
+function startShare() {
+  if (shareOn) return;
+  shareOn = true;
+  localStorage.setItem(SHARE_KEY, "1");
+  updateShareBtn();
+  if (navigator.geolocation) {
+    geoWatch = navigator.geolocation.watchPosition(
+      (p) => pushPos(p.coords.latitude, p.coords.longitude),
+      () => startSim(),                     // negou/sem sinal → simula
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 }
+    );
+  } else {
+    startSim();
+  }
+  toast("success", "📡", "Compartilhando sua localização nas entregas");
+}
+
+function stopShare() {
+  shareOn = false;
+  localStorage.removeItem(SHARE_KEY);
+  if (geoWatch != null) { navigator.geolocation.clearWatch(geoWatch); geoWatch = null; }
+  if (simTimer) { clearInterval(simTimer); simTimer = null; }
+  simPos = null;
+  updateShareBtn();
+  toast("info", "📴", "Localização desativada");
+}
+
 function enter(profile) {
   me = profile;
   $("#motoLoading").style.display = "none";
   $("#motoShell").style.display = "block";
   $("#motoWho").textContent = profile.codename || profile.email;
+  updateShareBtn();
+  if (localStorage.getItem(SHARE_KEY) === "1") startShare(); // restaura preferência
   unsub?.();
   unsub = watchAgentOrders(profile.uid, (list) => {
     orders = list || [];
@@ -160,6 +231,7 @@ function enter(profile) {
 onAction("moto-sent", (el) => setStatus(el.dataset.id, ORDER_STATUS.SENT));
 onAction("moto-delivered", (el) => setStatus(el.dataset.id, ORDER_STATUS.DELIVERED));
 onAction("moto-chat", (el) => { if (me) openChat(el.dataset.id, me, "Cliente"); });
+onAction("moto-share", () => { shareOn ? stopShare() : startShare(); });
 onUnreadChange(() => render()); // atualiza os badges de não-lidas ao vivo
 onAction("moto-logout", async () => { await auth.signOut(); window.location.replace("/"); });
 onAction("moto-theme", () => {

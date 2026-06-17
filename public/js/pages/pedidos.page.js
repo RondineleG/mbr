@@ -14,6 +14,59 @@ import { emptyState, withEmpty } from "../utils/loading.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
 import { DELIVERY_WINDOW, ORDER_CUTOFF_HOUR, MBOX_CUTOFF_HOUR } from "../utils/constants.js";
+import { loadLeaflet } from "../utils/leaflet-loader.js";
+import { haversineKm } from "../utils/geo.js";
+
+// Velocidade urbana média (km/h) para estimar o tempo de chegada.
+const AVG_SPEED_KMH = 22;
+// Mapas Leaflet de rastreamento ativos, por pedido (recriados a cada render).
+const _trackMaps = {};
+
+// Bloco de rastreamento ao vivo: só para pedido "enviado" com destino e posição.
+function trackingBlock(o) {
+  if (o.status !== "enviado" || o.address?.lat == null) return "";
+  const t = o.tracking;
+  if (!t || t.lat == null) {
+    return `<div class="order-track waiting">🛰️ Aguardando o entregador compartilhar a localização…</div>`;
+  }
+  const km = Math.round(haversineKm(t, o.address) * 10) / 10;
+  const eta = Math.max(1, Math.round((km / AVG_SPEED_KMH) * 60));
+  const ago = Math.max(0, Math.round((Date.now() - (t.ts || 0)) / 1000));
+  const agoTxt = ago < 60 ? `há ${ago}s` : `há ${Math.round(ago / 60)}min`;
+  return `<div class="order-track">
+    <div class="order-track-info">🛵 <b>Entregador a caminho</b> · ~${eta} min · ${km} km · atualizado ${agoTxt}</div>
+    <div class="order-track-map" id="track-map-${o.id}"></div>
+  </div>`;
+}
+
+// Monta/atualiza os mini-mapas após o render (lazy-load do Leaflet sob demanda).
+async function mountTrackingMaps(orders) {
+  const tracked = (orders || []).filter((o) =>
+    o.status === "enviado" && o.tracking?.lat != null && o.address?.lat != null);
+  // Limpa mapas de pedidos que não estão mais sendo rastreados.
+  Object.keys(_trackMaps).forEach((id) => {
+    if (!tracked.some((o) => o.id === id)) { _trackMaps[id].remove(); delete _trackMaps[id]; }
+  });
+  if (!tracked.length) return;
+  let L;
+  try { L = await loadLeaflet(); } catch { return; }
+  const pin = (txt, bg) => L.divIcon({ className: "", iconSize: [30, 30],
+    html: `<div class="track-pin" style="background:${bg}">${txt}</div>` });
+  tracked.forEach((o) => {
+    const el = document.getElementById(`track-map-${o.id}`);
+    if (!el) return;
+    if (_trackMaps[o.id]) _trackMaps[o.id].remove();   // recria no container novo
+    const moto = [o.tracking.lat, o.tracking.lng], dest = [o.address.lat, o.address.lng];
+    const map = L.map(el, { zoomControl: false, attributionControl: false, scrollWheelZoom: false, dragging: false });
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
+    L.marker(dest, { icon: pin("🏠", "#1a1206") }).addTo(map).bindPopup("Seu endereço");
+    L.marker(moto, { icon: pin("🛵", "#C9A84C") }).addTo(map).bindPopup("Entregador");
+    L.polyline([moto, dest], { color: "#C9A84C", weight: 3, opacity: .9, dashArray: "6 7" }).addTo(map);
+    map.fitBounds(L.latLngBounds([moto, dest]).pad(0.4));
+    setTimeout(() => map.invalidateSize(), 120);
+    _trackMaps[o.id] = map;
+  });
+}
 
 // criadoEm pode ser número (Date.now) ou Timestamp do Firestore.
 const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
@@ -131,6 +184,7 @@ function orderCard(o) {
     <div class="order-items-line">${escapeHtml(itemsLine)}</div>
     ${mboxReveal}
     ${cancelBlock}
+    ${trackingBlock(o)}
     ${showTimeline ? timeline(o) : ""}
     ${(canRepeat || (o.agenteResponsavel && o.status !== "cancelado")) ? `
       <div class="order-actions">
@@ -175,6 +229,7 @@ export async function renderPedidos() {
   );
   
   setHtml("pedidosContent", content);
+  mountTrackingMaps(orders);
 }
 
 export function initPedidos() {
