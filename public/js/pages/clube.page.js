@@ -9,10 +9,11 @@ import { getHistory } from "../services/points.service.js";
 import { listAgents } from "../services/user.service.js";
 import { getMissionsWithProgress, claimMissionReward, updateMissionProgress, calculateUserStats } from "../services/mission.service.js";
 import { codenameInitials, rankLabel, dateShort } from "../utils/format.js";
-import { modalConfirm } from "../components/modal.js";
+import { modalConfirm, modalCustom } from "../components/modal.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
 import { skeletonList, skeletonCards, emptyState, withLoading, withEmpty, loadingState } from "../utils/loading.js";
 import { isEnabled } from "../services/features.service.js";
+import { listLanches, getLanche, toggleStar, addLancheComment, listLancheComments } from "../services/lanche.service.js";
 
 let tab = "recompensas";
 let category = "all"; // all, benefits, physical, experiences, status
@@ -218,6 +219,83 @@ export function renderClube() {
   else if (tab === "missoes") setHtml("clubeDynamic", `<div class="section-title">Missões Ativas</div>${renderMissions()}`);
   else if (tab === "ranking") renderRanking();
   else if (tab === "historico") renderHistory();
+  else if (tab === "criacoes") renderCriacoes();
+}
+
+/* ─── Criações (lanches gerados) — dossiê + forks + estrelas + comentários ─── */
+function lancheCard(l) {
+  const me = store.get("profile");
+  const starred = (l.starredBy || []).includes(me?.uid);
+  const ings = (l.ingredientes || []).map(escapeHtml).join(" · ");
+  return `<div class="lanche-card" data-action="lanche-open" data-id="${l.id}">
+    <div class="lanche-card-head">
+      <div class="lanche-name">${escapeHtml(l.nome || l.id)}</div>
+      <div class="lanche-by">por ${escapeHtml(l.criadoPorNome || "agente")}</div>
+    </div>
+    <div class="lanche-ings">${ings}</div>
+    <div class="lanche-stats">
+      <button class="lanche-stat ${starred ? "on" : ""}" data-action="lanche-star" data-id="${l.id}">${starred ? "★" : "☆"} ${l.stars || 0}</button>
+      <span class="lanche-stat">🍴 ${l.forks || 0} forks</span>
+      <span class="lanche-stat">💬 comentar</span>
+    </div>
+  </div>`;
+}
+
+async function renderCriacoes() {
+  setHtml("clubeDynamic", loadingState("Carregando criações..."));
+  let lanches = [];
+  try { lanches = await listLanches(); } catch { lanches = []; }
+  if (!lanches.length) {
+    setHtml("clubeDynamic", `<div class="section-title">Criações da Ordem</div>${emptyState("🍔", "Nenhuma criação ainda", "Monte um lanche inédito no Cardápio e seja o primeiro a registrá-lo (+50⚡)")}`);
+    return;
+  }
+  setHtml("clubeDynamic", `<div class="section-title">Criações da Ordem <span class="section-subtitle">MAIS FORKADAS</span></div><div class="lanche-list">${lanches.map(lancheCard).join("")}</div>`);
+}
+
+const commentHtml = (c) => `<div class="lc-comment"><div class="lc-comment-head"><b>${escapeHtml(c.nome || "agente")}</b> <small>${dateShort(c.criadoEm)}</small></div><div>${escapeHtml(c.texto)}</div></div>`;
+
+async function openLancheModal(id) {
+  const me = store.get("profile");
+  const l = await getLanche(id);
+  if (!l) return;
+  const comments = await listLancheComments(id).catch(() => []);
+  const starred = (l.starredBy || []).includes(me?.uid);
+  const ings = (l.ingredientes || []).map(escapeHtml).join(" · ");
+  const dlg = modalCustom(`
+    <div class="modal-title" style="font-family:var(--f-mono)">${escapeHtml(l.nome || id)}</div>
+    <div class="lc-by">criado por <b>${escapeHtml(l.criadoPorNome || "agente")}</b></div>
+    <div class="lc-ings">${ings}</div>
+    <div class="lc-stats">
+      <button class="modal-btn ghost" id="lc-star">${starred ? "★" : "☆"} <span id="lc-stars">${l.stars || 0}</span></button>
+      <span class="lc-fork">🍴 ${l.forks || 0} forks</span>
+    </div>
+    <div class="modal-label">COMENTÁRIOS</div>
+    <div class="lc-comments" id="lc-comments">${comments.length ? comments.map(commentHtml).join("") : '<div class="lc-empty">Sem comentários ainda. Seja o primeiro.</div>'}</div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <input class="modal-input" id="lc-input" placeholder="Comentar…" maxlength="500" style="flex:1">
+      <button class="modal-btn primary" id="lc-send">Enviar</button>
+    </div>
+    <div class="modal-actions"><button class="modal-btn ghost" id="lc-close">Fechar</button></div>`);
+  const el = dlg.el;
+  el.querySelector("#lc-close").onclick = dlg.close;
+  el.querySelector("#lc-star").onclick = async () => {
+    if (!me) return;
+    const on = await toggleStar(id, me.uid);
+    const fresh = await getLanche(id);
+    const btn = el.querySelector("#lc-star");
+    btn.innerHTML = `${on ? "★" : "☆"} <span id="lc-stars">${fresh?.stars || 0}</span>`;
+  };
+  el.querySelector("#lc-send").onclick = async () => {
+    const inp = el.querySelector("#lc-input");
+    const txt = (inp.value || "").trim();
+    if (!txt || !me) return;
+    try {
+      await addLancheComment(id, me.uid, me.codename, txt);
+      inp.value = "";
+      const cs = await listLancheComments(id);
+      el.querySelector("#lc-comments").innerHTML = cs.map(commentHtml).join("");
+    } catch { toastError("Não foi possível comentar agora"); }
+  };
 }
 
 async function loadMissions() {
@@ -311,6 +389,14 @@ export function initClube() {
     renderClube();
     // Carrega missões sob demanda (no init o profile ainda pode não existir).
     if ((tab === "missoes" || tab === "recompensas") && !missions.length) loadMissions();
+  });
+  // Criações: abrir dossiê (modal) e estrelar pelo card.
+  onAction("lanche-open", (el) => openLancheModal(el.dataset.id));
+  onAction("lanche-star", async (el) => {
+    const me = store.get("profile");
+    if (!me) return;
+    try { await toggleStar(el.dataset.id, me.uid); if (tab === "criacoes") renderCriacoes(); }
+    catch { toastError("Não foi possível estrelar agora"); }
   });
   // Abre o Clube já numa aba específica (usado pela sidebar e atalhos da Home,
   // p/ que "Missões" leve sempre ao mesmo lugar que o menu interno).
