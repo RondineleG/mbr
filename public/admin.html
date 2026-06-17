@@ -61,6 +61,7 @@
       <div><div class="admin-brand-text">MRBUR</div><div class="admin-brand-sub">COMANDO</div></div>
     </div>
     <button class="admin-navbtn active" data-action="admin-nav" data-section="dashboard"><span class="admin-navbtn-icon">📊</span> Dashboard</button>
+    <button class="admin-navbtn" data-action="admin-nav" data-section="relatorios"><span class="admin-navbtn-icon">📈</span> Relatórios</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="pedidos"><span class="admin-navbtn-icon">📥</span> Pedidos</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="produtos"><span class="admin-navbtn-icon">🍔</span> Produtos</button>
     <button class="admin-navbtn" data-action="admin-nav" data-section="montar"><span class="admin-navbtn-icon">🔧</span> Monte Seu Lanche</button>
@@ -105,6 +106,21 @@
       </div>
 
       <div id="seedOutput"></div>
+    </section>
+
+    <!-- Relatórios -->
+    <section class="admin-section" id="section-relatorios">
+      <div class="admin-head">
+        <div><div class="admin-title">Relatórios</div><div class="admin-title-sub">MÉTRICAS E ANÁLISES · TEMPO REAL</div></div>
+        <div id="repPeriod" style="display:flex;gap:8px;flex-wrap:wrap"></div>
+      </div>
+      <div class="kpi-grid" id="repKpis"></div>
+      <div id="repChart" style="margin-top:8px"></div>
+      <div class="rep-cols">
+        <div id="repProducts" class="rep-panel"></div>
+        <div id="repPay" class="rep-panel"></div>
+        <div id="repMoto" class="rep-panel"></div>
+      </div>
     </section>
 
     <!-- Pedidos -->

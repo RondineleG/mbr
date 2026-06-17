@@ -7,6 +7,7 @@ import { getProfile } from "../services/user.service.js";
 import { ensureSeed } from "../seed.js";
 import { toastError, toastSuccess } from "../components/toast.js";
 import { initDashboard, renderDashboard } from "./dashboard.js";
+import { initReports, renderReports } from "./reports.admin.js";
 import { initProducts, renderProducts } from "./products.admin.js";
 import { initMontar, renderMontar } from "./montar.admin.js";
 import { initSpecials, renderLancheDia, renderMboxAdmin } from "./specials.admin.js";
@@ -19,6 +20,7 @@ import { initFeatures, renderFeatures } from "./features.admin.js";
 
 const SECTIONS = {
   dashboard: renderDashboard,
+  relatorios: renderReports,
   produtos: renderProducts,
   montar: renderMontar,
   lanchedia: renderLancheDia,
@@ -110,7 +112,7 @@ async function boot() {
   document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
   updateThemeUI();
   await ensureSeed();
-  initDashboard(); initProducts(); initMontar(); initSpecials(); initOrders(); initCustomers(); initMissions(); initRewards(); initInvites(); initFeatures();
+  initDashboard(); initReports(); initProducts(); initMontar(); initSpecials(); initOrders(); initCustomers(); initMissions(); initRewards(); initInvites(); initFeatures();
 
   onAction("admin-nav", (el) => navigate(el.dataset.section));
   onAction("admin-toggle-sidebar", () => toggleAdminSidebar());
