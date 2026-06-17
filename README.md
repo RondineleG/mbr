@@ -63,6 +63,27 @@ python3 -m http.server 5000
 
 ---
 
+## 🔐 Acesso (contas de teste)
+
+Contas criadas pelo seed de produção (`npm run create-users`) para validar os papéis
+do sistema. Use no **Modo PRODUÇÃO** (Firebase real):
+
+| Papel       | E-mail               | Senha          |
+| ----------- | -------------------- | -------------- |
+| Admin       | `admin@mrbur.com`    | `admin123456`  |
+| Agente 1    | `agente1@mrbur.com`  | `agente123456` |
+| Agente 2    | `agente2@mrbur.com`  | `agente123456` |
+| Agente 3    | `agente3@mrbur.com`  | `agente123456` |
+
+> O papel **Motoboy** é atribuído a um agente pelo Admin (painel → Agentes).
+> No **Modo DEMO**, use o convite `MRBUR-GENESIS-X7K9` para cadastrar ou
+> "⚙️ Criar admin demo" em `admin.html` (`admin@mrbur.com` / `ordem2025`).
+
+> ⚠️ **Credenciais de demonstração** — troque todas as senhas antes de qualquer
+> uso real e nunca reutilize estas contas em produção exposta.
+
+---
+
 ## ☁️ Deploy (Firebase Hosting)
 
 ```bash
@@ -93,6 +114,7 @@ public/
     ├── admin/            # admin-main · dashboard · products · orders · customers · store
     └── utils/            # constants · format · dom
 prototype/index.html      # protótipo original (referência, intacto)
+docs/                     # documentação e relatórios (SEED, PWA, RELATORIO_* + imagens)
 firestore.rules · storage.rules · firestore.indexes.json · firebase.json · .firebaserc
 ```
 
