@@ -12,7 +12,7 @@ import { openChat } from "../components/chat.js";
 import { syncChatNotifiers, getUnread, onUnreadChange } from "../components/chat-notifier.js";
 import { money } from "../utils/format.js";
 import { DELIVERY_MERITOS, DELIVERY_FEE, STORE } from "../utils/constants.js";
-import { tspNearestNeighbor, googleMapsRouteUrl } from "../utils/geo.js";
+import { tspNearestNeighbor } from "../utils/geo.js";
 import { toast, toastError } from "../components/toast.js";
 
 let me = null;
@@ -22,7 +22,6 @@ let MAP = null, LAYER = null;
 
 const ACTIVE = ["aprovado", "producao", "enviado"];
 const addrStr = (a) => !a ? "" : [a.street, a.neighborhood, a.city].filter(Boolean).join(", ");
-const mapUrl = (a) => "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addrStr(a) || "MrBur");
 // O motoboy NÃO recebe o valor do pedido — ele recebe a taxa de entrega que o
 // PRÓPRIO APP paga por entrega (+ méritos). Não há dinheiro do cliente a coletar.
 const deliveryPay = (o) => o?.deliveryFee ?? DELIVERY_FEE;
@@ -46,8 +45,8 @@ function card(o) {
         </div>
       </div>
       <div class="admin-item-actions" style="flex-direction:column;gap:8px">
-        <a class="admin-btn sm ghost" href="${mapUrl(o.address)}" target="_blank" rel="noopener">🗺️ Rota</a>
-        <button class="admin-btn sm ghost" data-action="moto-chat" data-id="${o.id}">💬 Chat${getUnread(o.id) ? ` <span class="chat-badge">${getUnread(o.id)}</span>` : ""}</button>
+        ${o.address?.lat != null ? `<button class="admin-btn sm ghost" data-action="moto-focus" data-id="${o.id}">🗺️ Rota</button>` : ""}
+        ${(o.status === ORDER_STATUS.SENT || o.status === ORDER_STATUS.DELIVERED) ? `<button class="admin-btn sm ghost" data-action="moto-chat" data-id="${o.id}">💬 Chat${getUnread(o.id) ? ` <span class="chat-badge">${getUnread(o.id)}</span>` : ""}</button>` : ""}
         ${action}
       </div>
     </div>`;
@@ -92,10 +91,8 @@ function renderRoute(active) {
       <small>${escapeHtml(addr || "—")} · ${legs[i]} km</small></div>
       <button class="admin-btn sm" data-action="moto-delivered" data-id="${o.id}">✅ Entregue</button></div>`;
   }).join("");
-  const mapsUrl = googleMapsRouteUrl(STORE, order.map((idx) => ({ lat: pts[idx].lat, lng: pts[idx].lng })));
   setHtml("motoRouteList",
-    `<div class="moto-route-total">📍 ${pts.length} entrega(s) · <b>${totalKm} km</b> no total (ida e volta à sede)</div>` +
-    `<a class="admin-btn sm" href="${mapsUrl}" target="_blank" rel="noopener" style="display:inline-block;text-decoration:none;margin-bottom:10px">🧭 Abrir rota no Google Maps</a>` +
+    `<div class="moto-route-total">📍 ${pts.length} entrega(s) · <b>${totalKm} km</b> no total (ida e volta à sede) · veja a rota no mapa acima ↑</div>` +
     lista);
 
   // Mapa Leaflet.
@@ -231,6 +228,14 @@ function enter(profile) {
 onAction("moto-sent", (el) => setStatus(el.dataset.id, ORDER_STATUS.SENT));
 onAction("moto-delivered", (el) => setStatus(el.dataset.id, ORDER_STATUS.DELIVERED));
 onAction("moto-chat", (el) => { if (me) openChat(el.dataset.id, me, "Cliente"); });
+// "Rota" agora foca a entrega no mapa do próprio app (sem abrir o Google Maps).
+onAction("moto-focus", (el) => {
+  const o = orders.find((x) => x.id === el.dataset.id);
+  if (!o?.address?.lat || !MAP) { toastError("Sem localização para este pedido"); return; }
+  $("#motoRouteWrap")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  MAP.setView([o.address.lat, o.address.lng], 16);
+  setTimeout(() => MAP.invalidateSize(), 250);
+});
 onAction("moto-share", () => { shareOn ? stopShare() : startShare(); });
 onUnreadChange(() => render()); // atualiza os badges de não-lidas ao vivo
 onAction("moto-logout", async () => { await auth.signOut(); window.location.replace("/"); });

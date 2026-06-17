@@ -31,6 +31,8 @@ let filter = "all";
 let motoboys = []; // agentes com motoboy:true (para atribuição inline)
 
 const ORDER_FLOW = ["recebido", "analisando", "aprovado", "producao", "enviado", "entregue"];
+// Motoboy só pode ser atribuído quando o pedido já está pronto (aprovado em diante).
+const CAN_ASSIGN = ["aprovado", "producao", "enviado"];
 
 const STATUS_ICON = {
   recebido: "📥", analisando: "🔍", aprovado: "✅",
@@ -61,10 +63,12 @@ function row(o) {
     <div class="data-actions">
       <button class="admin-btn sm ghost" data-action="order-view" data-id="${o.id}">Detalhes</button>
       ${action}
-      ${motoboys.length ? `<select class="status-select" data-action="order-assign" data-id="${o.id}" title="Atribuir motoboy">
+      ${motoboys.length && CAN_ASSIGN.includes(o.status)
+        ? `<select class="status-select" data-action="order-assign" data-id="${o.id}" title="Atribuir motoboy">
         <option value="">🛵 sem motoboy</option>
         ${motoboys.map((mb) => `<option value="${mb.uid}" ${o.agenteResponsavel === mb.uid ? "selected" : ""}>🛵 ${escapeHtml(mb.codename || mb.email)}</option>`).join("")}
-      </select>` : ""}
+      </select>`
+        : (motoboys.length ? `<span class="status-lock" title="Atribua o motoboy após aprovar o pedido">🛵 após aprovação</span>` : "")}
     </div>
   </div>`;
 }
