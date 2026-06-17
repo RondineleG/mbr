@@ -82,3 +82,17 @@ body.web { max-width: none !important; margin: 0 !important; width: 100%; backgr
 .web-shortcut .web-card-emoji { font-size: 34px; }
 .web-search { width: 100%; max-width: 560px; padding: 14px 18px; border-radius: 12px; border: 1px solid var(--bd2); background: var(--bg3); color: var(--tx); font-size: 15px; font-family: inherit; }
 .web-search:focus { outline: none; border-color: var(--G); }
+
+/* ── Monte Seu Lanche (interativo na web) ── */
+.web-mb-step { gap: 10px; }
+.web-mb-items { display: flex; flex-direction: column; gap: 6px; }
+.web-mb-item { display: flex; align-items: center; gap: 8px; padding: 9px 11px; border-radius: 10px; border: 1px solid var(--bd); background: var(--bg3); color: var(--tx); cursor: pointer; font-family: inherit; font-size: 13px; text-align: left; transition: all var(--transition); }
+.web-mb-item:hover { border-color: var(--G); }
+.web-mb-item.on { border-color: var(--G); background: var(--gw); }
+.web-mb-ic { font-size: 16px; }
+.web-mb-name { flex: 1; }
+.web-mb-price { font-family: var(--f-mono); font-size: 11px; color: var(--t2); }
+.web-mb-item.on .web-mb-price { color: var(--G); }
+.web-mb-check { width: 16px; color: var(--G); font-weight: 800; }
+.web-mb-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-top: 22px; padding: 16px 20px; border-radius: 14px; background: var(--card); border: 1px solid var(--bd); position: sticky; bottom: 16px; }
+.web-mb-total { font-family: var(--f-mono); font-size: 24px; font-weight: 800; color: var(--G); }

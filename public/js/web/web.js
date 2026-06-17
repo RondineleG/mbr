@@ -13,11 +13,16 @@ import { listRewards } from "../services/reward.service.js";
 import { getHistory } from "../services/points.service.js";
 import { getMissionsWithProgress } from "../services/mission.service.js";
 import { listInvites, getInviteStats } from "../services/invite.service.js";
+import { loadBuildSteps } from "../services/buildsteps.service.js";
+import { toast } from "../components/toast.js";
 import { money, dateShort, rankFromPoints, codenameInitials } from "../utils/format.js";
 import { BUILD_STEPS, DELIVERY_FEE } from "../utils/constants.js";
 
 const show = (id, on) => { const el = $("#" + id); if (el) el.style.display = on ? "" : "none"; };
 let ME = null, FEATURES = {}, PRODUCTS = [];
+let CUR = "inicio";                 // módulo atual (p/ re-render sem reload)
+let BUILD = null;                   // { steps, basePrice } do Monte Seu Lanche
+let SEL = {};                       // stepId -> [items] selecionados
 const role = () => ME?.role || "agent";
 const on = (key) => isEnabled(FEATURES, role(), key);
 
@@ -25,7 +30,8 @@ const CATS = [["dia","Lanche do Dia"],["mbox","MBox"],["acomp","Acompanhamentos"
 const prodCard = (p) => { const ex = p.exclusiveToPoints && p.pointsRequired > 0; return `<div class="web-card">
   <div class="web-card-emoji">${p.icon || "🍔"}</div>${p.tag ? `<span class="web-card-tag">${escapeHtml(p.tag)}</span>` : ""}
   <div class="web-card-name">${escapeHtml(p.name)}</div><div class="web-card-desc">${escapeHtml(p.description || "")}</div>
-  <div class="web-card-price">${ex ? `⚡ ${p.pointsRequired} méritos` : money(p.price)}</div></div>`; };
+  <div class="web-card-price">${ex ? `⚡ ${p.pointsRequired} méritos` : money(p.price)}</div>
+  ${ex ? "" : `<button class="web-btn block" data-add-prod="${p.id}">+ Sacola</button>`}</div>`; };
 
 // ───────── Renderizadores por módulo (retornam HTML; alguns async) ─────────
 const sectionTitle = (t) => `<div class="web-section-title">${t}</div>`;
@@ -57,25 +63,108 @@ async function renderCardapio() {
   return html || '<p style="color:var(--t2)">Cardápio vazio.</p>';
 }
 
-function renderMonte() {
-  const steps = BUILD_STEPS.filter(s => s.items && s.items.length).map(s => `
-    <div class="web-card" style="grid-column:span 1">
-      <div class="web-card-name">${s.icon} ${escapeHtml(s.label)} <small style="color:var(--t3)">(máx ${s.max})</small></div>
-      <div class="web-card-desc">${s.items.map(i => `${i.icon || "•"} ${escapeHtml(i.name)}${i.price ? " (+" + money(i.price) + ")" : ""}`).join("<br>")}</div>
-    </div>`).join("");
-  return `<p style="color:var(--t2);margin-bottom:14px">Monte seu lanche escolhendo os ingredientes de cada etapa (a montagem final é feita no app mobile).</p>
-    <div class="web-grid">${steps}</div>`;
+// Etapas com ingredientes (ignora a etapa "Revisar"/sem itens).
+const buildSteps = () => (BUILD?.steps || BUILD_STEPS).filter(s => s.items && s.items.length);
+
+// Pré-seleção: 1º item de pão/carnes/queijos/molhos (espelha o app mobile).
+function defaultSel() {
+  const sel = {};
+  for (const id of ["pao", "carnes", "queijos", "molhos"]) {
+    const s = buildSteps().find(s => s.id === id);
+    if (s?.items?.length) sel[id] = [s.items[0]];
+  }
+  return sel;
+}
+
+function monteTotal() {
+  let total = BUILD?.basePrice ?? 29.9;
+  buildSteps().forEach(s => (SEL[s.id] || []).forEach(it => { total += it.price || 0; }));
+  return total;
+}
+
+function monteHtml() {
+  const cards = buildSteps().map(s => {
+    const sel = SEL[s.id] || [];
+    const rows = s.items.map((it, i) => {
+      const active = sel.some(x => x.name === it.name);
+      return `<button class="web-mb-item ${active ? "on" : ""}" data-mb-step="${s.id}" data-mb-idx="${i}">
+        <span class="web-mb-ic">${it.icon || "•"}</span>
+        <span class="web-mb-name">${escapeHtml(it.name)}</span>
+        <span class="web-mb-price">${it.price > 0 ? "+ " + money(it.price) : "incluso"}</span>
+        <span class="web-mb-check">${active ? "✓" : ""}</span></button>`;
+    }).join("");
+    return `<div class="web-card web-mb-step">
+      <div class="web-card-name">${s.icon} ${escapeHtml(s.label)} <small style="color:var(--t2)">· máx ${s.max}</small></div>
+      <div class="web-mb-items">${rows}</div></div>`;
+  }).join("");
+  const total = monteTotal();
+  return `<p style="color:var(--t2);margin-bottom:14px">Monte seu lanche escolhendo os ingredientes de cada etapa.</p>
+    <div class="web-grid">${cards}</div>
+    <div class="web-mb-bar">
+      <div><div class="web-kpi-lbl">Total do lanche</div><div class="web-mb-total">${money(total)} <small style="color:var(--ok)">+${Math.round(total)}⚡</small></div></div>
+      <button class="web-btn" data-mb-add="1">Adicionar à sacola 🛒</button></div>`;
+}
+
+async function renderMonte() {
+  if (!BUILD) BUILD = await loadBuildSteps();
+  if (!Object.keys(SEL).length) SEL = defaultSel();
+  return monteHtml();
+}
+
+// Alterna um ingrediente (respeita máx; carne obrigatória mantém ao menos 1).
+function mbToggle(stepId, idx) {
+  const step = buildSteps().find(s => s.id === stepId);
+  if (!step) return;
+  const item = step.items[idx];
+  SEL[stepId] ||= [];
+  const sel = SEL[stepId];
+  const at = sel.findIndex(x => x.name === item.name);
+  if (at >= 0) {
+    if (stepId === "carnes" && sel.length === 1) { toast("info", "🥩", "Selecione ao menos 1 carne"); return; }
+    sel.splice(at, 1);
+  } else { if (sel.length >= step.max) sel.shift(); sel.push(item); }
+  setHtml("webSection", monteHtml());
+}
+
+function mbAddToCart() {
+  let total = BUILD?.basePrice ?? 29.9;
+  const parts = [];
+  buildSteps().forEach(s => (SEL[s.id] || []).forEach(it => { total += it.price || 0; parts.push(it.name); }));
+  store.cartAdd({ custom: true, name: "Monte Seu Lanche", icon: "🔧", price: total, qty: 1, desc: parts.join(", ") });
+  toast("success", "🔧", `Lanche adicionado · ${money(total)}`);
+  SEL = defaultSel();
+  updateCartChip();
+  setHtml("webSection", monteHtml());
 }
 
 function renderSacola() {
   const cart = store.get("cart") || [];
-  if (!cart.length) return '<p style="color:var(--t2)">Sua sacola está vazia. Adicione itens pelo Cardápio no app.</p>';
+  if (!cart.length) return '<p style="color:var(--t2)">Sua sacola está vazia. Adicione itens pelo Cardápio ou monte seu lanche.</p>';
   const subtotal = cart.reduce((a, i) => a + (i.price || 0) * (i.qty || 1), 0);
   return `<div class="web-grid">${cart.map(i => `<div class="web-card">
       <div class="web-card-emoji">${i.icon || "🍔"}</div><div class="web-card-name">${i.qty || 1}× ${escapeHtml(i.name)}</div>
       ${i.desc ? `<div class="web-card-desc">${escapeHtml(i.desc)}</div>` : ""}
-      <div class="web-card-price">${money((i.price || 0) * (i.qty || 1))}</div></div>`).join("")}</div>
-    <div class="web-kpi" style="margin-top:18px;max-width:280px"><div class="web-kpi-val">${money(subtotal + DELIVERY_FEE)}</div><div class="web-kpi-lbl">Total (com entrega ${money(DELIVERY_FEE)})</div></div>`;
+      <div class="web-card-price">${money((i.price || 0) * (i.qty || 1))}</div>
+      <button class="web-btn ghost danger block" data-cart-remove="${i.key}">Remover</button></div>`).join("")}</div>
+    <div class="web-mb-bar" style="margin-top:18px">
+      <div><div class="web-kpi-lbl">Total (com entrega ${money(DELIVERY_FEE)})</div><div class="web-mb-total">${money(subtotal + DELIVERY_FEE)}</div></div>
+      <a class="web-btn" href="/#sacola">Finalizar no app 📱</a></div>
+    <p style="color:var(--t2);font-size:12px;margin-top:12px">O pagamento e o agendamento são concluídos no app mobile (mesma sacola).</p>`;
+}
+
+// Atualiza o chip de méritos e o contador da sacola na navegação.
+function updateCartChip() {
+  const n = store.cartCount?.() ?? (store.get("cart") || []).reduce((a, c) => a + (c.qty || 1), 0);
+  const nav = document.querySelector('.web-navitem[data-go="sacola"]');
+  if (nav) nav.innerHTML = `<span>🛒</span> Sacola${n ? ` <b style="color:var(--G)">(${n})</b>` : ""}`;
+}
+
+function addProduct(id) {
+  const p = PRODUCTS.find(x => x.id === id);
+  if (!p) return;
+  store.cartAdd({ productId: p.id, name: p.name, icon: p.icon || "🍔", price: p.price || 0, qty: 1, desc: p.description || "" });
+  toast("success", "🛒", `${p.name} adicionado`);
+  updateCartChip();
 }
 
 async function renderPedidos() {
@@ -178,6 +267,7 @@ const MODULES = [
 async function go(key) {
   const item = key === "inicio" ? { label: "Início", render: renderInicio } : MODULES.find(m => m.key === key);
   if (!item) return;
+  CUR = key;
   $("#webTitle").textContent = item.label;
   document.querySelectorAll(".web-navitem").forEach(b => b.classList.toggle("active", b.dataset.go === key));
   setHtml("webSection", '<div class="web-loading-inline" style="color:var(--t2);padding:20px">Carregando…</div>');
@@ -203,6 +293,18 @@ async function renderWeb(profile) {
   // atalhos do Início também navegam
   document.addEventListener("click", (e) => { const s = e.target.closest("[data-go]"); if (s && s.classList.contains("web-shortcut")) go(s.dataset.go); });
 
+  // Interações dentro das seções: montador, add-to-cart e remover da sacola.
+  document.addEventListener("click", (e) => {
+    const mb = e.target.closest("[data-mb-step]");
+    if (mb) return mbToggle(mb.dataset.mbStep, Number(mb.dataset.mbIdx));
+    if (e.target.closest("[data-mb-add]")) return mbAddToCart();
+    const ap = e.target.closest("[data-add-prod]");
+    if (ap) return addProduct(ap.dataset.addProd);
+    const rm = e.target.closest("[data-cart-remove]");
+    if (rm) { store.cartRemove(rm.dataset.cartRemove); updateCartChip(); if (CUR === "sacola") setHtml("webSection", renderSacola()); }
+  });
+
+  updateCartChip();
   go("inicio");
 }
 
@@ -210,7 +312,10 @@ auth.onAuthChanged(async (user) => {
   if (!user) { window.location.replace("/"); return; }
   const profile = await getProfile(user.uid);
   if (!profile) { window.location.replace("/"); return; }
-  const enabled = await loadWebEnabled();
+  // Bypass de validação: ?preview=1 abre a Versão Web sem depender da flag
+  // global (config/webPage) — útil para validar em preview sem afetar produção.
+  const previewMode = new URLSearchParams(location.search).has("preview");
+  const enabled = previewMode || await loadWebEnabled();
   if (!enabled) { show("webLoading", false); show("webBlocked", true); return; }
   FEATURES = await loadFeatures().catch(() => ({}));
   renderWeb(profile);
