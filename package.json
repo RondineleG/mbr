@@ -4,10 +4,10 @@
   "description": "Seed script for MrBur Firebase production",
   "main": "seed.js",
   "scripts": {
-    "seed": "node seed.js",
-    "seed:admin": "node seed.js",
-    "seed:rest": "node seed-rest.js",
-    "create-users": "node create-users.js",
+    "seed": "node scripts/seed.js",
+    "seed:admin": "node scripts/seed.js",
+    "seed:rest": "node scripts/seed-rest.js",
+    "create-users": "node scripts/create-users.js",
     "test:e2e": "playwright test",
     "test:e2e:prod": "E2E_BASE=https://trabalhohowx.web.app playwright test"
   },
