@@ -1,0 +1,26 @@
+# CI: roda a suite E2E (Playwright) a cada PR e em push na main.
+# O servidor estatico (public/ na 5050) sobe automaticamente pelo
+# playwright.config.js (webServer). Site real do Firebase e usado no login.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Instalar navegador do Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Rodar E2E
+        run: npm run test:e2e
