@@ -127,9 +127,18 @@ export async function consumeInvite(code, uid) {
   });
 }
 
+// Código de convite: prefixo MBR- + 6 caracteres aleatórios (sem 0/O/1/I/L),
+// agrupados em MBR-XXX-XXX (ex.: MBR-X7K-PW1).
+const INVITE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+export function generateInviteCode() {
+  let r = "";
+  for (let i = 0; i < 6; i++) r += INVITE_ALPHABET[Math.floor(Math.random() * INVITE_ALPHABET.length)];
+  return `MBR-${r.slice(0, 3)}-${r.slice(3)}`;
+}
+
 /** Cria um convite (admin ou indicação) com expiração de 7 dias. */
 export async function createInvite(data) {
-  const code = norm(data.code) || ("MRBUR-" + Math.random().toString(36).slice(2, 7).toUpperCase());
+  const code = norm(data.code) || generateInviteCode();
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 dias
 
   const invite = {
