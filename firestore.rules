@@ -43,6 +43,12 @@ service cloud.firestore {
       allow create: if signedIn();
       allow update, delete: if isAdmin();
     }
+    // Eventos de fork (ranking semanal): leitura pública, criação autenticada.
+    match /forkEvents/{id} {
+      allow read: if true;
+      allow create: if signedIn();
+      allow update, delete: if isAdmin();
+    }
 
     // Pedidos: dono, admin ou o motoboy/agente responsável pela entrega podem atualizar.
     match /orders/{id} {
