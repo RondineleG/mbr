@@ -184,7 +184,7 @@ async function webCheckout() {
     if (!pay) return;                                   // cancelou
     const order = await createOrder({ uid: ME.uid, codename: ME.codename, items, address: ME.address, payment: pay });
     if (pay.metodo === "meritos") await adjustPoints(ME.uid, -pay.meritos, "Pagamento com méritos", order.id);
-    await registerLanchesFromCart(cart, ME.uid, order.id);   // dono/forks + méritos do criador
+    await registerLanchesFromCart(cart, ME.uid, ME.codename, order.id);   // dono/forks + méritos do criador
     store.cartClear();
     updateCartChip();
     toast("success", "🎉", `Pedido pago! ${money(order.total)}`);

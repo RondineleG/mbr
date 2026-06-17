@@ -196,7 +196,7 @@ async function checkout(btn) {
       payment: pay,
     });
     if (pay.metodo === "meritos") await adjustPoints(profile.uid, -pay.meritos, "Pagamento com méritos", order.id);
-    await registerLanchesFromCart(cart, profile.uid, order.id);   // dono/forks + méritos do criador
+    await registerLanchesFromCart(cart, profile.uid, profile.codename, order.id);   // dono/forks + méritos do criador
     store.cartClear();
     const quando = order.tipo === "mbox"
       ? `entrega sábado ${new Date(order.dataEntrega).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })}`

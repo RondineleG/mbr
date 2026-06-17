@@ -478,3 +478,26 @@
 .order-track-info b { color: var(--G, #C9A84C); }
 .order-track-map { height: 190px; width: 100%; background: #0c0a07; }
 .track-pin { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 15px; border: 2px solid #fff5; box-shadow: 0 2px 8px rgba(0,0,0,.55); }
+
+/* ── Criações (lanches gerados) ── */
+.lanche-list { display: flex; flex-direction: column; gap: 12px; }
+.lanche-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; cursor: pointer; transition: border-color var(--transition); }
+.lanche-card:hover { border-color: var(--gold); }
+.lanche-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.lanche-name { font-family: var(--f-mono); font-size: 15px; font-weight: 800; color: var(--gold); letter-spacing: .5px; }
+.lanche-by { font-size: 11px; color: var(--text-dim); white-space: nowrap; }
+.lanche-ings { font-size: 12px; color: var(--text-muted); margin: 6px 0 10px; line-height: 1.4; }
+.lanche-stats { display: flex; gap: 14px; align-items: center; }
+.lanche-stat { font-size: 12px; color: var(--text-muted); background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; }
+.lanche-stat.on { color: var(--gold); }
+/* Dossiê (modal) */
+.lc-by { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
+.lc-ings { font-size: 12.5px; color: var(--text); background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; line-height: 1.5; }
+.lc-stats { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+.lc-fork { font-size: 12px; color: var(--text-muted); }
+.lc-comments { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+.lc-comment { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 10px; }
+.lc-comment-head { display: flex; gap: 8px; align-items: baseline; font-size: 12px; }
+.lc-comment-head small { color: var(--text-dim); font-size: 10px; }
+.lc-comment > div:last-child { font-size: 13px; color: var(--text); margin-top: 3px; }
+.lc-empty { font-size: 12px; color: var(--text-dim); text-align: center; padding: 12px; }

@@ -6,7 +6,7 @@
    pedidos a partir de uma combinação existente contam como FORKS.
    Doc: lanches/{id}  (id derivado do hash da composição)
    ═══════════════════════════════════════════════════════════════ */
-import { runTransaction, inc, tsNow } from "../firebase/db.service.js";
+import { runTransaction, inc, tsNow, getDoc, getCollection, addDoc, updateDoc } from "../firebase/db.service.js";
 import { adjustPoints } from "./points.service.js";
 
 export const CRIACAO_MERITOS = 50;
@@ -58,15 +58,15 @@ const lancheId = (key) => "L" + hash(key).toString(36);
  * - 1ª vez (combinação nova): cria o doc, define o DONO, retorna isNew=true.
  * - Já existe e quem pede não é o dono: conta como FORK.
  */
-export async function registerLanche({ ingredientes, uid, nome }) {
+export async function registerLanche({ ingredientes, uid, nome, criadorNome = null }) {
   const key = lancheKey(ingredientes);
   const id = lancheId(key);
   return runTransaction(async (tx) => {
     const ex = await tx.get(`lanches/${id}`);
     if (!ex) {
       tx.set(`lanches/${id}`, {
-        id, nome, ingredientes, criadoPor: uid, criadoEm: tsNow(),
-        forks: 0, stars: 0,
+        id, nome, ingredientes, criadoPor: uid, criadoPorNome: criadorNome, criadoEm: tsNow(),
+        forks: 0, stars: 0, starredBy: [],
       });
       return { id, nome, isNew: true, criadoPor: uid };
     }
@@ -75,16 +75,44 @@ export async function registerLanche({ ingredientes, uid, nome }) {
   });
 }
 
+/** Lista as criações (mais forkadas/estreladas primeiro). */
+export async function listLanches() {
+  const all = await getCollection("lanches");
+  return all.sort((a, b) => (b.forks || 0) - (a.forks || 0) || (b.stars || 0) - (a.stars || 0));
+}
+export const getLanche = (id) => getDoc(`lanches/${id}`);
+
+/** Alterna a estrela do usuário no lanche; retorna o novo estado (bool). */
+export async function toggleStar(id, uid) {
+  const l = await getDoc(`lanches/${id}`);
+  if (!l) return false;
+  const set = new Set(l.starredBy || []);
+  const has = set.has(uid);
+  has ? set.delete(uid) : set.add(uid);
+  const arr = [...set];
+  await updateDoc(`lanches/${id}`, { starredBy: arr, stars: arr.length });
+  return !has;
+}
+
+/** Comentários estilo GitHub (coleção própria, por lanche). */
+export const addLancheComment = (lancheId, uid, nome, texto) =>
+  addDoc("lancheComentarios", { lancheId, uid, nome: nome || "agente", texto: String(texto).slice(0, 500), criadoEm: tsNow() });
+export async function listLancheComments(lancheId) {
+  const c = await getCollection("lancheComentarios", { where: [["lancheId", "==", lancheId]] });
+  const ms = (v) => v?.toMillis?.() ?? (typeof v === "number" ? v : 0);
+  return c.sort((a, b) => ms(a.criadoEm) - ms(b.criadoEm));
+}
+
 /**
  * Processa os itens "Monte Seu Lanche" de um carrinho no checkout:
  * registra cada combinação e credita +50 méritos ao criador da combinação nova.
  * Best-effort: nunca quebra o fluxo do pedido.
  */
-export async function registerLanchesFromCart(cart, uid, orderId) {
+export async function registerLanchesFromCart(cart, uid, criadorNome, orderId) {
   for (const it of (cart || [])) {
     if (!it?.custom || !it?.combo?.length) continue;
     try {
-      const res = await registerLanche({ ingredientes: it.combo, uid, nome: it.name });
+      const res = await registerLanche({ ingredientes: it.combo, uid, nome: it.name, criadorNome });
       if (res?.isNew) await adjustPoints(uid, CRIACAO_MERITOS, `Criou o lanche ${res.nome}`, orderId);
     } catch (e) {
       console.warn("[lanche] registro adiado:", e?.message || e);
