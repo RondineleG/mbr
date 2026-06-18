@@ -3,7 +3,7 @@
    Cache de recursos estáticos para funcionar offline
    Estratégia: Cache First para estáticos, Network First para dinâmicos
    ═══════════════════════════════════════════════════════════════ */
-const CACHE_VERSION = '1.4.15';
+const CACHE_VERSION = '1.4.16';
 const CACHE_NAME = `mrbur-${CACHE_VERSION}`;
 
 // Cache de recursos estáticos (app shell)
