@@ -1,7 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
    FORMAT — moeda, datas, máscaras de input, helpers de codinome
    ═══════════════════════════════════════════════════════════════ */
-import { CODENAME_ADJ, CODENAME_NOUN, RANKS } from "./constants.js";
+import { CODENAME_NUCLEO, CODENAME_EPITETO, RANKS } from "./constants.js";
 
 const BRL = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
 
@@ -30,11 +30,11 @@ export function toDate(value) {
   return isNaN(d) ? null : d;
 }
 
-/** Gera um codinome aleatório: "falcao-dourado". */
+/** Gera um codinome aleatório com concordância de gênero: "falcao-dourado", "raposa-dourada". */
 export function randomCodename() {
-  const a = CODENAME_ADJ[Math.floor(Math.random() * CODENAME_ADJ.length)];
-  const n = CODENAME_NOUN[Math.floor(Math.random() * CODENAME_NOUN.length)];
-  return `${a}-${n}`;
+  const n = CODENAME_NUCLEO[Math.floor(Math.random() * CODENAME_NUCLEO.length)];
+  const e = CODENAME_EPITETO[Math.floor(Math.random() * CODENAME_EPITETO.length)];
+  return `${n.w}-${e[n.g]}`;
 }
 
 /** "falcao-dourado" → "FD" (iniciais para o avatar). */

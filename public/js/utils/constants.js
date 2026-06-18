@@ -48,19 +48,29 @@ export const BUILD_STEPS = [
 export const BUILD_BASE_PRICE = 29.9;
 
 /** Geradores de codinome (estilo espionagem). ~2500 combinações. */
-export const CODENAME_ADJ = [
-  "raposa","mamba","cobra","falcao","lobo","pantera","coruja","aguia","tigre","urso",
-  "serpente","gaviao","onca","lince","condor","furia","tubarao","jaguar","fenix","grifo",
-  "fantasma","sombra","relampago","trovao","cometa","nebulosa","eclipse","vulcao","tempestade","ciclone",
-  "acido","cromado","blindado","noturno","silencioso","invisivel","veloz","astuto","feroz","letal",
-  "dourado","prateado","escarlate","carmesim","obsidiana","cobalto","safira","esmeralda","rubi","opala",
+// Codinome do agente = núcleo-epíteto, COM concordância de gênero.
+// Núcleo (substantivo) carrega o gênero; o epíteto (adjetivo) tem forma m/f.
+export const CODENAME_NUCLEO = [
+  { w: "raposa", g: "f" }, { w: "mamba", g: "f" }, { w: "cobra", g: "f" }, { w: "falcao", g: "m" },
+  { w: "lobo", g: "m" }, { w: "pantera", g: "f" }, { w: "coruja", g: "f" }, { w: "aguia", g: "f" },
+  { w: "tigre", g: "m" }, { w: "urso", g: "m" }, { w: "serpente", g: "f" }, { w: "gaviao", g: "m" },
+  { w: "onca", g: "f" }, { w: "lince", g: "m" }, { w: "condor", g: "m" }, { w: "tubarao", g: "m" },
+  { w: "jaguar", g: "m" }, { w: "fenix", g: "f" }, { w: "grifo", g: "m" }, { w: "fantasma", g: "m" },
+  { w: "sombra", g: "f" }, { w: "relampago", g: "m" }, { w: "trovao", g: "m" }, { w: "cometa", g: "m" },
+  { w: "eclipse", g: "m" }, { w: "vulcao", g: "m" }, { w: "tempestade", g: "f" }, { w: "ciclone", g: "m" },
+  { w: "furia", g: "f" }, { w: "nebulosa", g: "f" },
 ];
-export const CODENAME_NOUN = [
-  "negra","branca","vermelha","azul","dourada","secreta","veloz","noturna","mortal","suprema",
-  "alfa","omega","delta","sigma","gama","prime","zero","phantom","stealth","cipher",
-  "norte","sul","leste","oeste","central","polar","tropical","orbital","boreal","austral",
-  "sagaz","brutal","furtiva","lendaria","mistica","sombria","glacial","ardente","cosmica","atomica",
-  "real","imperial","rebelde","selvagem","epica","infinita","eterna","absoluta","radical","suprema",
+export const CODENAME_EPITETO = [
+  { m: "negro", f: "negra" }, { m: "branco", f: "branca" }, { m: "vermelho", f: "vermelha" },
+  { m: "dourado", f: "dourada" }, { m: "prateado", f: "prateada" }, { m: "secreto", f: "secreta" },
+  { m: "noturno", f: "noturna" }, { m: "supremo", f: "suprema" }, { m: "sombrio", f: "sombria" },
+  { m: "cosmico", f: "cosmica" }, { m: "atomico", f: "atomica" }, { m: "epico", f: "epica" },
+  { m: "infinito", f: "infinita" }, { m: "eterno", f: "eterna" }, { m: "absoluto", f: "absoluta" },
+  { m: "furtivo", f: "furtiva" }, { m: "lendario", f: "lendaria" }, { m: "mistico", f: "mistica" },
+  { m: "selvagem", f: "selvagem" }, { m: "mortal", f: "mortal" }, { m: "veloz", f: "veloz" },
+  { m: "glacial", f: "glacial" }, { m: "ardente", f: "ardente" }, { m: "imperial", f: "imperial" },
+  { m: "rebelde", f: "rebelde" }, { m: "brutal", f: "brutal" }, { m: "letal", f: "letal" },
+  { m: "alfa", f: "alfa" }, { m: "omega", f: "omega" }, { m: "polar", f: "polar" },
 ];
 
 /* ═══════════════════════════════════════════════════════════════
