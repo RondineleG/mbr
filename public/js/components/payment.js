@@ -4,12 +4,14 @@
    ═══════════════════════════════════════════════════════════════ */
 import { modalCustom } from "./modal.js";
 import { money } from "../utils/format.js";
+import { MERITO_VALUE_BRL } from "../utils/constants.js";
 
 const PIX_CODE = "00020126MRBUR5204000053039865802BR5909MRBUR LTDA6009AMERICANA62070503***6304A1B2";
 
 export function openPayment(total, opts = {}) {
   const saldo = Math.max(0, Math.floor(opts.points || 0));
-  const custoMeritos = Math.round(total); // 1 real = 1 mérito
+  // Resgate desacoplado do ganho: cada mérito vale MERITO_VALUE_BRL (R$0,05).
+  const custoMeritos = Math.round(total / MERITO_VALUE_BRL);
   const podeMeritos = opts.allowMeritos !== false; // permitir pagar com méritos
   return new Promise((resolve) => {
     const dlg = modalCustom(`
@@ -43,6 +45,7 @@ export function openPayment(total, opts = {}) {
       <div id="payMeritos" style="display:none;text-align:center">
         <div style="font-size:48px;line-height:1;margin:6px 0">🏅</div>
         <div class="pay-meritos-row"><span>Custo</span><b>${custoMeritos} ⚡</b></div>
+        <div style="font-size:10px;color:var(--t2);margin:-2px 0 6px">1 ⚡ = ${money(MERITO_VALUE_BRL)} · cobre ${money(total)}</div>
         <div class="pay-meritos-row"><span>Seu saldo</span><b style="color:${saldo >= custoMeritos ? "var(--ok)" : "var(--er)"}">${saldo} ⚡</b></div>
         ${saldo < custoMeritos ? `<div style="font-size:12px;color:var(--er);margin-top:8px">Saldo insuficiente — faltam ${custoMeritos - saldo} ⚡</div>`
           : `<div style="font-size:11px;color:var(--t2);margin-top:8px">Você ficará com ${saldo - custoMeritos} ⚡ após o pagamento.</div>`}
