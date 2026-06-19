@@ -89,6 +89,13 @@ export const RANKS = [
 /** Pontos ganhos por real gasto no pedido. */
 export const POINTS_PER_BRL = 1;
 
+/**
+ * Valor de 1 mérito em R$ ao RESGATAR (pagar com méritos / descontos).
+ * Desacoplado do ganho: ganha-se 1 mérito/R$1, mas no resgate cada mérito
+ * vale R$0,05 → ~5% de retorno (sustentável). custoEmMeritos = total / este valor.
+ */
+export const MERITO_VALUE_BRL = 0.05;
+
 /** Taxa de entrega padrão (BRL). */
 export const DELIVERY_FEE = 8.0;
 
