@@ -28,6 +28,10 @@
   const CIN  = '"Cinzel",serif';
   const COR  = '"Cormorant Garamond",serif';
   let t = 0, running = true, lastTs = 0, raf = 0;
+  const SPEED = 2.4; // acelera a animação (16,2s → ~6,8s) sem mexer nas fases.
+  // Tocar a animação completa só de vez em quando; nas reaberturas, vai direto.
+  let playFull = true;
+  try { playFull = (Date.now() - Number(localStorage.getItem("mb-boot-last") || 0)) > 6 * 3600 * 1000; } catch {}
 
   /* ── grain ── */
   const gC = document.createElement('canvas');
@@ -629,7 +633,7 @@
   function frame(ts){
     if(!running) return;
     if(ts-lastTs<16){ raf=requestAnimationFrame(frame); return; }
-    lastTs=ts; t+=1/60;
+    lastTs=ts; t+=(1/60)*SPEED;
 
     const mapAl = 1 - eOut(fd(t,PH.streetFade,PH.streetFull));
     if(mapAl>0.001){
@@ -668,5 +672,11 @@
   }
   window.MBskipBoot = endBoot;
 
-  document.fonts && document.fonts.ready ? document.fonts.ready.then(()=>{raf=requestAnimationFrame(frame);}) : (raf=requestAnimationFrame(frame));
+  if (playFull) {
+    try { localStorage.setItem("mb-boot-last", String(Date.now())); } catch {}
+    document.fonts && document.fonts.ready ? document.fonts.ready.then(()=>{raf=requestAnimationFrame(frame);}) : (raf=requestAnimationFrame(frame));
+  } else {
+    // Reabertura recente: pula a animação — mostra a marca por ~0,9s e entra.
+    setTimeout(endBoot, 900);
+  }
 })();

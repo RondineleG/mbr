@@ -67,10 +67,11 @@
 .boot-fill { position:absolute; top:0; left:0; height:100%; width:0%; background: linear-gradient(90deg,#4a1e04,#C9A84C,#F4D080); box-shadow:0 0 10px rgba(201,168,76,0.5); transition: width 0.25s linear; }
 .boot-fill::after { content:''; position:absolute; right:-4px; top:-4px; width:8px; height:8px; border-radius:50%; background: radial-gradient(circle,#fffacc,#f0c84c); box-shadow:0 0 12px rgba(244,200,76,0.85); }
 .boot-coords { font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:0.26em; color: rgba(201,168,76,0.28); text-align:center; }
-#bootSkip { position:absolute; bottom:20px; right:20px; z-index:40; pointer-events:auto; background:transparent; border:none;
-  border-bottom:1px solid rgba(201,168,76,0.12); font-family:'Cinzel',serif; font-size:9px; letter-spacing:0.42em;
-  color: rgba(201,168,76,0.32); padding:6px 0; transition: color 0.3s, border-color 0.3s; cursor:pointer; }
-#bootSkip:hover { color:#C9A84C; border-bottom-color: rgba(201,168,76,0.5); }
+#bootSkip { position:absolute; top:18px; right:18px; z-index:40; pointer-events:auto;
+  background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.5); border-radius:999px;
+  font-family:'Cinzel',serif; font-size:10px; letter-spacing:0.24em;
+  color:#C9A84C; padding:8px 16px; transition: all 0.25s; cursor:pointer; }
+#bootSkip:hover { background:rgba(201,168,76,0.22); border-color:#C9A84C; }
 @keyframes bootPulse { from { box-shadow:0 0 10px rgba(201,168,76,0.18); transform:scale(1);} to { box-shadow:0 0 38px rgba(201,168,76,0.5); transform:scale(1.04);} }
 @keyframes bootRot { to { transform: rotate(360deg); } }
 </style>
@@ -103,7 +104,7 @@
       <div class="boot-coords" id="bootCoords">22°44'S · 47°20'W · AMERICANA · SP</div>
     </div>
   </div>
-  <button id="bootSkip" onclick="window.MBskipBoot&&window.MBskipBoot()">PULAR</button>
+  <button id="bootSkip" onclick="window.MBskipBoot&&window.MBskipBoot()">PULAR ›</button>
 </div>
 
 <!-- ═══ LOGIN ═══ -->
