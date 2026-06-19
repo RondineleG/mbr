@@ -10,6 +10,7 @@ import { getDoc, setDoc, tsNow } from "../firebase/db.service.js";
 import { APP_VERSION } from "../version.js";
 import { toastSuccess, toastError } from "../components/toast.js";
 import { awardWeeklyChampion, getLastAward } from "../services/lanche.service.js";
+import { getMeritoValue, setMeritoValue } from "../services/economia.service.js";
 
 // ── Controle de versão do app (config/app no Firestore) ──
 async function loadVersionConfig() {
@@ -118,10 +119,30 @@ async function premiarCampeao() {
   }
 }
 
+async function loadMeritoStatus() {
+  const v = await getMeritoValue().catch(() => null);
+  const el = document.getElementById("meritoStatus");
+  const inp = document.getElementById("cfgMerito");
+  if (v != null) {
+    const perBrl = Math.round(1 / v);
+    if (el) el.textContent = `1 mérito = R$ ${v.toFixed(2).replace(".", ",")} · ${perBrl}⚡ por R$1`;
+    if (inp && !inp.value) inp.value = v;
+  }
+}
+
+async function saveMeritoConfig() {
+  const v = Number(document.getElementById("cfgMerito")?.value);
+  if (!(v > 0)) return toastError("Valor inválido — use, ex.: 0.05");
+  try { await setMeritoValue(v); toastSuccess(`Valor do mérito salvo: R$ ${v.toFixed(2).replace(".", ",")}`); loadMeritoStatus(); }
+  catch { toastError("Falha ao salvar (precisa ser admin)"); }
+}
+
 export function initDashboard() {
   subscribeOrders(() => { if (document.getElementById("section-dashboard")?.classList.contains("active")) renderDashboard(); });
   onAction("save-version", () => saveVersionConfig());
   onAction("premiar-campeao", () => premiarCampeao());
+  onAction("save-merito", () => saveMeritoConfig());
   loadVersionConfig();
   loadCampeaoStatus();
+  loadMeritoStatus();
 }

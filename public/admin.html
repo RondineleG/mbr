@@ -115,6 +115,19 @@
         </div>
       </div>
 
+      <!-- Economia: valor do mérito no resgate (config/economia) -->
+      <div style="margin-top:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:16px;max-width:560px">
+        <div class="admin-subtitle">ECONOMIA · VALOR DO MÉRITO</div>
+        <div id="meritoStatus" style="font-size:11px;color:var(--text-dim);margin-bottom:12px">—</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <input id="cfgMerito" type="number" step="0.01" min="0.01" placeholder="0.05" style="flex:1;min-width:120px;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-input);color:var(--text);font-family:var(--f-mono)">
+          <button class="admin-btn" data-action="save-merito">Salvar valor</button>
+        </div>
+        <div style="font-size:10px;color:var(--text-dim);margin-top:10px;line-height:1.5">
+          R$ que 1 mérito vale ao <b>pagar com méritos</b> (ganho continua 1⚡/R$1). Ex.: <b>0.05</b> = 20⚡ por R$1 (~5% de retorno).
+        </div>
+      </div>
+
       <div id="seedOutput"></div>
     </section>
 
