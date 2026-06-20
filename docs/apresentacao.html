@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MrBur · A Ordem — Dossiê de Operação</title>
+<meta name="description" content="Apresentação ponta a ponta do MrBur 'A Ordem' — as três personas (Cliente, Motoboy, Admin) e a operação completa de um pedido.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060503; --bg2:#0e0b06; --bg3:#181309;
+  --card:#0b0905;
+  --G:#C9A84C; --GL:#F0D880; --GD:#7A5C1E;
+  --tx:#EDE0C4; --t2:rgba(237,224,196,.56); --t3:rgba(237,224,196,.34);
+  --bd:rgba(201,168,76,.14); --bd2:rgba(201,168,76,.30);
+  --ok:#4FAE74; --info:#5DA9E9; --mbox:#A855F7;
+  --f-disp:'Cinzel',serif; --f-mono:'Share Tech Mono',monospace;
+  --f-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  --ease:cubic-bezier(.22,1,.36,1);
+  --acc:var(--G);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg); color:var(--tx); font-family:var(--f-body);
+  line-height:1.6; overflow-x:hidden; -webkit-font-smoothing:antialiased;
+}
+/* Brasas/glow de fundo fixo */
+body::before{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:
+    radial-gradient(60% 50% at 50% -8%, rgba(201,168,76,.16), transparent 70%),
+    radial-gradient(40% 40% at 92% 8%, rgba(176,104,32,.10), transparent 70%),
+    radial-gradient(50% 50% at 4% 100%, rgba(201,168,76,.07), transparent 70%);
+}
+body::after{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.4;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.025'/%3E%3C/svg%3E");
+}
+.wrap{position:relative; z-index:1; max-width:1180px; margin:0 auto; padding:0 24px}
+a{color:inherit; text-decoration:none}
+img{display:block; max-width:100%}
+
+.kicker{
+  font-family:var(--f-mono); font-size:11px; letter-spacing:.32em; text-transform:uppercase;
+  color:var(--acc); display:inline-flex; align-items:center; gap:.7em;
+}
+.kicker::before{content:""; width:26px; height:1px; background:var(--acc); opacity:.7}
+
+h1,h2,h3{font-family:var(--f-disp); font-weight:700; line-height:1.08; letter-spacing:.01em}
+
+/* ─── NAV ─── */
+nav{
+  position:sticky; top:0; z-index:50; backdrop-filter:blur(14px);
+  background:linear-gradient(180deg, rgba(6,5,3,.92), rgba(6,5,3,.66));
+  border-bottom:1px solid var(--bd);
+}
+.nav-in{max-width:1180px; margin:0 auto; padding:13px 24px; display:flex; align-items:center; gap:18px}
+.brand{font-family:var(--f-disp); font-weight:800; font-size:18px; letter-spacing:.06em; display:flex; align-items:center; gap:9px; white-space:nowrap}
+.brand b{color:var(--G)}
+.brand .flame{filter:drop-shadow(0 0 8px rgba(201,168,76,.6))}
+.nav-links{margin-left:auto; display:flex; gap:4px; flex-wrap:wrap}
+.nav-links a{
+  font-family:var(--f-mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+  color:var(--t2); padding:7px 12px; border-radius:8px; transition:.25s var(--ease); white-space:nowrap;
+}
+.nav-links a:hover{color:var(--tx); background:rgba(201,168,76,.08)}
+.nav-links a.on{color:var(--bg); background:var(--G)}
+
+/* ─── HERO ─── */
+.hero{min-height:92vh; display:flex; flex-direction:column; justify-content:center; padding:80px 0 60px; position:relative}
+.hero .seal{
+  width:88px; height:88px; border-radius:50%; display:grid; place-items:center; font-size:40px;
+  border:1px solid var(--bd2); background:radial-gradient(circle at 50% 35%, rgba(201,168,76,.2), rgba(11,9,5,.9));
+  box-shadow:0 0 0 8px rgba(201,168,76,.04), 0 24px 60px rgba(0,0,0,.6); margin-bottom:30px;
+  animation:emberPulse 4.5s var(--ease) infinite;
+}
+@keyframes emberPulse{0%,100%{box-shadow:0 0 0 8px rgba(201,168,76,.04),0 24px 60px rgba(0,0,0,.6)} 50%{box-shadow:0 0 0 14px rgba(201,168,76,.09),0 24px 70px rgba(0,0,0,.7)}}
+.hero h1{font-size:clamp(48px, 11vw, 132px); font-weight:900; letter-spacing:.02em; margin:14px 0}
+.hero h1 .sub{display:block; font-size:clamp(15px,3vw,26px); font-weight:600; letter-spacing:.42em; color:var(--G); margin-top:10px}
+.hero .lead{max-width:62ch; color:var(--t2); font-size:clamp(15px,2vw,19px); margin:10px 0 0}
+.hero .lead b{color:var(--tx); font-weight:600}
+.brief{margin-top:34px; display:flex; flex-wrap:wrap; gap:10px 26px; font-family:var(--f-mono); font-size:12px; color:var(--t2)}
+.brief span b{color:var(--G); font-weight:400}
+.scrollcue{margin-top:46px; font-family:var(--f-mono); font-size:11px; letter-spacing:.2em; color:var(--t3); display:flex; align-items:center; gap:10px}
+.scrollcue i{width:1px; height:34px; background:linear-gradient(var(--G),transparent); display:block; animation:drop 2s var(--ease) infinite}
+@keyframes drop{0%{transform:scaleY(.3);transform-origin:top;opacity:.3}50%{transform:scaleY(1);opacity:1}100%{transform:scaleY(.3);transform-origin:bottom;opacity:.3}}
+
+/* ─── SECTION SHELL ─── */
+section{padding:74px 0; position:relative}
+.sec-head{margin-bottom:40px; max-width:78ch}
+.sec-head h2{font-size:clamp(30px,5.4vw,56px); margin:14px 0 12px}
+.sec-head p{color:var(--t2); font-size:clamp(15px,2vw,18px)}
+.divider{height:1px; background:linear-gradient(90deg,var(--bd2),transparent); margin:0}
+
+/* ─── OVERVIEW: personas ─── */
+.personas{display:grid; gap:18px; margin-top:8px}
+.p-row{
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:26px;
+  padding:26px 28px; border:1px solid var(--bd); border-radius:18px;
+  background:linear-gradient(135deg, rgba(201,168,76,.05), rgba(11,9,5,.4));
+  transition:.4s var(--ease); position:relative; overflow:hidden;
+}
+.p-row::after{content:""; position:absolute; inset:0; border-radius:18px; box-shadow:inset 0 1px 0 rgba(201,168,76,.08)}
+.p-row:hover{transform:translateY(-4px); border-color:var(--bd2); background:linear-gradient(135deg, color-mix(in srgb,var(--acc) 12%,transparent), rgba(11,9,5,.5))}
+.p-row .pidx{font-family:var(--f-disp); font-weight:900; font-size:clamp(40px,7vw,72px); color:transparent; -webkit-text-stroke:1px var(--acc); opacity:.6; line-height:.8}
+.p-row .pemoji{font-size:30px; margin-right:4px}
+.p-row h3{font-size:clamp(22px,3.4vw,30px); display:flex; align-items:center; gap:12px}
+.p-row .prole{font-family:var(--f-mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--acc); margin:6px 0 9px}
+.p-row .pdesc{color:var(--t2); font-size:15px; max-width:60ch}
+.p-row .pcount{font-family:var(--f-mono); font-size:12px; color:var(--t3); text-align:right; white-space:nowrap}
+.p-row .pgo{display:inline-block; margin-top:8px; font-family:var(--f-mono); font-size:11px; letter-spacing:.15em; color:var(--acc)}
+
+/* ─── PERSONA SECTIONS ─── */
+.group{margin-top:54px}
+.group-head{display:flex; align-items:baseline; gap:14px; margin-bottom:22px; border-bottom:1px solid var(--bd); padding-bottom:12px}
+.group-head .gn{font-family:var(--f-mono); color:var(--acc); font-size:13px}
+.group-head h3{font-size:clamp(19px,2.8vw,26px)}
+.group-head p{color:var(--t3); font-size:13px; margin-left:auto; font-family:var(--f-mono); letter-spacing:.06em}
+
+.grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px}
+.frame{
+  border:1px solid var(--bd); border-radius:14px; overflow:hidden; cursor:pointer;
+  background:var(--card); transition:.4s var(--ease); position:relative;
+  opacity:0; transform:translateY(22px);
+}
+.frame.in{opacity:1; transform:none}
+.frame:hover{transform:translateY(-5px); border-color:var(--acc); box-shadow:0 24px 50px rgba(0,0,0,.55), 0 0 0 1px color-mix(in srgb,var(--acc) 40%,transparent)}
+.frame .thumb{position:relative; aspect-ratio:16/10; overflow:hidden; background:#000}
+.frame .thumb img{width:100%; height:100%; object-fit:cover; object-position:top center; transition:.6s var(--ease)}
+.frame:hover .thumb img{transform:scale(1.04)}
+.frame .num{
+  position:absolute; top:10px; left:10px; z-index:2; font-family:var(--f-mono); font-size:11px;
+  color:var(--bg); background:var(--acc); padding:3px 8px; border-radius:6px; letter-spacing:.05em; font-weight:bold;
+}
+.frame .zoom{position:absolute; top:10px; right:10px; z-index:2; opacity:0; transition:.3s; font-size:13px; background:rgba(6,5,3,.7); border:1px solid var(--bd2); border-radius:6px; padding:3px 7px}
+.frame:hover .zoom{opacity:1}
+.frame .cap{padding:14px 15px 16px}
+.frame .cap h4{font-family:var(--f-disp); font-weight:600; font-size:15px; letter-spacing:.01em}
+.frame .cap p{color:var(--t2); font-size:12.5px; margin-top:5px; line-height:1.5}
+.frame.feat{grid-column:span 2}
+.frame.feat .thumb{aspect-ratio:16/9}
+.frame.feat .cap h4{font-size:18px}
+
+/* ─── TIMELINE (operação completa) ─── */
+.flow{position:relative; margin-top:20px; padding-left:0}
+.flow::before{content:""; position:absolute; left:calc(50% - .5px); top:0; bottom:0; width:1px; background:linear-gradient(var(--bd2),var(--bd),transparent)}
+.step{display:grid; grid-template-columns:1fr 56px 1fr; align-items:center; gap:0; margin:8px 0; opacity:0; transform:translateY(24px); transition:.6s var(--ease)}
+.step.in{opacity:1; transform:none}
+.step .node{
+  grid-column:2; width:44px; height:44px; border-radius:50%; display:grid; place-items:center; font-size:18px;
+  border:1px solid var(--acc); background:var(--bg); z-index:2; margin:0 auto;
+  box-shadow:0 0 0 6px rgba(6,5,3,.9), 0 0 22px color-mix(in srgb,var(--acc) 35%,transparent);
+}
+.step .scard{
+  border:1px solid var(--bd); border-radius:14px; overflow:hidden; background:var(--card);
+  cursor:pointer; transition:.35s var(--ease);
+}
+.step .scard:hover{border-color:var(--acc); transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,0,0,.5)}
+.step .scard img{width:100%; aspect-ratio:16/10; object-fit:cover; object-position:top center}
+.step .scard .sc-cap{padding:12px 14px 14px}
+.step .sc-meta{font-family:var(--f-mono); font-size:10.5px; letter-spacing:.15em; text-transform:uppercase; color:var(--acc); display:flex; gap:8px; align-items:center}
+.step .sc-cap h4{font-family:var(--f-disp); font-weight:600; font-size:15px; margin:6px 0 4px}
+.step .sc-cap p{color:var(--t2); font-size:12.5px}
+.step.left .scard{grid-column:1}
+.step.right .scard{grid-column:3}
+.step.left .sc-meta,.step.left .sc-cap h4,.step.left .sc-cap p{text-align:right}
+.step.left .sc-meta{justify-content:flex-end}
+
+/* ─── FOOTER ─── */
+footer{padding:64px 0 80px; border-top:1px solid var(--bd); margin-top:40px; text-align:center}
+footer .fbrand{font-family:var(--f-disp); font-weight:800; font-size:22px; letter-spacing:.06em}
+footer p{color:var(--t2); font-size:13px; margin-top:12px; font-family:var(--f-mono); letter-spacing:.04em}
+footer .note{color:var(--t3); font-size:12px; margin-top:18px; max-width:60ch; margin-left:auto; margin-right:auto}
+
+/* ─── LIGHTBOX ─── */
+.lb{position:fixed; inset:0; z-index:100; background:rgba(3,2,1,.94); backdrop-filter:blur(8px); display:none; flex-direction:column; padding:24px}
+.lb.open{display:flex; animation:fade .3s var(--ease)}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.lb-top{display:flex; align-items:center; gap:16px; color:var(--t2); font-family:var(--f-mono); font-size:12px; flex:0 0 auto}
+.lb-top .lb-x{margin-left:auto; cursor:pointer; font-size:26px; line-height:1; color:var(--tx); padding:4px 10px; border:1px solid var(--bd2); border-radius:8px}
+.lb-stage{flex:1; display:flex; align-items:center; justify-content:center; gap:18px; min-height:0; padding:18px 0}
+.lb-stage img{max-width:100%; max-height:100%; object-fit:contain; border:1px solid var(--bd2); border-radius:12px; box-shadow:0 40px 90px rgba(0,0,0,.7)}
+.lb-arrow{flex:0 0 auto; cursor:pointer; font-family:var(--f-disp); font-size:30px; color:var(--t2); width:50px; height:50px; border:1px solid var(--bd2); border-radius:50%; display:grid; place-items:center; transition:.25s var(--ease); user-select:none}
+.lb-arrow:hover{color:var(--bg); background:var(--G); border-color:var(--G)}
+.lb-cap{flex:0 0 auto; text-align:center; padding-top:6px}
+.lb-cap h4{font-family:var(--f-disp); font-size:18px}
+.lb-cap p{color:var(--t2); font-size:13px; margin-top:4px}
+
+@media(max-width:860px){
+  .nav-links{display:none}
+  .grid{grid-template-columns:repeat(2,1fr)}
+  .frame.feat{grid-column:span 2}
+  .p-row{grid-template-columns:auto 1fr; }
+  .p-row .pcount{grid-column:1/-1; text-align:left}
+  .flow::before{left:21px}
+  .step{grid-template-columns:44px 1fr; gap:14px}
+  .step .node{grid-column:1}
+  .step.left .scard,.step.right .scard{grid-column:2}
+  .step.left .sc-meta,.step.left .sc-cap h4,.step.left .sc-cap p{text-align:left}
+  .step.left .sc-meta{justify-content:flex-start}
+}
+@media(max-width:540px){
+  .grid{grid-template-columns:1fr}
+  .frame.feat{grid-column:span 1}
+  .wrap{padding:0 16px}
+  .lb-arrow{width:42px;height:42px;font-size:24px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important; transition:none!important}
+  .frame,.step{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand"><span class="flame">🔥</span> Mr<b>Bur</b> · A Ordem</div>
+    <div class="nav-links">
+      <a href="#visao">Visão</a>
+      <a href="#cliente">Cliente</a>
+      <a href="#motoboy">Motoboy</a>
+      <a href="#admin">Admin</a>
+      <a href="#operacao">Operação</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="seal">🔥</div>
+    <span class="kicker">Dossiê de Operação · E2E</span>
+    <h1>A Ordem<span class="sub">M R B U R</span></h1>
+    <p class="lead">Hamburgueria gamificada onde cada cliente é um <b>agente</b> com codinome, méritos e patente. Esta é a operação completa, vista pelas <b>três personas</b> que a fazem girar.</p>
+    <div class="brief">
+      <span><b>03</b> personas</span>
+      <span><b>73</b> telas capturadas</span>
+      <span><b>01</b> pedido real ponta a ponta</span>
+      <span><b>v1.4.20</b></span>
+    </div>
+    <div class="scrollcue"><i></i> ROLE PARA INFILTRAR</div>
+  </div>
+</header>
+
+<section id="visao">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Briefing</span>
+      <h2>As três personas</h2>
+      <p>Um único app, três frentes de operação. Cada agente enxerga telas e poderes diferentes — juntos, fecham o ciclo do pedido.</p>
+    </div>
+    <div class="personas" id="personaRows"></div>
+  </div>
+</section>
+
+<div class="wrap"><div class="divider"></div></div>
+
+<section id="cliente"></section>
+<div class="wrap"><div class="divider"></div></div>
+<section id="motoboy"></section>
+<div class="wrap"><div class="divider"></div></div>
+<section id="admin"></section>
+
+<div class="wrap"><div class="divider"></div></div>
+
+<section id="operacao">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">Missão completa</span>
+      <h2>Operação ponta a ponta</h2>
+      <p>Um pedido real (<b style="color:var(--G)">ORD&#8209;2606&#8209;4LB8</b> · criação <b style="color:var(--G)">fogueira&#8209;imperial</b>) atravessando as três personas em tempo real: do montar ao entregue, com chat e méritos creditados.</p>
+    </div>
+    <div class="flow" id="flow"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="fbrand">🔥 Mr<b style="color:var(--G)">Bur</b></div>
+    <p>A Ordem · Documentação E2E · 2026&#8209;06&#8209;20 · v1.4.20</p>
+    <p class="note">Captura gerada por harness Playwright (3 navegadores + Firebase Admin SDK). Pagamento é demonstração — nenhuma cobrança real é efetuada.</p>
+  </div>
+</footer>
+
+<div class="lb" id="lb">
+  <div class="lb-top">
+    <span id="lbCount"></span>
+    <span class="lb-x" id="lbX">✕</span>
+  </div>
+  <div class="lb-stage">
+    <div class="lb-arrow" id="lbPrev">‹</div>
+    <img id="lbImg" alt="">
+    <div class="lb-arrow" id="lbNext">›</div>
+  </div>
+  <div class="lb-cap"><h4 id="lbTitle"></h4><p id="lbDesc"></p></div>
+</div>
+
+<script>
+const PERSONAS = [
+  {
+    id:"cliente", dir:"e2e/01-cliente", icon:"🕵️", name:"Agente Cliente", role:"Quem pede", accent:"#C9A84C",
+    desc:"Monta lanches autorais, paga, acompanha a entrega e ganha méritos. A porta de entrada da Ordem.",
+    groups:[
+      {n:"01", t:"Acesso & Home", note:"login + painel", shots:[
+        {f:"01-boot-intro.png", t:"Abertura da Ordem", d:"Cena cinematográfica de boot antes do acesso do agente."},
+        {f:"02-home.png", t:"Home do Agente", d:"Patente, méritos, atalhos e novidades em um só painel."},
+      ]},
+      {n:"02", t:"Monte Seu Lanche", note:"wizard de criação", shots:[
+        {f:"03-cardapio-monte-passo1.png", t:"Montador · Pão", d:"Primeira etapa: a base do lanche, com preço ao vivo."},
+        {f:"04-cardapio-monte-passo2.png", t:"Montador · Carnes", d:"Escolha da proteína; carne é obrigatória."},
+        {f:"05-cardapio-monte-passo3.png", t:"Montador · Extras", d:"Queijos e adicionais — inclusos não somam preço."},
+        {f:"06-cardapio-monte-passo4.png", t:"Montador · Salada", d:"Vegetais frescos para fechar a composição."},
+        {f:"07-cardapio-monte-passo5.png", t:"Montador · Molhos", d:"Molhos inclusos e premium."},
+        {f:"08-cardapio-monte-passo6.png", t:"Montador · Finalização", d:"Últimos adicionais antes de revisar."},
+        {f:"14-cardapio-revisao.png", t:"Revisão da Criação", d:"Difere do básico → vira criação (codinome + forks + 50⚡); senão, 'Clássico MrBur'."},
+      ]},
+      {n:"03", t:"Cardápio", note:"categorias prontas", shots:[
+        {f:"09-cardapio-dia.png", t:"Lanche do Dia", d:"Oferta rotativa do dia, preço fixo."},
+        {f:"10-cardapio-mbox.png", t:"MBox", d:"Caixa-surpresa de sábado, oculta até o corte de sexta 22h."},
+        {f:"11-cardapio-acomp.png", t:"Acompanhamentos", d:"Porções para complementar o pedido."},
+        {f:"12-cardapio-bebidas.png", t:"Bebidas", d:"Catálogo de bebidas."},
+        {f:"13-cardapio-sobremesas.png", t:"Sobremesas", d:"Doces para fechar."},
+      ]},
+      {n:"04", t:"Sacola & Pagamento", note:"checkout demo", shots:[
+        {f:"15-sacola.png", t:"Sacola", d:"Itens, frete por km (endereço geocodificado) e total."},
+        {f:"16-pagamento-cartao.png", t:"Pagamento · Cartão", d:"Cartão com máscaras e validação."},
+        {f:"17-pagamento-pix.png", t:"Pagamento · Pix", d:"Pix copia-e-cola."},
+        {f:"18-pagamento-meritos.png", t:"Pagamento · Méritos", d:"Resgate por méritos (1⚡ = R$0,05)."},
+      ]},
+      {n:"05", t:"Pedidos", note:"acompanhamento", shots:[
+        {f:"19-pedidos.png", t:"Meus Pedidos", d:"Status, timeline e ações (alterar/cancelar até o corte)."},
+      ]},
+      {n:"06", t:"Clube & Gamificação", note:"méritos, criações, ranking", shots:[
+        {f:"20-clube.png", t:"Clube", d:"Hub do agente: méritos, criações, missões, ranking, loja."},
+        {f:"21-clube-criacoes.png", t:"Criações", d:"Galeria de lanches autorais com forks, estrelas e campeão da semana."},
+        {f:"22-clube-historico.png", t:"Extrato", d:"Entradas e saídas de méritos com data e descrição."},
+        {f:"23-clube-missoes.png", t:"Missões", d:"Desafios com progresso e recompensa em méritos."},
+        {f:"24-clube-ranking.png", t:"Ranking", d:"Placar de agentes por méritos e patente."},
+        {f:"25-clube-recompensas.png", t:"Recompensas", d:"Loja de resgates: frete grátis, brindes, experiências."},
+      ]},
+      {n:"07", t:"Busca, Convites & Perfil", note:"conta do agente", shots:[
+        {f:"26-busca.png", t:"Busca", d:"Busca no catálogo por nome e categoria."},
+        {f:"27-convites.png", t:"Convites", d:"Estatísticas e gestão dos códigos para recrutar agentes."},
+        {f:"28-perfil.png", t:"Perfil", d:"Dossiê editável; o codinome é permanente."},
+      ]},
+      {n:"08", t:"Versão Web / PWA", note:"desktop responsivo", shots:[
+        {f:"29-web-inicio.png", t:"Web · Início", d:"A Ordem adaptada para telas grandes."},
+        {f:"30-web-cardapio.png", t:"Web · Cardápio", d:"Monte Seu Lanche interativo no desktop."},
+        {f:"31-web-sacola.png", t:"Web · Sacola", d:"Checkout completo na web."},
+        {f:"32-web-pedidos.png", t:"Web · Pedidos", d:"Acompanhamento dos pedidos."},
+        {f:"33-web-clube.png", t:"Web · Clube", d:"Gamificação na versão desktop."},
+      ]},
+    ],
+  },
+  {
+    id:"motoboy", dir:"e2e/02-motoboy", icon:"🛵", name:"Agente Motoboy", role:"Quem entrega", accent:"#5DA9E9",
+    desc:"Recebe as entregas atribuídas, segue a rota otimizada, conversa com o cliente e compartilha a localização ao vivo.",
+    groups:[
+      {n:"01", t:"Central de Entregas", note:"painel do entregador", shots:[
+        {f:"01-central-entregas.png", t:"Central de Entregas", d:"Visão geral das entregas do agente motoboy."},
+        {f:"02-resumo-kpis.png", t:"Resumo / KPIs", d:"Em rota, ganhos por entrega e concluídas."},
+        {f:"04-entregas-em-rota.png", t:"Entregas em Rota", d:"Pedidos ativos com endereço e ações."},
+        {f:"06-localizacao-on.png", t:"Localização ao Vivo", d:"📡 Compartilhamento de GPS ligado para o rastreio do cliente."},
+        {f:"05-entregas-concluidas.png", t:"Concluídas", d:"Histórico recente de entregas finalizadas."},
+        {f:"03-sem-rota-ativa.png", t:"Sem Rota Ativa", d:"Estado vazio quando não há entrega geolocalizada no momento."},
+      ]},
+    ],
+  },
+  {
+    id:"admin", dir:"e2e/03-admin", icon:"👑", name:"Agente Admin", role:"Quem comanda", accent:"#4FAE74",
+    desc:"O Comando: pedidos em tempo real, catálogo, gamificação, relatórios e regras do jogo.",
+    groups:[
+      {n:"01", t:"Comando & Métricas", note:"pulso da operação", shots:[
+        {f:"01-dashboard.png", t:"Dashboard", d:"KPIs do negócio: pedidos, faturamento, agentes."},
+        {f:"02-dashboard.png", t:"Dashboard · Controles", d:"Versão do app, prêmio do campeão e valor do mérito."},
+        {f:"03-relatorios.png", t:"Relatórios", d:"Faturamento por dia, top produtos, pagamento e entregas."},
+      ]},
+      {n:"02", t:"Operação & Pessoas", note:"pedidos e agentes", shots:[
+        {f:"04-pedidos.png", t:"Pedidos (tempo real)", d:"Fila ao vivo + troca de status; reflete no cliente na hora."},
+        {f:"09-agentes.png", t:"Agentes", d:"Papéis, méritos e o toggle que promove um motoboy."},
+      ]},
+      {n:"03", t:"Catálogo & Cardápio", note:"o que é vendido", shots:[
+        {f:"05-produtos.png", t:"Produtos", d:"CRUD do catálogo com imagem, preço e categoria."},
+        {f:"06-monte-seu-lanche.png", t:"Monte Seu Lanche", d:"Ingredientes e preço-base do montador, editáveis ao vivo."},
+        {f:"07-lanche-do-dia.png", t:"Lanche do Dia", d:"Programação do especial por dia da semana."},
+        {f:"08-mbox.png", t:"MBox", d:"Configuração da caixa-surpresa de sábado e estoque."},
+      ]},
+      {n:"04", t:"Engajamento & Regras", note:"o jogo", shots:[
+        {f:"10-missoes.png", t:"Missões", d:"Criação e gestão dos desafios dos agentes."},
+        {f:"11-recompensas.png", t:"Recompensas", d:"Catálogo de resgates por méritos."},
+        {f:"12-convites.png", t:"Convites", d:"Geração, edição e revogação de códigos."},
+        {f:"13-funcionalidades.png", t:"Funcionalidades", d:"Feature flags que ligam/desligam recursos por papel."},
+      ]},
+    ],
+  },
+];
+
+const FLOW = {
+  dir:"e2e/04-fluxo-integrado",
+  steps:[
+    {f:"01-cliente-home.png", p:"cliente", t:"Agente entra logado", d:"Home com patente e méritos."},
+    {f:"02-cliente-monta-lanche.png", p:"cliente", t:"Monta o lanche", d:"Adiciona bacon → criação inédita."},
+    {f:"03-cliente-revisao-criacao.png", p:"cliente", t:"Revisa a criação", d:"Codinome automático e elegível a +50⚡."},
+    {f:"04-cliente-sacola.png", p:"cliente", t:"Sacola", d:"Frete por km e total."},
+    {f:"05-cliente-pagamento.png", p:"cliente", t:"Paga (cartão demo)", d:"Pix e méritos também disponíveis."},
+    {f:"06-cliente-pedido-criado.png", p:"cliente", t:"Pedido criado", d:"Status inicial: Recebido."},
+    {f:"07-admin-pedido-recebido.png", p:"admin", t:"Admin recebe", d:"Aparece na fila em tempo real."},
+    {f:"08-admin-status-analisando.png", p:"admin", t:"Analisando", d:"Primeira transição de status."},
+    {f:"09-admin-status-aprovado.png", p:"admin", t:"Aprovado", d:"Libera a atribuição de motoboy."},
+    {f:"10-admin-motoboy-atribuido.png", p:"admin", t:"Motoboy atribuído", d:"Designa o entregador responsável."},
+    {f:"11-admin-pedido-enviado.png", p:"admin", t:"Enviado", d:"Sai para entrega."},
+    {f:"12-motoboy-entrega-recebida.png", p:"motoboy", t:"Motoboy recebe", d:"Entrega aparece em rota."},
+    {f:"13-motoboy-rota-mapa.png", p:"motoboy", t:"Rota + mapa", d:"Trajeto otimizado (PCV) no mapa Leaflet."},
+    {f:"14-motoboy-mensagem-enviada.png", p:"motoboy", t:"Mensagem ao cliente", d:"Avisa que saiu para a entrega."},
+    {f:"15-cliente-rastreio.png", p:"cliente", t:"Rastreio ao vivo", d:"Mini-mapa motoboy → destino."},
+    {f:"16-cliente-recebe-mensagem.png", p:"cliente", t:"Recebe a mensagem", d:"Chat liberado após 'enviado'."},
+    {f:"17-cliente-responde.png", p:"cliente", t:"Cliente responde", d:"Conversa em tempo real."},
+    {f:"18-motoboy-recebe-resposta.png", p:"motoboy", t:"Resposta recebida", d:"Chega na hora do lado do motoboy."},
+    {f:"19-motoboy-marca-entregue.png", p:"motoboy", t:"Marca entregue", d:"Ganha taxa + méritos da entrega."},
+    {f:"20-cliente-pedido-entregue.png", p:"cliente", t:"Pedido entregue", d:"Status final no app do cliente."},
+    {f:"21-cliente-extrato-meritos.png", p:"cliente", t:"Méritos creditados", d:"Visíveis no Clube → Extrato."},
+  ],
+};
+const PERSONA_META = {cliente:{icon:"🕵️",accent:"#C9A84C"}, motoboy:{icon:"🛵",accent:"#5DA9E9"}, admin:{icon:"👑",accent:"#4FAE74"}};
+
+// ── Render ──
+const galleries = {}; // id -> [{src,t,d}]
+const esc = (s)=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function registerGallery(id, shots, dir){ galleries[id] = shots.map(s=>({src:`${dir}/${s.f}`, t:s.t, d:s.d})); }
+
+// Persona overview rows
+document.getElementById("personaRows").innerHTML = PERSONAS.map((p,i)=>{
+  const count = p.groups.reduce((a,g)=>a+g.shots.length,0);
+  return `<a class="p-row" href="#${p.id}" style="--acc:${p.accent}">
+    <div class="pidx">0${i+1}</div>
+    <div>
+      <h3><span class="pemoji">${p.icon}</span>${esc(p.name)}</h3>
+      <div class="prole">${esc(p.role)}</div>
+      <div class="pdesc">${esc(p.desc)}</div>
+      <span class="pgo">VER DOSSIÊ →</span>
+    </div>
+    <div class="pcount">${count} telas</div>
+  </a>`;
+}).join("");
+
+// Persona sections
+PERSONAS.forEach(p=>{
+  const sec = document.getElementById(p.id);
+  sec.style.setProperty("--acc", p.accent);
+  let html = `<div class="wrap">
+    <div class="sec-head">
+      <span class="kicker">${p.icon} ${esc(p.role)}</span>
+      <h2>${esc(p.name)}</h2>
+      <p>${esc(p.desc)}</p>
+    </div>`;
+  p.groups.forEach(g=>{
+    const gid = `${p.id}-${g.n}`;
+    registerGallery(gid, g.shots, p.dir);
+    html += `<div class="group">
+      <div class="group-head"><span class="gn">${g.n}</span><h3>${esc(g.t)}</h3><p>${esc(g.note)}</p></div>
+      <div class="grid">${g.shots.map((s,idx)=>frameHTML(gid, idx, `${p.dir}/${s.f}`, s.t, s.d, g.shots.length>=4 && idx===0)).join("")}</div>
+    </div>`;
+  });
+  html += `</div>`;
+  sec.innerHTML = html;
+});
+
+function frameHTML(gid, idx, src, t, d, feat){
+  return `<div class="frame${feat?" feat":""}" data-g="${gid}" data-i="${idx}">
+    <div class="thumb"><span class="num">${String(idx+1).padStart(2,"0")}</span><span class="zoom">⤢</span>
+      <img loading="lazy" src="${src}" alt="${esc(t)}"></div>
+    <div class="cap"><h4>${esc(t)}</h4><p>${esc(d)}</p></div>
+  </div>`;
+}
+
+// Flow timeline
+registerGallery("flow", FLOW.steps, FLOW.dir);
+document.getElementById("flow").innerHTML = FLOW.steps.map((s,idx)=>{
+  const m = PERSONA_META[s.p]; const side = idx%2===0 ? "left":"right";
+  return `<div class="step ${side}" style="--acc:${m.accent}">
+    <div class="scard" data-g="flow" data-i="${idx}">
+      <img loading="lazy" src="${FLOW.dir}/${s.f}" alt="${esc(s.t)}">
+      <div class="sc-cap"><div class="sc-meta">${m.icon} ${esc(s.p)} · ${String(idx+1).padStart(2,"0")}</div><h4>${esc(s.t)}</h4><p>${esc(s.d)}</p></div>
+    </div>
+    <div class="node">${m.icon}</div>
+  </div>`;
+}).join("");
+
+// ── Lightbox ──
+const lb=document.getElementById("lb"), lbImg=document.getElementById("lbImg"),
+  lbTitle=document.getElementById("lbTitle"), lbDesc=document.getElementById("lbDesc"),
+  lbCount=document.getElementById("lbCount");
+let curG=null, curI=0;
+function openLB(g,i){ curG=g; curI=i; renderLB(); lb.classList.add("open"); document.body.style.overflow="hidden"; }
+function renderLB(){
+  const arr=galleries[curG]; if(!arr) return; const it=arr[(curI+arr.length)%arr.length]; curI=(curI+arr.length)%arr.length;
+  lbImg.src=it.src; lbImg.alt=it.t; lbTitle.textContent=it.t; lbDesc.textContent=it.d;
+  lbCount.textContent=`${String(curI+1).padStart(2,"0")} / ${String(arr.length).padStart(2,"0")}`;
+}
+function closeLB(){ lb.classList.remove("open"); document.body.style.overflow=""; }
+function step(d){ curI+=d; renderLB(); }
+document.addEventListener("click",e=>{
+  const f=e.target.closest("[data-g]"); if(f){ openLB(f.dataset.g, +f.dataset.i); }
+});
+document.getElementById("lbX").onclick=closeLB;
+document.getElementById("lbPrev").onclick=()=>step(-1);
+document.getElementById("lbNext").onclick=()=>step(1);
+lb.addEventListener("click",e=>{ if(e.target===lb||e.target.classList.contains("lb-stage")) closeLB(); });
+document.addEventListener("keydown",e=>{
+  if(!lb.classList.contains("open")) return;
+  if(e.key==="Escape") closeLB(); else if(e.key==="ArrowRight") step(1); else if(e.key==="ArrowLeft") step(-1);
+});
+
+// ── Scroll reveal ──
+const io=new IntersectionObserver((es)=>{es.forEach(en=>{ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target);} })},{threshold:.12, rootMargin:"0px 0px -8% 0px"});
+document.querySelectorAll(".frame,.step").forEach(el=>io.observe(el));
+
+// ── Nav active state ──
+const navA=[...document.querySelectorAll(".nav-links a")];
+const secs=["visao","cliente","motoboy","admin","operacao"].map(id=>document.getElementById(id));
+const navIo=new IntersectionObserver((es)=>{es.forEach(en=>{ if(en.isIntersecting){ const id=en.target.id; navA.forEach(a=>a.classList.toggle("on", a.getAttribute("href")==="#"+id)); } })},{rootMargin:"-45% 0px -50% 0px"});
+secs.forEach(s=>s&&navIo.observe(s));
+</script>
+</body>
+</html>
