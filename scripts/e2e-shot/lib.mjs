@@ -60,10 +60,11 @@ export async function dismissModals(page) {
   await page.keyboard.press("Escape").catch(() => {});
 }
 
-/** Dispensa a animação de boot do app principal. */
+/** Dispensa a animação de boot do app principal (remove o overlay à força se persistir). */
 export async function skipBoot(page) {
-  try { await page.locator("#bootSkip").click({ timeout: 8000 }); } catch {}
-  await page.locator("#boot").waitFor({ state: "detached", timeout: 8000 }).catch(() => {});
+  try { await page.locator("#bootSkip").click({ timeout: 6000 }); } catch {}
+  const gone = await page.locator("#boot").waitFor({ state: "detached", timeout: 6000 }).then(() => true).catch(() => false);
+  if (!gone) await page.evaluate(() => document.getElementById("boot")?.remove()).catch(() => {});
 }
 
 /**
