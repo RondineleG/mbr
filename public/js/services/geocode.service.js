@@ -15,17 +15,35 @@ export async function lookupCep(cep) {
   } catch { return null; }
 }
 
-/** Geocodifica um endereço (Nominatim) → {lat,lng} ou null. */
+// Uma consulta ao Nominatim. `params` é a querystring específica (q= ou postalcode=).
+async function nominatim(params) {
+  const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&${params}`, {
+    headers: { "Accept": "application/json" },
+  });
+  const arr = await r.json();
+  if (!Array.isArray(arr) || !arr.length) return null;
+  return { lat: +Number(arr[0].lat).toFixed(6), lng: +Number(arr[0].lon).toFixed(6) };
+}
+
+/**
+ * Geocodifica um endereço (Nominatim) → {lat,lng} ou null.
+ * Tenta do mais específico ao mais amplo até obter um acerto — endereços
+ * parciais (sem número, ou só bairro/cidade) ainda devolvem uma coordenada
+ * aproximada, o que basta para frete, rota do motoboy e rastreio no mapa.
+ */
 export async function geocode(addr) {
   if (!addr) return null;
-  const q = [addr.street, addr.number, addr.neighborhood, addr.city, addr.uf, "Brasil"].filter(Boolean).join(", ");
-  if (!q) return null;
-  try {
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=br&q=${encodeURIComponent(q)}`, {
-      headers: { "Accept": "application/json" },
-    });
-    const arr = await r.json();
-    if (!Array.isArray(arr) || !arr.length) return null;
-    return { lat: +Number(arr[0].lat).toFixed(6), lng: +Number(arr[0].lon).toFixed(6) };
-  } catch { return null; }
+  const full = [addr.street, addr.number, addr.neighborhood, addr.city, addr.uf, "Brasil"].filter(Boolean).join(", ");
+  const sansNumber = [addr.street, addr.neighborhood, addr.city, addr.uf, "Brasil"].filter(Boolean).join(", ");
+  const area = [addr.neighborhood, addr.city, addr.uf, "Brasil"].filter(Boolean).join(", ");
+  const cep = String(addr.cep || "").replace(/\D/g, "");
+  const tries = [];
+  if (full) tries.push(`q=${encodeURIComponent(full)}`);
+  if (cep.length === 8) tries.push(`postalcode=${cep}`);
+  if (sansNumber && sansNumber !== full) tries.push(`q=${encodeURIComponent(sansNumber)}`);
+  if (area) tries.push(`q=${encodeURIComponent(area)}`);
+  for (const p of tries) {
+    try { const hit = await nominatim(p); if (hit) return hit; } catch { /* tenta a próxima estratégia */ }
+  }
+  return null;
 }

@@ -13,6 +13,7 @@ import { syncChatNotifiers, getUnread, onUnreadChange } from "../components/chat
 import { money } from "../utils/format.js";
 import { DELIVERY_MERITOS, DELIVERY_FEE, STORE } from "../utils/constants.js";
 import { tspNearestNeighbor } from "../utils/geo.js";
+import { geocode } from "../services/geocode.service.js";
 import { toast, toastError } from "../components/toast.js";
 
 let me = null;
@@ -209,6 +210,23 @@ function stopShare() {
   toast("info", "📴", "Localização desativada");
 }
 
+// Pedidos antigos podem ter endereço sem coordenada (geocode falhou no checkout
+// ou o cliente cadastrou antes do fix). Sem lat não há rota/mapa/rastreio — então
+// geocodificamos sob demanda e gravamos no pedido. 1 tentativa por pedido.
+const geoTried = new Set();
+async function backfillCoords(list) {
+  const pend = (list || []).filter((o) =>
+    !geoTried.has(o.id) && ACTIVE.includes(o.status) &&
+    o.address && o.address.lat == null && (o.address.street || o.address.cep || o.address.city));
+  for (const o of pend) {
+    geoTried.add(o.id);
+    try {
+      const c = await geocode(o.address);
+      if (c) await updateDoc(`orders/${o.id}`, { address: { ...o.address, ...c } }); // realtime redesenha o mapa
+    } catch { /* segue sem coords */ }
+  }
+}
+
 function enter(profile) {
   me = profile;
   $("#motoLoading").style.display = "none";
@@ -220,9 +238,23 @@ function enter(profile) {
   unsub = watchAgentOrders(profile.uid, (list) => {
     orders = list || [];
     render();
+    backfillCoords(orders);   // completa coordenadas faltantes → popula rota/mapa
     // Avisa o motoboy de novas mensagens dos clientes nas entregas atribuídas.
     syncChatNotifiers(orders.filter((o) => o.status !== "cancelado").map((o) => o.id), profile.uid);
   });
+}
+
+// Erro/timeout no acesso: troca o spinner por uma ação de retry em vez de girar pra sempre.
+function showAccessError(msg) {
+  const l = $("#motoLoading");
+  if (!l) return;
+  l.innerHTML = `<div class="al-text">⚠️ ${escapeHtml(msg || "Não foi possível carregar a Central de Entregas")}</div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="admin-btn sm" id="motoRetry">Tentar novamente</button>
+      <button class="admin-btn sm ghost" id="motoBack">Voltar ao app</button>
+    </div>`;
+  $("#motoRetry")?.addEventListener("click", () => location.reload());
+  $("#motoBack")?.addEventListener("click", () => location.replace("/"));
 }
 
 onAction("moto-sent", (el) => setStatus(el.dataset.id, ORDER_STATUS.SENT));
@@ -245,9 +277,22 @@ onAction("moto-theme", () => {
   localStorage.setItem("admin-theme", cur);
 });
 
+// Rede lenta/sem resposta não pode deixar o spinner girando indefinidamente.
+let accessTimer = setTimeout(() => {
+  const l = $("#motoLoading");
+  if (l && l.style.display !== "none") showAccessError("A verificação de acesso está demorando. Verifique sua conexão.");
+}, 12000);
+
 auth.onAuthChanged(async (user) => {
   if (!user) { window.location.replace("/"); return; }
-  const profile = await getProfile(user.uid);
-  if (profile?.motoboy) enter(profile);
-  else window.location.replace("/"); // sem permissão de entregas
+  try {
+    const profile = await getProfile(user.uid);
+    clearTimeout(accessTimer);
+    if (profile?.motoboy) enter(profile);
+    else window.location.replace("/"); // sem permissão de entregas
+  } catch (err) {
+    clearTimeout(accessTimer);
+    console.error("[motoboy] falha ao verificar acesso:", err);
+    showAccessError("Não foi possível verificar seu acesso. Tente novamente.");
+  }
 });

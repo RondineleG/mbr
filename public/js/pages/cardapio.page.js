@@ -10,7 +10,7 @@ import { money } from "../utils/format.js";
 import { skeletonList } from "../components/skeleton.js";
 import { toast, toastInfo, toastError } from "../components/toast.js";
 import { isEnabled, watchMenuTabs, isTabEnabled } from "../services/features.service.js";
-import { gerarNomeLanche } from "../services/lanche.service.js";
+import { gerarNomeLanche, isCreationCombo } from "../services/lanche.service.js";
 
 // Ingredientes e preço-base do montador: começam com o padrão e são
 // substituídos ao vivo pelo que o admin cadastra (config/montar no Firestore).
@@ -98,6 +98,9 @@ function renderReview() {
       <span style="font-size:14px;font-weight:700">TOTAL</span>
       <span style="font-size:22px;font-weight:900;color:var(--gold);font-family:var(--f-mono)">${money(total)}</span></div>
     <div style="font-size:11px;color:var(--success);font-weight:700;text-align:right;margin-top:4px;font-family:var(--f-mono)">+${Math.round(total)}⚡ méritos</div>
+    <div style="font-size:11px;text-align:right;margin-top:4px;color:var(--text-dim)">${isCreationCombo(currentParts(), STEPS)
+      ? "🔧 Combinação inédita — concorre a forks, estrelas e +50⚡ se você for o 1º a criar"
+      : "🍔 Lanche clássico — sem forks/estrelas"}</div>
     <div class="step-buttons" style="flex-direction:column;gap:10px;margin-top:16px">
       <button class="step-btn" data-action="build-add-go">Adicionar e ir pra Sacola 🛒</button>
       <button class="step-btn-back" style="width:100%;flex:1" data-action="build-add-continue">Adicionar e montar outro 🔄</button>
@@ -119,14 +122,28 @@ function toggleItem(stepId, idx) {
   renderStepContent();
 }
 
+// Composição atual (nomes dos ingredientes escolhidos, em todas as etapas visíveis).
+function currentParts() {
+  const parts = [];
+  visible().forEach((s) => { if (s.id !== "finalizar") (selections[s.id] || []).forEach((it) => parts.push(it.name)); });
+  return parts;
+}
+
 // Adiciona o lanche montado à sacola e reseta o wizard para um novo lanche.
+// Só vira CRIAÇÃO (codinome + forks/estrelas + méritos de criador) se a
+// composição diferir do básico padrão; o básico entra como lanche comum.
 function addBuildToCart() {
   let total = basePrice;
   const parts = [];
   visible().forEach((s) => (selections[s.id] || []).forEach((it) => { total += it.price || 0; parts.push(it.name); }));
-  const nome = gerarNomeLanche(parts);
-  store.cartAdd({ custom: true, name: nome, icon: "🔧", price: total, qty: 1, desc: parts.join(", "), combo: parts });
-  toast("success", "🔧", `${nome} adicionado! ${money(total)}`);
+  if (isCreationCombo(parts, STEPS)) {
+    const nome = gerarNomeLanche(parts);
+    store.cartAdd({ custom: true, name: nome, icon: "🔧", price: total, qty: 1, desc: parts.join(", "), combo: parts });
+    toast("success", "🔧", `${nome} adicionado! ${money(total)}`);
+  } else {
+    store.cartAdd({ name: "Clássico MrBur", icon: "🍔", price: total, qty: 1, desc: parts.join(", ") });
+    toast("success", "🍔", `Clássico MrBur adicionado! ${money(total)}`);
+  }
   selections = defaultSelections(); currentStep = 0; renderWizard();
 }
 

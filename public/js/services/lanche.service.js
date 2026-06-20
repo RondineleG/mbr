@@ -65,6 +65,26 @@ export function gerarNomeLanche(ingredientes) {
 
 const lancheId = (key) => "L" + hash(key).toString(36);
 
+/** Nomes da composição BÁSICA padrão (1º item incluso de pão/carne/extra/molho). */
+export function basicComboNames(steps) {
+  const names = [];
+  for (const id of ["pao", "carnes", "queijos", "molhos"]) {
+    const s = (steps || []).find((x) => x.id === id && !x.disabled);
+    if (s?.items?.length) names.push(s.items[0].name);
+  }
+  return names;
+}
+
+/**
+ * Um lanche montado só é "criação" (vale codinome, forks, estrelas e +50⚡)
+ * quando a composição DIFERE do básico padrão. Igual ao básico = lanche comum.
+ */
+export function isCreationCombo(parts, steps) {
+  const basic = basicComboNames(steps);
+  if (!basic.length) return true;                 // sem básico definido → trata como criação
+  return lancheKey(parts) !== lancheKey(basic);
+}
+
 /**
  * Registra o pedido de um lanche montado.
  * - 1ª vez (combinação nova): cria o doc, define o DONO, retorna isNew=true.

@@ -8,6 +8,7 @@ import { adjustPoints } from "./points.service.js";
 import { updateMissionProgress, calculateUserStats } from "./mission.service.js";
 import { DELIVERY_FEE, POINTS_PER_BRL, ORDER_CUTOFF_HOUR } from "../utils/constants.js";
 import { deliveryFeeFor } from "../utils/geo.js";
+import { geocode } from "./geocode.service.js";
 import { mboxSchedule, mboxReservedUnits, mboxUnitsOf, MBOX_STOCK } from "./specials.service.js";
 
 // Normaliza um item do carrinho para persistência (omite flags ausentes —
@@ -83,7 +84,13 @@ function generateOrderNumber() {
  */
 export async function createOrder({ uid, codename, items, address, agenteResponsavel = null, payment = null }) {
   const subtotal = items.reduce((a, it) => a + it.price * (it.qty || 1), 0);
-  const fee = deliveryFeeFor(address);          // R$5 + R$0,50/km da sede ao cliente
+  // Garante coordenada no pedido: sem ela não há frete por km, rota do motoboy
+  // nem rastreio no mapa. Best-effort — geocodifica só quando ainda falta lat.
+  let addr = address || {};
+  if (addr.lat == null && (addr.street || addr.cep || addr.city)) {
+    try { const c = await geocode(addr); if (c) addr = { ...addr, ...c }; } catch { /* segue sem coords */ }
+  }
+  const fee = deliveryFeeFor(addr);             // R$5 + R$0,50/km da sede ao cliente
   const total = subtotal + fee;
   const numeroPedido = generateOrderNumber();
   // MBox tem agendamento próprio (sábado, corte sexta 22h); demais seguem o corte das 13h.
@@ -116,7 +123,7 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
     total,
     pointsEarned,
     pointsAwarded: false,
-    address: address || {},
+    address: addr,
     // Agendamento (corte das 13h, ou regra da MBox aos sábados).
     agendado,
     dataEntrega,
