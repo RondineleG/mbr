@@ -87,7 +87,7 @@ html.boot-skip #boot { display: none !important; } /* carregamento só 1× por d
 .boot-radar { position: absolute; inset: 0; border-radius: 50%; overflow: hidden; }
 .boot-radar::after { content:''; position:absolute; inset:0; border-radius:50%;
   background: conic-gradient(from 0deg, rgba(201,168,76,0) 0%, rgba(201,168,76,0.38) 18%, rgba(201,168,76,0) 22%); animation: bootRot 2.2s linear infinite; }
-.boot-emblem-icon { font-size: 22px; z-index:1; filter: drop-shadow(0 0 14px rgba(201,168,76,0.55)); }
+.boot-emblem-icon { width:32px; height:32px; object-fit:contain; z-index:1; filter: drop-shadow(0 0 14px rgba(201,168,76,0.55)); }
 .boot-title { font-family:'Cinzel',serif; font-weight:600; font-size: clamp(30px,7.5vw,52px); letter-spacing:0.2em; color:#EDE0C4;
   text-shadow: 0 0 60px rgba(201,168,76,0.4), 0 0 16px rgba(201,168,76,0.15); }
 .boot-tag { font-family:'Share Tech Mono',monospace; font-size: clamp(7px,2vw,9px); letter-spacing:0.5em; color: rgba(201,168,76,0.34); margin-top:6px; }
@@ -120,7 +120,7 @@ html.boot-skip #boot { display: none !important; } /* carregamento só 1× por d
     <div class="boot-top">
       <div class="boot-emblem">
         <div class="boot-ring"></div><div class="boot-ring"></div>
-        <div class="boot-radar"></div><div class="boot-emblem-icon">📡</div>
+        <div class="boot-radar"></div><img class="boot-emblem-icon" src="/flame.png?v=136" alt="MrBur" width="32" height="32">
       </div>
       <div>
         <div class="boot-title">MRBUR</div>
