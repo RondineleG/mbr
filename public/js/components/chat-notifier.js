@@ -3,12 +3,13 @@
    Uma conversa = (pedido, canal). Mantém um watcher por conversa ativa.
    "Lido" é persistido em localStorage pela chave da thread.
    ═══════════════════════════════════════════════════════════════ */
-import { watchMessages, threadKey, CHANNELS } from "../services/chat.service.js";
+import { watchOrderMessages, threadKey, CHANNELS } from "../services/chat.service.js";
 import { toast } from "./toast.js";
 
-const watchers = new Map();   // threadKey -> { unsub, baseline }
+const watchers = new Map();   // orderId -> { unsub, baseline, channels:Set, keys:Set }
 const unread = new Map();     // threadKey -> contagem de não-lidas
 const listeners = new Set();  // callbacks notificados quando a contagem muda
+const chanOf = (m) => m?.channel || CHANNELS.CM;
 
 const ROLE_LABEL = { cliente: "Cliente", motoboy: "Entregador", admin: "Atendimento MrBur" };
 
@@ -46,33 +47,41 @@ export function markRead(tkey) {
 }
 
 /**
- * Sincroniza watchers com a lista de conversas atual.
+ * Sincroniza watchers com a lista de conversas atual. Agrupa por PEDIDO e abre
+ * UM único listener por pedido (deriva as não-lidas de cada canal dali), em vez
+ * de um listener por canal sobre a mesma query.
  * @param {Array<{orderId:string, channel?:string}>} threads conversas a observar
  * @param {string} meUid uid do usuário corrente (para ignorar as próprias msgs)
  */
 export function syncChatNotifiers(threads, meUid) {
-  const specs = new Map(); // threadKey -> {orderId, channel}
+  const byOrder = new Map(); // orderId -> Set(channels)
   for (const t of (threads || [])) {
-    const ch = t.channel || CHANNELS.CM;
-    specs.set(threadKey(t.orderId, ch), { orderId: t.orderId, channel: ch });
+    if (!t || !t.orderId) continue;
+    if (!byOrder.has(t.orderId)) byOrder.set(t.orderId, new Set());
+    byOrder.get(t.orderId).add(t.channel || CHANNELS.CM);
   }
 
-  for (const [tkey, w] of watchers) {
-    if (!specs.has(tkey)) { w.unsub?.(); watchers.delete(tkey); unread.delete(tkey); }
+  // Remove watchers de pedidos que saíram da lista.
+  for (const [orderId, w] of watchers) {
+    if (!byOrder.has(orderId)) { w.unsub?.(); watchers.delete(orderId); for (const tk of w.keys) unread.delete(tk); }
   }
 
-  for (const [tkey, { orderId, channel }] of specs) {
-    if (watchers.has(tkey)) continue;
-    const w = { unsub: null, baseline: null };
-    watchers.set(tkey, w);
-    w.unsub = watchMessages(orderId, (msgs) => {
-      // Não-lidas (persistente): mensagens de outros depois do último "lido".
-      const lastRead = getLastRead(tkey);
-      setUnread(tkey, (msgs || []).filter((m) => m.from !== meUid && tsOf(m) > lastRead).length);
-
-      // Toast só para mensagem nova (a 1ª leitura é baseline silenciosa).
-      if (!msgs.length) { if (w.baseline == null) w.baseline = 0; return; }
-      const last = msgs[msgs.length - 1];
+  for (const [orderId, channels] of byOrder) {
+    const existing = watchers.get(orderId);
+    if (existing) { existing.channels = channels; continue; } // já observado — atualiza canais
+    const w = { unsub: null, baseline: null, channels, keys: new Set() };
+    watchers.set(orderId, w);
+    w.unsub = watchOrderMessages(orderId, (msgs) => {
+      // Não-lidas por canal (persistente): mensagens de outros após o último "lido".
+      for (const ch of w.channels) {
+        const tk = threadKey(orderId, ch); w.keys.add(tk);
+        const lastRead = getLastRead(tk);
+        setUnread(tk, msgs.filter((m) => chanOf(m) === ch && m.from !== meUid && tsOf(m) > lastRead).length);
+      }
+      // Toast p/ a última msg nova de outra pessoa, em qualquer canal observado.
+      const watched = msgs.filter((m) => w.channels.has(chanOf(m)));
+      if (!watched.length) { if (w.baseline == null) w.baseline = 0; return; }
+      const last = watched[watched.length - 1];
       const lastTs = tsOf(last);
       if (w.baseline == null) { w.baseline = lastTs; return; }
       if (lastTs > w.baseline) {
@@ -82,7 +91,7 @@ export function syncChatNotifiers(threads, meUid) {
           toast("info", "💬", `Nova mensagem de ${who}: ${String(last.text || "").slice(0, 40)}`);
         }
       }
-    }, channel);
+    });
   }
 }
 

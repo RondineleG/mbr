@@ -9,12 +9,17 @@
   // a sidebar colapsa e fica ruim — então mandamos para o app mobile (PWA).
   // Bypass p/ testar a web num aparelho pequeno: web.html?forceweb=1
   (function () {
-    try {
-      if (location.search.indexOf("forceweb") === -1 &&
-          window.matchMedia("(max-width: 760px)").matches) {
-        location.replace("/");
-      }
-    } catch (e) { /* sem matchMedia: segue normal */ }
+    function checkNarrow() {
+      try {
+        if (location.search.indexOf("forceweb") === -1 &&
+            window.matchMedia("(max-width: 760px)").matches) {
+          location.replace("/");
+        }
+      } catch (e) { /* sem matchMedia: segue normal */ }
+    }
+    checkNarrow();                                   // no carregamento
+    window.addEventListener("resize", checkNarrow);  // e ao redimensionar/rotacionar
+    window.addEventListener("orientationchange", checkNarrow);
   })();
   try { document.documentElement.setAttribute("data-theme", localStorage.getItem("admin-theme") === "light" ? "light" : "dark"); } catch (e) {}
 </script>

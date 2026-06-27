@@ -93,8 +93,8 @@ function dayLabel(value) {
   return d.toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
 }
 
-export function renderOrders() {
-  // Mais novos primeiro (por criadoEm desc).
+// Pedidos visíveis (aplicando filtro de status + busca), mais novos primeiro.
+function visibleOrders() {
   let orders = [...getOrders()].sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
   if (filter !== "all") orders = orders.filter((o) => o.status === filter);
   if (search) {
@@ -105,6 +105,11 @@ export function renderOrders() {
       (o.numeroPedido || "").toLowerCase().includes(q) ||
       (o.id || "").toLowerCase().includes(q));
   }
+  return orders;
+}
+
+export function renderOrders() {
+  const orders = visibleOrders();
   if (!orders.length) {
     setHtml("ordersList", `<div class="empty-state">${search ? "🔍 Nenhum pedido para “" + escapeHtml(search) + "”" : "📦"}</div>`);
     return;
@@ -161,16 +166,21 @@ async function loadMotoboys() {
   catch (e) { console.warn("Falha ao carregar motoboys:", e?.message || e); }
 }
 
-// A plataforma observa as conversas com cliente (cp) e motoboy (mp) dos pedidos
-// recentes não cancelados, para tocar toast e contar não-lidas mesmo fora da aba.
+// A plataforma observa as conversas (cp/mp) dos pedidos recentes E dos que estão
+// VISÍVEIS no momento (filtro/busca) — assim o badge de não-lida nunca falta no
+// que o admin vê. 1 listener por pedido (dedup por id), limitado.
 function syncAdminChat() {
   if (!me) return;
   const recent = [...getOrders()]
     .filter((o) => o.status !== "cancelado")
     .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0))
     .slice(0, 40);
+  const seen = new Set();
+  const pool = [...visibleOrders(), ...recent].filter((o) => {
+    if (!o || seen.has(o.id)) return false; seen.add(o.id); return true;
+  }).slice(0, 60);
   const threads = [];
-  for (const o of recent) {
+  for (const o of pool) {
     threads.push({ orderId: o.id, channel: "cp" });
     if (o.agenteResponsavel) threads.push({ orderId: o.id, channel: "mp" });
   }
@@ -206,11 +216,12 @@ export function initOrders() {
       b.classList.toggle("ghost", !on);
     });
     renderOrders();
+    syncAdminChat(); // passa a observar as conversas do filtro atual
   });
   onAction("order-view", (el) => viewOrder(el.dataset.id));
   // Busca por cliente / nº do pedido (filtra a lista ao digitar).
   const si = document.getElementById("ordersSearch");
-  if (si) si.addEventListener("input", () => { search = si.value.trim(); renderOrders(); });
+  if (si) si.addEventListener("input", () => { search = si.value.trim(); renderOrders(); syncAdminChat(); });
   onChange("order-status", async (el) => {
     // Defesa: não produzir antes do corte das 13h (cliente ainda pode alterar/cancelar).
     const o = getOrders().find((x) => x.id === el.dataset.id);
@@ -236,7 +247,7 @@ export function initOrders() {
       if (!ok) { renderOrders(); return; } // re-render reverte o <select> visualmente
     }
     try { await updateStatus(el.dataset.id, target); toastSuccess("Status atualizado → " + (ORDER_STATUS_LABELS[target] || target)); }
-    catch { toastError("Falha ao atualizar status"); }
+    catch { toastError("Falha ao atualizar status"); renderOrders(); } // re-render reverte o <select> ao valor real
   });
 
   // Re-renderiza periodicamente para liberar os cadeados quando o corte das 13h passa.

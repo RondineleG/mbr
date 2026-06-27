@@ -264,10 +264,14 @@ export async function enterApp(profile) {
   unsubOrders = watchUserOrders(profile.uid, (orders) => {
     store.set("orders", orders);
     // Avisa o cliente de novas mensagens: com o entregador (cm, quando atribuído)
-    // e com a plataforma/atendimento (cp, em qualquer pedido não cancelado).
+    // e com a plataforma/atendimento (cp). Limita aos 25 pedidos mais recentes
+    // não cancelados (1 listener por pedido) p/ não crescer sem limite.
+    const recent = (orders || [])
+      .filter((o) => o.status !== "cancelado")
+      .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0))
+      .slice(0, 25);
     const threads = [];
-    for (const o of (orders || [])) {
-      if (o.status === "cancelado") continue;
+    for (const o of recent) {
       threads.push({ orderId: o.id, channel: "cp" });
       if (o.agenteResponsavel) threads.push({ orderId: o.id, channel: "cm" });
     }

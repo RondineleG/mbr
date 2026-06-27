@@ -58,7 +58,7 @@ export async function openPayment(total, opts = {}) {
       <div class="modal-actions">
         <button class="modal-btn ghost" id="payCancel">Cancelar</button>
         <button class="modal-btn primary" id="payConfirm">Pagar ${money(total)}</button>
-      </div>`);
+      </div>`, { onClose: () => resolve(null) }); // ESC/clique-fora cancela sem travar o checkout
 
     const el = dlg.el;
     let metodo = "cartao";

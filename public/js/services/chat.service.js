@@ -36,3 +36,11 @@ export function watchMessages(orderId, cb, channel = CHANNELS.CM) {
       .sort((a, b) => toMillis(a.createdAt) - toMillis(b.createdAt)));
   });
 }
+
+/** Observa TODAS as mensagens do pedido (todos os canais) num único listener.
+ *  Usado pelo notifier p/ derivar não-lidas por canal sem abrir 1 listener/canal. */
+export function watchOrderMessages(orderId, cb) {
+  return watchCollection("orderMessages", { where: [["orderId", "==", orderId]] }, (rows) => {
+    cb((rows || []).slice().sort((a, b) => toMillis(a.createdAt) - toMillis(b.createdAt)));
+  });
+}

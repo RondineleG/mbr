@@ -254,9 +254,14 @@ function enter(profile) {
     orders = list || [];
     render();
     backfillCoords(orders);   // completa coordenadas faltantes → popula rota/mapa
-    // Avisa o motoboy de novas mensagens: do cliente (cm) e da plataforma (mp).
+    // Avisa o motoboy: cliente (cm) e plataforma (mp). Limita aos 25 pedidos
+    // mais recentes não cancelados (1 listener por pedido).
+    const recent = orders
+      .filter((o) => o.status !== "cancelado")
+      .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0))
+      .slice(0, 25);
     const threads = [];
-    for (const o of orders.filter((o) => o.status !== "cancelado")) {
+    for (const o of recent) {
       threads.push({ orderId: o.id, channel: "cm" }, { orderId: o.id, channel: "mp" });
     }
     syncChatNotifiers(threads, profile.uid);

@@ -64,6 +64,10 @@ function onKeydown(e) {
 
 function open(html, fallback = null, onClose = null) {
   ensure();
+  // Re-entrância: se já há um modal ativo, encerra-o limpo (resolve cancel + roda
+  // onClose) antes de assumir o overlay — evita Promise pendente e listener vazado.
+  if (resolver) { resolver(cancelValue); resolver = null; }
+  if (onCloseHook) { const h = onCloseHook; onCloseHook = null; try { h(cancelValue); } catch (e) { console.error(e); } }
   cancelValue = fallback;
   onCloseHook = onClose;
   lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
