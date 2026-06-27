@@ -675,23 +675,18 @@
      - 1ª vez do dia no tema ESCURO → cinemática completa. */
   const root = document.documentElement;
   const today = new Date().toISOString().slice(0, 10);
-  const themeNow = root.getAttribute("data-theme") || "light";
   let alreadyToday = false;
   try { alreadyToday = localStorage.getItem("mrbur:bootDay") === today; } catch {}
 
   if (root.classList.contains("boot-skip") || alreadyToday) {
-    endBoot();
+    endBoot();                              // já carregou hoje → direto pro login
   } else {
     try { localStorage.setItem("mrbur:bootDay", today); } catch {}
-    if (themeNow === "light") {
-      const boot = document.getElementById("boot");
-      if (boot) boot.classList.add("boot-simple");
-      clearInterval(grainTimer);            // não precisa do grain no loader claro
-      setTimeout(endBoot, 1300);
-    } else {
-      document.fonts && document.fonts.ready
-        ? document.fonts.ready.then(() => { raf = requestAnimationFrame(frame); })
-        : (raf = requestAnimationFrame(frame));
-    }
+    // Loader simples e breve, no tema atual (claro/escuro) → depois redireciona ao login.
+    // (A cinemática pesada foi removida da entrada por pedido do usuário.)
+    const boot = document.getElementById("boot");
+    if (boot) boot.classList.add("boot-simple");
+    clearInterval(grainTimer);
+    setTimeout(endBoot, 1200);
   }
 })();
