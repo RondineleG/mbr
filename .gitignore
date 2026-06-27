@@ -30,3 +30,6 @@ playwright-report/
 # Vídeos gerados pelo harness de captura (regeráveis; não versionar)
 *.webm
 *.mp4
+
+# Screenshots de validação E2E (regeráveis; não versionar)
+docs/e2e/videos/shots/
