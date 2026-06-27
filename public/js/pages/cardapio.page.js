@@ -95,7 +95,8 @@ function renderStepContent() {
 
 function renderReview() {
   let extras = 0;
-  let body = `<div style="padding:16px"><div class="menu-section-header"><div class="menu-section-title">Resumo do seu Lanche</div></div>`;
+  // padding-bottom extra: a .step-nav é sticky (bottom:68px) e cobriria o último botão.
+  let body = `<div style="padding:16px 16px 140px"><div class="menu-section-header"><div class="menu-section-title">Resumo do seu Lanche</div></div>`;
   visible().forEach((s) => {
     if (s.id === "finalizar") return;
     const sel = selections[s.id] || [];
@@ -200,11 +201,22 @@ function menuItem(p) {
     </button>`;
   }
   
-  return `<button class="menu-item" data-action="add-product" data-id="${p.id}" type="button">
+  // Reflete o que já está na sacola: sem nada → "Adicionar"; com itens → − qtd +.
+  const cart = store.get("cart") || [];
+  const inCart = cart.find((c) => c.productId === p.id && !c.custom);
+  const qty = inCart?.qty || 0;
+  const control = qty > 0
+    ? `<div class="menu-item-qty">
+        <button class="qty-btn" data-action="qty" data-key="${inCart.key}" data-delta="-1" type="button" aria-label="Diminuir ${escapeHtml(p.name)}">−</button>
+        <span class="qty-val">${qty}</span>
+        <button class="qty-btn" data-action="qty" data-key="${inCart.key}" data-delta="1" type="button" aria-label="Adicionar ${escapeHtml(p.name)}">+</button>
+      </div>`
+    : `<button class="menu-add-btn" data-action="add-product" data-id="${p.id}" type="button">Adicionar</button>`;
+  return `<div class="menu-item">
     <span class="menu-item-icon">${p.icon || "🍔"}</span>
     <div class="menu-item-info"><div class="menu-item-name">${escapeHtml(p.name)}</div><div class="menu-item-desc">${escapeHtml(p.description || "")}</div></div>
-    <span class="menu-item-price">${money(p.price)}</span>
-  </button>`;
+    <div class="menu-item-aside"><span class="menu-item-price">${money(p.price)}</span>${control}</div>
+  </div>`;
 }
 
 // Card do Lanche do Dia (somente o de HOJE). Preço fixo, sem méritos.
@@ -431,6 +443,8 @@ export function initCardapio() {
   onAction("add-mbox", () => addMbox());
   onAction("buy-points", (el) => buyWithPoints(el.dataset.id));
   store.subscribe("products", renderCategories);
+  // Reflete quantidade/botões do cardápio ao vivo quando o carrinho muda.
+  store.subscribe("cart", () => { if (store.get("page") === "cardapio") renderCategories(); });
   store.subscribe("missionProgress", () => {
     if (store.get("page") === "cardapio") renderCategories();
   });
