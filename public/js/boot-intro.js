@@ -29,9 +29,6 @@
   const COR  = '"Cormorant Garamond",serif';
   let t = 0, running = true, lastTs = 0, raf = 0;
   const SPEED = 2.4; // acelera a animação (16,2s → ~6,8s) sem mexer nas fases.
-  // Tocar a animação completa só de vez em quando; nas reaberturas, vai direto.
-  let playFull = true;
-  try { playFull = (Date.now() - Number(localStorage.getItem("mb-boot-last") || 0)) > 6 * 3600 * 1000; } catch {}
 
   /* ── grain ── */
   const gC = document.createElement('canvas');
@@ -672,11 +669,29 @@
   }
   window.MBskipBoot = endBoot;
 
-  if (playFull) {
-    try { localStorage.setItem("mb-boot-last", String(Date.now())); } catch {}
-    document.fonts && document.fonts.ready ? document.fonts.ready.then(()=>{raf=requestAnimationFrame(frame);}) : (raf=requestAnimationFrame(frame));
+  /* ── Quando mostrar o carregamento ──
+     - já apareceu hoje (boot-skip / mrbur:bootDay) → pula direto pro login;
+     - 1ª vez do dia no tema CLARO → loader simples themed (~1,3s);
+     - 1ª vez do dia no tema ESCURO → cinemática completa. */
+  const root = document.documentElement;
+  const today = new Date().toISOString().slice(0, 10);
+  const themeNow = root.getAttribute("data-theme") || "light";
+  let alreadyToday = false;
+  try { alreadyToday = localStorage.getItem("mrbur:bootDay") === today; } catch {}
+
+  if (root.classList.contains("boot-skip") || alreadyToday) {
+    endBoot();
   } else {
-    // Reabertura recente: pula a animação — mostra a marca por ~0,9s e entra.
-    setTimeout(endBoot, 900);
+    try { localStorage.setItem("mrbur:bootDay", today); } catch {}
+    if (themeNow === "light") {
+      const boot = document.getElementById("boot");
+      if (boot) boot.classList.add("boot-simple");
+      clearInterval(grainTimer);            // não precisa do grain no loader claro
+      setTimeout(endBoot, 1300);
+    } else {
+      document.fonts && document.fonts.ready
+        ? document.fonts.ready.then(() => { raf = requestAnimationFrame(frame); })
+        : (raf = requestAnimationFrame(frame));
+    }
   }
 })();

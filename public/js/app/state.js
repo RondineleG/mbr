@@ -8,7 +8,7 @@ const CART_KEY = "mrbur:cart";
 const THEME_KEY = "mrbur:theme";
 
 const loadCart = () => { try { return JSON.parse(localStorage.getItem(CART_KEY) || "[]"); } catch { return []; } };
-const loadTheme = () => localStorage.getItem(THEME_KEY) || "dark";
+const loadTheme = () => localStorage.getItem(THEME_KEY) || "light"; // 1ª vez = tema claro
 
 const state = {
   authUser: null,       // { uid, email } | null
