@@ -46,7 +46,7 @@ function renderStepTabs() {
     </button>`).join(""));
   setHtml("stepDots", V.map((_, i) => {
     let cls = "step-dot"; if (i === currentStep) cls += " active"; else if (i < currentStep) cls += " completed";
-    return `<div class="${cls}" data-action="build-step" data-step="${i}"></div>`;
+    return `<button class="${cls}" data-action="build-step" data-step="${i}" type="button" aria-label="Ir para etapa ${i + 1}"></button>`;
   }).join(""));
   show($("#stepBackBtn"), currentStep > 0);
   const back = $("#stepBackBtn"); if (back) back.textContent = "← Voltar";
@@ -82,14 +82,14 @@ function renderStepContent() {
     </div>
     <div class="menu-items">${step.items.map((item, i) => {
       const on = sel.some((s) => s.name === item.name);
-      return `<div class="menu-item ${on ? "selected" : ""}" data-action="build-toggle" data-step="${step.id}" data-idx="${i}">
+      return `<button class="menu-item ${on ? "selected" : ""}" data-action="build-toggle" data-step="${step.id}" data-idx="${i}" type="button">
         <span class="menu-item-icon">${item.icon}</span>
         <div class="menu-item-info"><div class="menu-item-name">${escapeHtml(item.name)}</div><div class="menu-item-desc">${escapeHtml(item.desc)}</div></div>
         ${item.price > 0
           ? `<span class="menu-item-price">+ ${money(item.price)}</span>`
           : `<span class="menu-item-price included">incluído</span>`}
         <div class="menu-item-check">${on ? "✓" : ""}</div>
-      </div>`;
+      </button>`;
     }).join("")}</div>`);
 }
 
@@ -189,22 +189,22 @@ function prontoCard(p) {
 function menuItem(p) {
   // Se for item exclusivo de pontos, mostrar preço em méritos
   if (p.exclusiveToPoints && p.pointsRequired > 0) {
-    return `<div class="menu-item points-item" data-action="buy-points" data-id="${p.id}">
+    return `<button class="menu-item points-item" data-action="buy-points" data-id="${p.id}" type="button">
       <span class="menu-item-icon">${p.icon || "🍔"}</span>
       <div class="menu-item-info">
         <div class="menu-item-name">${escapeHtml(p.name)}</div>
         <div class="menu-item-desc">${escapeHtml(p.description || "")}</div>
         <div class="menu-item-points-badge">⚡ ${p.pointsRequired} méritos</div>
       </div>
-      <button class="menu-item-points-btn">COMPRAR</button>
-    </div>`;
+      <span class="menu-item-points-btn">COMPRAR</span>
+    </button>`;
   }
   
-  return `<div class="menu-item" data-action="add-product" data-id="${p.id}">
+  return `<button class="menu-item" data-action="add-product" data-id="${p.id}" type="button">
     <span class="menu-item-icon">${p.icon || "🍔"}</span>
     <div class="menu-item-info"><div class="menu-item-name">${escapeHtml(p.name)}</div><div class="menu-item-desc">${escapeHtml(p.description || "")}</div></div>
     <span class="menu-item-price">${money(p.price)}</span>
-  </div>`;
+  </button>`;
 }
 
 // Card do Lanche do Dia (somente o de HOJE). Preço fixo, sem méritos.

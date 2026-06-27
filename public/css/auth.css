@@ -68,7 +68,12 @@
 .login-input:focus { border-color: var(--gold-border); }
 .login-input::placeholder { color: var(--text-dim); }
 .login-hint { font-size: 9px; color: var(--text-dim); text-align: left; margin-bottom: 16px; font-family: var(--f-mono); }
-.login-link { font-size: 10px; color: var(--gold); text-align: right; margin: -6px 0 14px; cursor: pointer; font-family: var(--f-mono); letter-spacing: 0.5px; }
+.login-link {
+  display: block; width: fit-content; margin: -6px 0 14px auto; padding: 0;
+  border: 0; background: transparent;
+  font-size: 10px; color: var(--gold); text-align: right; cursor: pointer;
+  font-family: var(--f-mono); letter-spacing: 0.5px;
+}
 .login-link:hover { text-decoration: underline; }
 .login-error {
   font-size: 11px; color: var(--danger); margin-bottom: 14px;

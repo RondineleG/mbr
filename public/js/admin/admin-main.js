@@ -47,10 +47,7 @@ function navigate(section) {
   document.querySelectorAll(".admin-navbtn").forEach((b) => b.classList.toggle("active", b.dataset.section === section));
   SECTIONS[section]?.();
   
-  // Fechar sidebar no mobile após navegação
-  if (window.innerWidth <= 720) {
-    toggleAdminSidebar();
-  }
+  if (window.innerWidth <= 720) closeAdminSidebar();
 }
 
 function updateThemeUI() {
@@ -77,6 +74,11 @@ function toggleAdminSidebar() {
   if (overlay) {
     overlay.classList.toggle("open");
   }
+}
+
+function closeAdminSidebar() {
+  document.getElementById("adminSidebar")?.classList.remove("open");
+  document.getElementById("adminSidebarOverlay")?.classList.remove("open");
 }
 
 function enterAdmin(profile) {

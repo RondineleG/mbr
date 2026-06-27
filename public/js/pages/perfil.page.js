@@ -2,7 +2,7 @@
    PERFIL PAGE — dados do agente, edição (modal), tema e logout
    Codinome é PERMANENTE (não editável).
    ═══════════════════════════════════════════════════════════════ */
-import { onAction, setText, setHtml, show } from "../utils/dom.js";
+import { onAction, setText, setHtml, escapeHtml } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { codenameInitials, rankLabel, formatAddress, rankFromPoints } from "../utils/format.js";
 import { updateProfile } from "../services/user.service.js";
@@ -18,7 +18,7 @@ export function renderProfile() {
   const p = store.get("profile");
   if (!p) return;
   const r = rankFromPoints(p.points);
-  setHtml("profileCodename", `${p.codename}<span class="profile-codename-lock">🔒</span>`);
+  setHtml("profileCodename", `${escapeHtml(p.codename)}<span class="profile-codename-lock">🔒</span>`);
   setText("profileAvatar", codenameInitials(p.codename));
   setText("profileRank", rankLabel(p.points));
   setText("profStatPoints", p.points || 0);
@@ -56,34 +56,13 @@ async function toggleNotifyRow() {
 async function showMyInvites() {
   const p = store.get("profile");
   if (!p) return;
-  
-  // Show loading modal first
-  const modal = document.createElement('div');
-  modal.className = 'modal-overlay';
-  modal.innerHTML = `
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="modal-title">Meus Convites</div>
-        <button class="modal-close" data-action="close-invites-modal">✕</button>
-      </div>
-      <div class="modal-body">
-        <div class="loading-state">Carregando convites...</div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  
-  const closeModal = () => {
-    if (document.body.contains(modal)) {
-      document.body.removeChild(modal);
-    }
-  };
-  
-  modal.querySelector('[data-action="close-invites-modal"]')?.addEventListener('click', closeModal);
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) closeModal();
-  });
-  
+
+  const dialog = modalCustom(`
+    <div class="modal-title">Meus Convites</div>
+    <div class="modal-message" id="myInvitesBody"><div class="loading-state">Carregando convites...</div></div>
+    <div class="modal-actions"><button class="modal-btn ghost" id="myInvitesClose" type="button">Fechar</button></div>`);
+  dialog.el.querySelector("#myInvitesClose").onclick = () => dialog.close();
+
   try {
     const invites = await listInvites();
     const myInvites = invites.filter(i => i.criadoPor === p.uid);
@@ -96,9 +75,9 @@ async function showMyInvites() {
       const status = i.status === 'usado' ? "✅ Usado" : i.status === 'expirado' ? "⏰ Expirado" : i.status === 'cancelado' ? "🚫 Cancelado" : "🎫 Disponível";
       const expiry = new Date(i.dataExpiracao?.toDate?.() || i.dataExpiracao).toLocaleDateString('pt-BR');
       return `<div class="invite-item">
-        <div class="invite-code">${i.token || i.id}</div>
+        <div class="invite-code">${escapeHtml(i.token || i.id)}</div>
         <div class="invite-status">${status}</div>
-        <div class="invite-expiry">Expira: ${expiry}</div>
+        <div class="invite-expiry">Expira: ${escapeHtml(expiry)}</div>
       </div>`;
     };
     
@@ -119,18 +98,13 @@ async function showMyInvites() {
       </div>
     `;
     
-    // Update modal content
-    const modalBody = modal.querySelector('.modal-body');
-    if (modalBody) {
-      modalBody.innerHTML = html;
-    }
+    const modalBody = dialog.el.querySelector('#myInvitesBody');
+    if (modalBody) modalBody.innerHTML = html;
     
   } catch (err) {
     console.error("Erro ao carregar convites:", err);
-    const modalBody = modal.querySelector('.modal-body');
-    if (modalBody) {
-      modalBody.innerHTML = '<div class="error-state">Erro ao carregar convites. Tente novamente.</div>';
-    }
+    const modalBody = dialog.el.querySelector('#myInvitesBody');
+    if (modalBody) modalBody.innerHTML = '<div class="error-state">Erro ao carregar convites. Tente novamente.</div>';
     toast("error", "⚠", "Erro ao carregar convites");
   }
 }

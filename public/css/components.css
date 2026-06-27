@@ -25,7 +25,7 @@
 
 /* ── Menu item ── */
 .menu-items { padding: 0 16px; }
-.menu-item { display: flex; align-items: center; gap: 14px; padding: 14px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--bd); border-radius: 12px; cursor: pointer; transition: all var(--dur) var(--ease); position: relative; }
+.menu-item { display: flex; align-items: center; gap: 14px; width: 100%; padding: 14px; margin-bottom: 8px; background: var(--card); border: 1px solid var(--bd); border-radius: 12px; color: var(--tx); text-align: left; font: inherit; cursor: pointer; transition: all var(--dur) var(--ease); position: relative; }
 .menu-item:hover { border-color: var(--G); }
 .menu-item.selected { border-color: var(--G); background: var(--gw); }
 .menu-item-icon { font-size: 32px; flex-shrink: 0; }
@@ -326,6 +326,7 @@
 .modal-overlay { position: fixed; inset: 0; z-index: 1500; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease; }
 .modal-overlay.show { opacity: 1; pointer-events: auto; }
 .modal-card { width: 100%; max-width: 380px; background: var(--bg-elevated); border: 1px solid var(--gold-border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); transform: scale(0.96); transition: transform 0.25s ease; max-height: 90vh; overflow-y: auto; }
+.modal-card:focus { outline: none; }
 .modal-overlay.show .modal-card { transform: scale(1); }
 .modal-title { font-family: var(--f-display); font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
 .modal-label { font-size: 9px; letter-spacing: 2px; color: var(--text-dim); font-family: var(--f-mono); margin: 12px 0 4px; }

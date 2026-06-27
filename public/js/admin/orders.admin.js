@@ -155,7 +155,7 @@ async function viewOrder(id) {
     try { await assignAgent(o.id, e.target.value); toastSuccess(e.target.value ? "Motoboy atribuído" : "Atribuição removida"); }
     catch { toastError("Falha ao atribuir motoboy"); }
   };
-  m.el.querySelector("#vclose").onclick = () => document.querySelector(".modal-overlay").classList.remove("show");
+  m.el.querySelector("#vclose").onclick = () => m.close();
 }
 
 async function loadMotoboys() {

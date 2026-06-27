@@ -6,7 +6,7 @@ import { $, setHtml, escapeHtml } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import * as auth from "../firebase/auth.service.js";
 import { getProfile, listAgents } from "../services/user.service.js";
-import { loadFeatures, isEnabled, loadWebEnabled } from "../services/features.service.js";
+import { loadFeatures, isEnabled, loadWebEnabled, loadMenuTabs, isTabEnabled } from "../services/features.service.js";
 import { listProducts } from "../services/product.service.js";
 import { createOrder, listUserOrders, ORDER_STATUS_LABELS } from "../services/order.service.js";
 import { listRewards } from "../services/reward.service.js";
@@ -22,12 +22,14 @@ import { money, dateShort, rankFromPoints, codenameInitials } from "../utils/for
 import { BUILD_STEPS, DELIVERY_FEE, POINTS_PER_BRL } from "../utils/constants.js";
 
 const show = (id, on) => { const el = $("#" + id); if (el) el.style.display = on ? "" : "none"; };
-let ME = null, FEATURES = {}, PRODUCTS = [];
+let ME = null, FEATURES = {}, MENU_TABS_CFG = {}, PRODUCTS = [];
 let CUR = "inicio";                 // módulo atual (p/ re-render sem reload)
 let BUILD = null;                   // { steps, basePrice } do Monte Seu Lanche
 let SEL = {};                       // stepId -> [items] selecionados
 const role = () => ME?.role || "agent";
 const on = (key) => isEnabled(FEATURES, role(), key);
+const moduleVisible = (m) => on(m.key) && (m.key !== "monteSeuLanche" || isTabEnabled(MENU_TABS_CFG, "monte"));
+const productVisible = (p) => isTabEnabled(MENU_TABS_CFG, p.category) && (on("lojaMeritos") || !p.exclusiveToPoints);
 
 const CATS = [["dia","Lanche do Dia"],["mbox","MBox"],["acomp","Acompanhamentos"],["bebidas","Bebidas"],["sobremesas","Sobremesas"],["exclusivos","Exclusivos"]];
 const prodCard = (p) => { const ex = p.exclusiveToPoints && p.pointsRequired > 0; return `<div class="web-card">
@@ -41,7 +43,7 @@ const sectionTitle = (t) => `<div class="web-section-title">${t}</div>`;
 
 function renderInicio() {
   const r = rankFromPoints(ME.points || 0);
-  const atalhos = MODULES.filter(m => on(m.key)).map(m =>
+  const atalhos = MODULES.filter(moduleVisible).map(m =>
     `<button class="web-card web-shortcut" data-go="${m.key}"><div class="web-card-emoji">${m.icon}</div><div class="web-card-name">${m.label}</div></button>`).join("");
   return `
     <div class="web-hero"><h2>O clube secreto dos melhores lanches</h2>
@@ -59,6 +61,7 @@ async function renderCardapio() {
   const meritosOn = on("lojaMeritos");
   let html = "";
   for (const [k, label] of CATS) {
+    if (!isTabEnabled(MENU_TABS_CFG, k)) continue;
     if (k === "exclusivos" && !meritosOn) continue;
     const items = PRODUCTS.filter(p => p.category === k && (meritosOn || !p.exclusiveToPoints));
     if (items.length) html += sectionTitle(label) + `<div class="web-grid">${items.map(prodCard).join("")}</div>`;
@@ -109,6 +112,7 @@ function monteHtml() {
 }
 
 async function renderMonte() {
+  if (!isTabEnabled(MENU_TABS_CFG, "monte")) return '<p style="color:var(--t2)">Monte Seu Lanche indisponível no momento.</p>';
   if (!BUILD) BUILD = await loadBuildSteps();
   if (!Object.keys(SEL).length) SEL = defaultSel();
   return monteHtml();
@@ -214,6 +218,7 @@ function updateCartChip() {
 function addProduct(id) {
   const p = PRODUCTS.find(x => x.id === id);
   if (!p) return;
+  if (!productVisible(p)) { toastError("Este item está indisponível no momento"); return; }
   store.cartAdd({ productId: p.id, name: p.name, icon: p.icon || "🍔", price: p.price || 0, qty: 1, desc: p.description || "" });
   toast("success", "🛒", `${p.name} adicionado`);
   updateCartChip();
@@ -280,16 +285,17 @@ async function renderConvites() {
 
 async function renderBusca() {
   PRODUCTS = PRODUCTS.length ? PRODUCTS : (await listProducts({ activeOnly: true })) || [];
+  const visibleProducts = PRODUCTS.filter(productVisible);
   setTimeout(() => {
     const inp = $("#webBuscaInput");
     if (inp) inp.oninput = () => {
       const q = inp.value.toLowerCase().trim();
-      const res = PRODUCTS.filter(p => (p.name + " " + (p.description || "")).toLowerCase().includes(q));
+      const res = visibleProducts.filter(p => (p.name + " " + (p.description || "")).toLowerCase().includes(q));
       setHtml("webBuscaRes", res.map(prodCard).join("") || '<p style="color:var(--t2)">Nada encontrado.</p>');
     };
   }, 30);
   return `<input id="webBuscaInput" class="web-search" placeholder="🔍 Buscar no cardápio…" autocomplete="off">
-    <div id="webBuscaRes" class="web-grid" style="margin-top:18px">${PRODUCTS.map(prodCard).join("")}</div>`;
+    <div id="webBuscaRes" class="web-grid" style="margin-top:18px">${visibleProducts.map(prodCard).join("")}</div>`;
 }
 
 function renderPerfil() {
@@ -339,7 +345,7 @@ async function renderWeb(profile) {
 
   // Nav dinâmica: Início + módulos habilitados pro papel.
   const nav = [`<button class="web-navitem active" data-go="inicio"><span>🏠</span> Início</button>`]
-    .concat(MODULES.filter(m => on(m.key)).map(m => `<button class="web-navitem" data-go="${m.key}"><span>${m.icon}</span> ${m.label}</button>`));
+    .concat(MODULES.filter(moduleVisible).map(m => `<button class="web-navitem" data-go="${m.key}"><span>${m.icon}</span> ${m.label}</button>`));
   setHtml("webNav", nav.join(""));
   document.querySelectorAll(".web-navitem").forEach(b => b.onclick = () => go(b.dataset.go));
   // atalhos do Início também navegam
@@ -371,6 +377,9 @@ auth.onAuthChanged(async (user) => {
   const previewMode = new URLSearchParams(location.search).has("preview");
   const enabled = previewMode || await loadWebEnabled();
   if (!enabled) { show("webLoading", false); show("webBlocked", true); return; }
-  FEATURES = await loadFeatures().catch(() => ({}));
+  [FEATURES, MENU_TABS_CFG] = await Promise.all([
+    loadFeatures().catch(() => ({})),
+    loadMenuTabs().catch(() => ({})),
+  ]);
   renderWeb(profile);
 });

@@ -151,7 +151,7 @@ async function setStatus(id, status) {
    sede → cliente (útil no modo DEMO). Escreve no máximo 1×/4s.        */
 const SHARE_KEY = "moto-share";
 const WRITE_MS = 4000;
-let shareOn = false, geoWatch = null, simTimer = null, lastWrite = 0, simPos = null;
+let shareOn = false, shareMode = "off", geoWatch = null, simTimer = null, lastWrite = 0, simPos = null;
 
 const sentIds = () => orders.filter((o) => o.status === ORDER_STATUS.SENT).map((o) => o.id);
 
@@ -169,6 +169,9 @@ async function pushPos(lat, lng) {
 // Fallback sem GPS: avança em direção ao 1º destino "enviado" a cada tick.
 function startSim() {
   if (simTimer) return;
+  shareMode = "sim";
+  updateShareBtn();
+  toast("info", "📍", "GPS indisponível. Simulando trajeto para demonstração.");
   simTimer = setInterval(() => {
     const o = orders.find((x) => x.status === ORDER_STATUS.SENT && x.address?.lat != null);
     if (!o) return;
@@ -182,29 +185,41 @@ function startSim() {
 function updateShareBtn() {
   const btn = $("#motoShareBtn");
   if (!btn) return;
-  btn.textContent = `📡 Localização: ${shareOn ? "ON" : "OFF"}`;
-  btn.classList.toggle("active", shareOn);
+  const label = !shareOn ? "OFF" : shareMode === "sim" ? "Simulação" : shareMode === "gps" ? "GPS ativo" : "Ativando...";
+  btn.textContent = `📡 Localização: ${label}`;
+  btn.classList.toggle("active", shareOn && shareMode !== "sim");
+  btn.classList.toggle("simulated", shareOn && shareMode === "sim");
 }
 
 function startShare() {
   if (shareOn) return;
   shareOn = true;
+  shareMode = "pending";
   localStorage.setItem(SHARE_KEY, "1");
   updateShareBtn();
   if (navigator.geolocation) {
     geoWatch = navigator.geolocation.watchPosition(
-      (p) => pushPos(p.coords.latitude, p.coords.longitude),
+      (p) => {
+        if (simTimer) { clearInterval(simTimer); simTimer = null; simPos = null; }
+        if (shareMode !== "gps") {
+          shareMode = "gps";
+          updateShareBtn();
+          toast("success", "📡", "GPS ativo nas entregas");
+        }
+        pushPos(p.coords.latitude, p.coords.longitude);
+      },
       () => startSim(),                     // negou/sem sinal → simula
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 8000 }
     );
   } else {
     startSim();
   }
-  toast("success", "📡", "Compartilhando sua localização nas entregas");
+  toast("info", "📡", "Ativando localização nas entregas");
 }
 
 function stopShare() {
   shareOn = false;
+  shareMode = "off";
   localStorage.removeItem(SHARE_KEY);
   if (geoWatch != null) { navigator.geolocation.clearWatch(geoWatch); geoWatch = null; }
   if (simTimer) { clearInterval(simTimer); simTimer = null; }

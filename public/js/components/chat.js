@@ -6,6 +6,7 @@ import { modalCustom } from "./modal.js";
 import { escapeHtml } from "../utils/dom.js";
 import { sendMessage, watchMessages, threadKey, CHANNELS } from "../services/chat.service.js";
 import { markRead } from "./chat-notifier.js";
+import { toastError } from "./toast.js";
 
 const roleOf = (me) => me.role === "admin" ? "admin" : (me.motoboy ? "motoboy" : "cliente");
 // Rótulo amigável de quem enviou (a "plataforma" é o admin).
@@ -38,6 +39,7 @@ export function openChat(orderId, me, title = "Chat", channel = CHANNELS.CM) {
 
   const box = dialog.el.querySelector("#chatMsgs");
   const input = dialog.el.querySelector("#chatInput");
+  const sendBtn = dialog.el.querySelector("#chatSend");
   const role = roleOf(me);
 
   markRead(tkey); // ao abrir, zera não-lidas
@@ -65,13 +67,25 @@ export function openChat(orderId, me, title = "Chat", channel = CHANNELS.CM) {
   }, channel);
 
   const send = async () => {
-    const text = input.value;
+    const text = input.value.trim();
     if (!text.trim()) return;
     input.value = "";
+    input.disabled = true;
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Enviando...";
     try { await sendMessage(orderId, { from: me.uid, fromRole: role, text, channel }); }
-    catch (e) { console.error("Erro ao enviar mensagem:", e); }
+    catch (e) {
+      console.error("Erro ao enviar mensagem:", e);
+      input.value = text;
+      toastError("Mensagem não enviada. Tente novamente.");
+      input.focus();
+    } finally {
+      input.disabled = false;
+      sendBtn.disabled = false;
+      sendBtn.textContent = "Enviar";
+    }
   };
-  dialog.el.querySelector("#chatSend").onclick = send;
+  sendBtn.onclick = send;
   input.onkeydown = (e) => { if (e.key === "Enter") send(); };
   dialog.el.querySelector("#chatClose").onclick = () => { unsub?.(); dialog.close(); };
   setTimeout(() => input.focus(), 50);

@@ -21,6 +21,7 @@ let tab = "recompensas";
 let category = "all"; // all, benefits, physical, experiences, status
 let missions = [];
 let isLoadingMissions = false;
+let lancheKeyboardBound = false;
 
 /** Cards de recompensa (reutilizado pela Home). */
 export function renderRewardCards(rewards, userPoints) {
@@ -30,11 +31,11 @@ export function renderRewardCards(rewards, userPoints) {
     
     let btn = '';
     if (outOfStock) {
-      btn = `<button class="reward-card-btn locked">🚫 Esgotado</button>`;
+      btn = `<button class="reward-card-btn locked" type="button" disabled>🚫 Esgotado</button>`;
     } else if (locked) {
-      btn = `<button class="reward-card-btn locked">🔒 Faltam ${r.pointsRequired - userPoints}</button>`;
+      btn = `<button class="reward-card-btn locked" type="button" disabled>🔒 Faltam ${r.pointsRequired - userPoints}</button>`;
     } else {
-      btn = `<button class="reward-card-btn" data-action="redeem" data-id="${r.id}">RESGATAR</button>`;
+      btn = `<button class="reward-card-btn" data-action="redeem" data-id="${r.id}" type="button">RESGATAR</button>`;
     }
     
     // Stock indicator for physical items.
@@ -230,7 +231,7 @@ function lancheCard(l) {
   const me = store.get("profile");
   const starred = (l.starredBy || []).includes(me?.uid);
   const ings = (l.ingredientes || []).map(escapeHtml).join(" · ");
-  return `<div class="lanche-card" data-action="lanche-open" data-id="${l.id}">
+  return `<div class="lanche-card" data-action="lanche-open" data-id="${l.id}" role="button" tabindex="0">
     <div class="lanche-card-head">
       <div class="lanche-name">${escapeHtml(l.nome || l.id)}</div>
       <div class="lanche-by">por ${escapeHtml(l.criadoPorNome || "agente")}</div>
@@ -434,6 +435,16 @@ export function initClube() {
   });
   // Criações: abrir dossiê (modal), estrelar e forkar pelo card.
   onAction("lanche-open", (el) => openLancheModal(el.dataset.id));
+  if (!lancheKeyboardBound) {
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" && e.key !== " ") return;
+      const card = e.target.closest?.(".lanche-card[data-action='lanche-open']");
+      if (!card || e.target.closest("button")) return;
+      e.preventDefault();
+      openLancheModal(card.dataset.id);
+    });
+    lancheKeyboardBound = true;
+  }
   onAction("lanche-fork", async (el) => {
     const l = await getLanche(el.dataset.id);
     if (l) forkLanche(l);

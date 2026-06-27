@@ -95,7 +95,7 @@ async function viewCustomer(uid) {
     <div class="modal-label">EXTRATO DE MÉRITOS</div>
     ${history.slice(0, 6).map((h) => `<div style="display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)"><span>${escapeHtml(h.reason)}</span><span style="color:${h.delta >= 0 ? "var(--success)" : "var(--danger)"};font-family:var(--f-mono)">${h.delta >= 0 ? "+" : ""}${h.delta}</span></div>`).join("") || '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">Sem movimentações</div>'}
     <div class="modal-actions"><button class="modal-btn primary" id="cclose">Fechar</button></div>`;
-  m.el.querySelector("#cclose").onclick = () => document.querySelector(".modal-overlay").classList.remove("show");
+  m.el.querySelector("#cclose").onclick = () => m.close();
 }
 
 async function toggleMotoboy(uid, turnOn) {

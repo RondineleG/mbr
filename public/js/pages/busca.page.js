@@ -20,11 +20,11 @@ function filter() {
     (p.name.toLowerCase().includes(q) || (p.description || "").toLowerCase().includes(q) || (p.category || "").includes(q)));
   el.innerHTML = results.length
     ? results.map((p) => `
-      <div class="menu-item" data-action="add-product" data-id="${p.id}" style="margin-bottom:8px">
+      <button class="menu-item" data-action="search-add" data-id="${p.id}" type="button" style="margin-bottom:8px">
         <span class="menu-item-icon">${p.icon || "🍔"}</span>
         <div class="menu-item-info"><div class="menu-item-name">${escapeHtml(p.name)}</div><div class="menu-item-desc">${escapeHtml(p.description || "")}</div></div>
         <span class="menu-item-price">${money(p.price)}</span>
-      </div>`).join("")
+      </button>`).join("")
     : `<div class="text-center" style="padding:24px;color:var(--text-dim)">Nenhum resultado para "${escapeHtml(q)}"</div>`;
 }
 
