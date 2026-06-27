@@ -384,6 +384,19 @@
 .chat-time { font-size: 9px; color: var(--t2); align-self: flex-end; font-family: 'Share Tech Mono', monospace; opacity: .7; margin-top: 1px; }
 .chat-bubble.grouped { margin-top: -4px; }            /* aproxima bolhas do mesmo autor */
 .chat-day { align-self: center; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--t2); font-family: 'Share Tech Mono', monospace; background: var(--bg3); border: 1px solid var(--bd); border-radius: 10px; padding: 2px 10px; margin: 4px 0; }
+/* Abas de canal (Entregador/Central) e trava da conversa */
+.chat-tabs { display: flex; gap: 6px; margin: 8px 0 2px; }
+.chat-tab { flex: 1; padding: 8px; font-size: 12px; font-weight: 700; border: 1px solid var(--bd); background: transparent; color: var(--t2); border-radius: 8px; cursor: pointer; font-family: inherit; transition: all .15s ease; }
+.chat-tab.active { border-color: var(--G); background: var(--gw); color: var(--G); }
+.chat-locked { text-align: center; font-size: 12px; color: var(--t2); padding: 12px; border: 1px dashed var(--bd); border-radius: 10px; margin: 6px 0; }
+/* Lista de conversas (inbox do ícone fixo) */
+.chat-inbox-list { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; margin: 8px 0; }
+.chat-inbox-row { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px; border: 1px solid var(--bd); background: var(--bg3); border-radius: 10px; cursor: pointer; text-align: left; font-family: inherit; }
+.chat-inbox-row:hover { border-color: var(--G); }
+.chat-inbox-main { flex: 1; min-width: 0; }
+.chat-inbox-num { font-weight: 700; color: var(--tx); font-size: 13px; }
+.chat-inbox-sub { font-size: 11px; color: var(--t2); margin-top: 2px; }
+.chat-inbox-arrow { color: var(--t3); font-size: 18px; }
 .chat-input-row { display: flex; gap: 8px; align-items: center; }
 .chat-input-row .modal-input { flex: 1; margin: 0; }
 

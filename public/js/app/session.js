@@ -6,14 +6,15 @@ import { $, $$, show, onAction } from "../utils/dom.js";
 import * as store from "./state.js";
 import { navigate } from "./router.js";
 import { loadFeatures, watchFeatures, isEnabled } from "../services/features.service.js";
-import { syncChatNotifiers, stopChatNotifiers } from "../components/chat-notifier.js";
+import { syncChatNotifiers, stopChatNotifiers, onUnreadChange } from "../components/chat-notifier.js";
+import { openInbox } from "../components/chat-inbox.js";
 import * as auth from "../firebase/auth.service.js";
 import * as userSvc from "../services/user.service.js";
 import { watchUserOrders, reconcileOrderPoints } from "../services/order.service.js";
 import { notifyStatusChange } from "../services/notify.service.js";
 import { listProducts } from "../services/product.service.js";
 import { listRewards } from "../services/reward.service.js";
-import { renderTopbar } from "../components/topbar.js";
+import { renderTopbar, renderChatBadge } from "../components/topbar.js";
 import * as missionService from "../services/mission.service.js";
 import { modalConfirm, modalCustom } from "../components/modal.js";
 import { toastSuccess } from "../components/toast.js";
@@ -25,6 +26,13 @@ let unsubMissions = null;
 const _lastOrderStatus = {};
 let unsubFeatures = null;
 let entered = false;
+
+// Chat fixo da topbar: abre a lista de conversas; badge segue as não-lidas.
+onAction("open-chat-inbox", () => {
+  const profile = store.get("profile");
+  if (profile) openInbox(store.get("orders") || [], profile, "cliente");
+});
+onUnreadChange(() => renderChatBadge());
 
 /** Mapeia um elemento de navegação para a chave de funcionalidade. */
 function featureKeyOf(el) {

@@ -10,9 +10,8 @@ import { money, dateShort, toDate } from "../utils/format.js";
 import { modalCustom, modalConfirm } from "../components/modal.js";
 import { toastSuccess, toastError, toastInfo } from "../components/toast.js";
 import { CANCEL_WINDOW_MS } from "../utils/constants.js";
-import { openChat } from "../components/chat.js";
-import { syncChatNotifiers, getUnread, onUnreadChange, markRead } from "../components/chat-notifier.js";
-import { threadKey } from "../services/chat.service.js";
+import { openConversation } from "../components/chat.js";
+import { syncChatNotifiers, onUnreadChange, unreadForOrder } from "../components/chat-notifier.js";
 
 // Perfil do admin corrente (definido no login) — é a "plataforma" no chat.
 let me = null;
@@ -77,8 +76,7 @@ function row(o) {
         ${motoboys.map((mb) => `<option value="${mb.uid}" ${o.agenteResponsavel === mb.uid ? "selected" : ""}>🛵 ${escapeHtml(mb.codename || mb.email)}</option>`).join("")}
       </select>`
         : (motoboys.length ? `<span class="status-lock" title="Atribua o motoboy após aprovar o pedido">🛵 após aprovação</span>` : "")}
-      <button class="admin-btn sm ghost" data-action="order-chat-cliente" data-id="${o.id}" title="Falar com o cliente">💬 Cliente${getUnread(threadKey(o.id, "cp")) ? ` <span class="chat-badge">${getUnread(threadKey(o.id, "cp"))}</span>` : ""}</button>
-      ${o.agenteResponsavel ? `<button class="admin-btn sm ghost" data-action="order-chat-motoboy" data-id="${o.id}" title="Falar com o motoboy">🛵 Motoboy${getUnread(threadKey(o.id, "mp")) ? ` <span class="chat-badge">${getUnread(threadKey(o.id, "mp"))}</span>` : ""}</button>` : ""}
+      <button class="admin-btn sm ghost" data-action="order-chat" data-id="${o.id}" title="Conversas do pedido (Cliente / Motoboy)">💬 Chat${unreadForOrder(o.id, ["cp", "mp"]) ? ` <span class="chat-badge">${unreadForOrder(o.id, ["cp", "mp"])}</span>` : ""}</button>
     </div>
   </div>`;
 }
@@ -186,17 +184,11 @@ export function initOrders() {
   });
   loadMotoboys();
 
-  // Chat da plataforma com o cliente (cp) e com o motoboy (mp) do pedido.
-  onAction("order-chat-cliente", (el) => {
+  // Chat da plataforma: abas Cliente (cp) e Motoboy (mp) no mesmo modal.
+  onAction("order-chat", (el) => {
     if (!me) return;
     const o = getOrders().find((x) => x.id === el.dataset.id);
-    markRead(threadKey(el.dataset.id, "cp"));
-    openChat(el.dataset.id, me, `Cliente · ${o?.cliente || o?.codename || ""}`.trim(), "cp");
-  });
-  onAction("order-chat-motoboy", (el) => {
-    if (!me) return;
-    markRead(threadKey(el.dataset.id, "mp"));
-    openChat(el.dataset.id, me, "Motoboy", "mp");
+    if (o) openConversation(o, me, "admin");
   });
   onUnreadChange(() => { if (document.getElementById("section-pedidos")?.classList.contains("active")) renderOrders(); });
 

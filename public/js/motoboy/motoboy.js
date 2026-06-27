@@ -8,9 +8,8 @@ import { getProfile } from "../services/user.service.js";
 import { watchAgentOrders, updateStatus, ORDER_STATUS, ORDER_STATUS_LABELS } from "../services/order.service.js";
 import { updateDoc } from "../firebase/db.service.js";
 import { adjustPoints } from "../services/points.service.js";
-import { openChat } from "../components/chat.js";
-import { syncChatNotifiers, getUnread, onUnreadChange } from "../components/chat-notifier.js";
-import { threadKey } from "../services/chat.service.js";
+import { openInbox } from "../components/chat-inbox.js";
+import { syncChatNotifiers, onUnreadChange, totalUnread } from "../components/chat-notifier.js";
 import { modalConfirm } from "../components/modal.js";
 import { money } from "../utils/format.js";
 import { DELIVERY_MERITOS, DELIVERY_FEE, STORE } from "../utils/constants.js";
@@ -49,8 +48,6 @@ function card(o) {
       </div>
       <div class="admin-item-actions" style="flex-direction:column;gap:8px">
         ${o.address?.lat != null ? `<button class="admin-btn sm ghost" data-action="moto-focus" data-id="${o.id}">🗺️ Rota</button>` : ""}
-        ${(o.status === ORDER_STATUS.SENT || o.status === ORDER_STATUS.DELIVERED) ? `<button class="admin-btn sm ghost" data-action="moto-chat" data-id="${o.id}">💬 Cliente${getUnread(threadKey(o.id, "cm")) ? ` <span class="chat-badge">${getUnread(threadKey(o.id, "cm"))}</span>` : ""}</button>` : ""}
-        <button class="admin-btn sm ghost" data-action="moto-chat-support" data-id="${o.id}">🎧 Suporte${getUnread(threadKey(o.id, "mp")) ? ` <span class="chat-badge">${getUnread(threadKey(o.id, "mp"))}</span>` : ""}</button>
         ${action}
       </div>
     </div>`;
@@ -288,8 +285,7 @@ onAction("moto-delivered", async (el) => {
   });
   if (ok) setStatus(el.dataset.id, ORDER_STATUS.DELIVERED);
 });
-onAction("moto-chat", (el) => { if (me) openChat(el.dataset.id, me, "Cliente", "cm"); });
-onAction("moto-chat-support", (el) => { if (me) openChat(el.dataset.id, me, "Suporte MrBur", "mp"); });
+onAction("moto-inbox", () => { if (me) openInbox(orders, me, "motoboy"); });
 // "Rota" agora foca a entrega no mapa do próprio app (sem abrir o Google Maps).
 onAction("moto-focus", (el) => {
   const o = orders.find((x) => x.id === el.dataset.id);
@@ -299,7 +295,11 @@ onAction("moto-focus", (el) => {
   setTimeout(() => MAP.invalidateSize(), 250);
 });
 onAction("moto-share", () => { shareOn ? stopShare() : startShare(); });
-onUnreadChange(() => render()); // atualiza os badges de não-lidas ao vivo
+onUnreadChange(() => {
+  render();
+  const b = document.getElementById("motoChatBadge");
+  if (b) { const n = totalUnread(); b.textContent = n; b.style.display = n > 0 ? "" : "none"; }
+});
 onAction("moto-logout", async () => { await auth.signOut(); window.location.replace("/"); });
 onAction("moto-theme", () => {
   const cur = document.documentElement.getAttribute("data-theme") === "light" ? "dark" : "light";

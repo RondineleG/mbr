@@ -28,6 +28,14 @@ function setUnread(tkey, n) {
 /** Contagem de não-lidas de uma conversa (chave = threadKey(orderId, channel)). */
 export function getUnread(tkey) { return unread.get(tkey) || 0; }
 
+/** Total de não-lidas em todas as conversas observadas (badge do topo). */
+export function totalUnread() { let n = 0; for (const v of unread.values()) n += v; return n; }
+
+/** Não-lidas somando os canais de um pedido (ex.: na lista de conversas). */
+export function unreadForOrder(orderId, channels) {
+  return (channels || []).reduce((n, ch) => n + getUnread(threadKey(orderId, ch)), 0);
+}
+
 /** Assina mudanças de contagem (para re-renderizar badges). Retorna unsub. */
 export function onUnreadChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 

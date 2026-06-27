@@ -4,9 +4,6 @@
    ═══════════════════════════════════════════════════════════════ */
 import { setHtml, escapeHtml, onAction } from "../utils/dom.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
-import { openChat } from "../components/chat.js";
-import { getUnread, onUnreadChange, markRead } from "../components/chat-notifier.js";
-import { threadKey } from "../services/chat.service.js";
 import * as store from "../app/state.js";
 import { money, dateShort } from "../utils/format.js";
 import { ORDER_STATUS_LABELS, cancelOrder, canCancelOrder } from "../services/order.service.js";
@@ -147,12 +144,7 @@ function orderCard(o) {
   const itemsLine = (o.items || []).map((it) => `${it.qty || 1}× ${it.name}`).join(" · ");
   const showTimeline = o.status !== "cancelado";
   const canRepeat = o.status !== "cancelado" && o.items && o.items.length > 0;
-  // Cliente só fala com o entregador depois que o pedido sai para entrega.
-  const canChat = o.agenteResponsavel && (o.status === "enviado" || o.status === "entregue");
-  // Atendimento da plataforma fica disponível em qualquer pedido ativo.
-  const canSupport = o.status !== "cancelado";
-  const cmUnread = getUnread(threadKey(o.id, "cm"));
-  const cpUnread = getUnread(threadKey(o.id, "cp"));
+  // Chat agora é pelo ícone fixo 💬 da topbar (lista de conversas), não por card.
 
   // MBox: a composição é SURPRESA — só é revelada após o corte de sexta 22h
   // (quando o pedido também deixa de ser cancelável). Antes disso, fica oculta.
@@ -193,11 +185,9 @@ function orderCard(o) {
     ${cancelBlock}
     ${trackingBlock(o)}
     ${showTimeline ? timeline(o) : ""}
-    ${(canRepeat || canChat || canSupport) ? `
+    ${canRepeat ? `
       <div class="order-actions">
-        ${canRepeat ? `<button class="order-repeat-btn" data-action="repeat-order" data-order-id="${o.id}">🔄 Repetir Pedido</button>` : ""}
-        ${canChat ? `<button class="order-repeat-btn" data-action="order-chat" data-order-id="${o.id}">💬 Falar com entregador${cmUnread ? ` <span class="chat-badge">${cmUnread}</span>` : ""}</button>` : ""}
-        ${canSupport ? `<button class="order-repeat-btn" data-action="order-chat-support" data-order-id="${o.id}">🎧 Falar com a loja${cpUnread ? ` <span class="chat-badge">${cpUnread}</span>` : ""}</button>` : ""}
+        <button class="order-repeat-btn" data-action="repeat-order" data-order-id="${o.id}">🔄 Repetir Pedido</button>
       </div>
     ` : ""}
   </div>`;
@@ -244,23 +234,8 @@ export function initPedidos() {
   // Realtime: qualquer mudança em orders re-renderiza (inclui troca de status pelo admin).
   store.subscribe("orders", renderPedidos);
 
-  // Chat com o entregador (motoboy) do pedido.
-  onAction("order-chat", (el) => {
-    const profile = store.get("profile");
-    markRead(threadKey(el.dataset.orderId, "cm"));
-    if (profile) openChat(el.dataset.orderId, profile, "Entregador", "cm");
-  });
+  // (Chat agora é pelo ícone fixo 💬 da topbar → components/chat-inbox.js)
 
-  // Chat com a plataforma/atendimento (independe de ter entregador).
-  onAction("order-chat-support", (el) => {
-    const profile = store.get("profile");
-    markRead(threadKey(el.dataset.orderId, "cp"));
-    if (profile) openChat(el.dataset.orderId, profile, "Atendimento MrBur", "cp");
-  });
-
-  // Atualiza os badges de não-lidas ao vivo.
-  onUnreadChange(() => { if (store.get("page") === "pedidos") renderPedidos(); });
-  
   // Handler para repetir pedido
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action="repeat-order"]');

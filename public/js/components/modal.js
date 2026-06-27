@@ -8,6 +8,7 @@ let overlay;
 let resolver = null;
 let lastFocus = null;
 let cancelValue = null;
+let onCloseHook = null; // chamado em QUALQUER fechamento (botão, ESC, clique-fora)
 
 const focusableSelector = [
   "button:not([disabled])",
@@ -61,9 +62,10 @@ function onKeydown(e) {
   }
 }
 
-function open(html, fallback = null) {
+function open(html, fallback = null, onClose = null) {
   ensure();
   cancelValue = fallback;
+  onCloseHook = onClose;
   lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
   const card = overlay.querySelector(".modal-card");
   card.innerHTML = html;
@@ -89,6 +91,8 @@ function close(value) {
   const focusBack = lastFocus;
   lastFocus = null;
   if (resolver) { resolver(value); resolver = null; }
+  const hook = onCloseHook; onCloseHook = null;
+  if (hook) { try { hook(value); } catch (e) { console.error(e); } }
   requestAnimationFrame(() => {
     if (focusBack?.isConnected) focusBack.focus({ preventScroll: true });
   });
@@ -131,10 +135,12 @@ export function modalConfirm({ title, message, confirmText = "Confirmar", danger
   });
 }
 
-/** Conteúdo HTML arbitrário (ex.: form de produto no admin). Retorna API. */
-export function modalCustom(html) {
+/** Conteúdo HTML arbitrário (ex.: form de produto no admin). Retorna API.
+ *  opts.onClose é chamado em qualquer fechamento (botão, ESC, clique-fora) —
+ *  use p/ limpar listeners (ex.: unsubscribe do chat) e evitar vazamentos. */
+export function modalCustom(html, opts = {}) {
   ensure();
-  open(html, null);
+  open(html, null, opts.onClose || null);
   return {
     el: overlay.querySelector(".modal-card"),
     close: () => close(null),

@@ -4,6 +4,7 @@
 import { setText, show } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { codenameInitials, rankLabel } from "../utils/format.js";
+import { totalUnread } from "./chat-notifier.js";
 
 export function renderTopbar() {
   const p = store.get("profile");
@@ -14,6 +15,16 @@ export function renderTopbar() {
   const themeBtn = document.getElementById("themeBtn");
   if (themeBtn) themeBtn.textContent = store.get("theme") === "light" ? "☀️" : "🌙";
   renderCartBadges();
+  renderChatBadge();
+}
+
+/** Badge de não-lidas no ícone de chat fixo da topbar. */
+export function renderChatBadge() {
+  const el = document.getElementById("topChatBadge");
+  if (!el) return;
+  const n = totalUnread();
+  el.textContent = n;
+  show(el, n > 0);
 }
 
 export function renderCartBadges() {
