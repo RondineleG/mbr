@@ -8,6 +8,7 @@ import { showOnboarding } from "../app/session.js";
 import { setInviteContext } from "./onboarding.page.js";
 import { modalPrompt } from "../components/modal.js";
 import { toastSuccess } from "../components/toast.js";
+import { maskInvite, isValidInvite } from "../utils/format.js";
 
 let mode = "agent";
 
@@ -42,6 +43,7 @@ async function doLogin(btn) {
   } else {
     const code = $("#loginCode").value.trim().toUpperCase();
     if (!code) return setError("Informe o código do convite");
+    if (!isValidInvite(code)) return setError("Código inválido — use o formato MBR-XXX-XXX");
     btn.disabled = true;
     try {
       const res = await checkInvite(code);
@@ -84,6 +86,9 @@ export function initLogin() {
   onAction("login-tab", (el) => switchTab(el.dataset.mode));
   onAction("do-login", (el) => doLogin(el));
   onAction("forgot-password", () => forgotPassword());
+
+  // Máscara do convite: alfanumérico, MAIÚSCULAS, XXX-XXX-XXX.
+  $("#loginCode")?.addEventListener("input", (e) => maskInvite(e.target));
 
   // Enter dispara login.
   ["loginEmail", "loginPass", "loginCode"].forEach((id) => {

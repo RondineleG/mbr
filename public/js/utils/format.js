@@ -80,6 +80,17 @@ export function maskCep(el) {
   el.value = v;
 }
 
+/** Máscara do código de convite: só letras/números, MAIÚSCULAS, 9 chars
+ *  agrupados em XXX-XXX-XXX (ex.: MBR-DS8-S9O). */
+export function maskInvite(el) {
+  const a = el.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 9);
+  el.value = a.replace(/(.{3})(.{1,3})?(.{1,3})?/, (_, g1, g2, g3) =>
+    [g1, g2, g3].filter(Boolean).join("-"));
+}
+
+/** Convite válido? 9 alfanuméricos no formato XXX-XXX-XXX. */
+export const isValidInvite = (code) => /^[A-Z0-9]{3}-[A-Z0-9]{3}-[A-Z0-9]{3}$/.test((code || "").toUpperCase().trim());
+
 /** Monta endereço legível a partir do objeto address. */
 export function formatAddress(addr) {
   if (!addr) return "—";
