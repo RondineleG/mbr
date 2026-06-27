@@ -11,6 +11,9 @@ import { toastInfo } from "../components/toast.js";
 function filter() {
   const q = ($("#searchInput")?.value || "").toLowerCase().trim();
   const el = $("#searchResults");
+  if (!el) return;
+  // A página já mostra "Populares" + "Categorias" de forma estática; quando não há
+  // busca, apenas limpamos a área de resultados (sem duplicar atalhos).
   if (!q) { el.innerHTML = ""; return; }
   const results = store.get("products").filter((p) =>
     p.active !== false &&

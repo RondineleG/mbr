@@ -7,9 +7,16 @@ import { getOrders, subscribeOrders, startOrdersWatch } from "./admin-store.js";
 import { updateStatus, assignAgent, ORDER_STATUS, ORDER_STATUS_LABELS } from "../services/order.service.js";
 import { listAgents } from "../services/user.service.js";
 import { money, dateShort, toDate } from "../utils/format.js";
-import { modalCustom } from "../components/modal.js";
+import { modalCustom, modalConfirm } from "../components/modal.js";
 import { toastSuccess, toastError, toastInfo } from "../components/toast.js";
 import { CANCEL_WINDOW_MS } from "../utils/constants.js";
+import { openChat } from "../components/chat.js";
+import { syncChatNotifiers, getUnread, onUnreadChange, markRead } from "../components/chat-notifier.js";
+import { threadKey } from "../services/chat.service.js";
+
+// Perfil do admin corrente (definido no login) — é a "plataforma" no chat.
+let me = null;
+export function setAdminProfile(p) { me = p; }
 
 const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
 // O admin só aceita/produz após o corte das 13h (até lá o cliente pode alterar/cancelar).
@@ -28,6 +35,7 @@ function diaLabel(ts) {
 export { startOrdersWatch };
 
 let filter = "all";
+let search = "";   // busca por cliente / nº do pedido
 let motoboys = []; // agentes com motoboy:true (para atribuição inline)
 
 const ORDER_FLOW = ["recebido", "analisando", "aprovado", "producao", "enviado", "entregue"];
@@ -69,6 +77,8 @@ function row(o) {
         ${motoboys.map((mb) => `<option value="${mb.uid}" ${o.agenteResponsavel === mb.uid ? "selected" : ""}>🛵 ${escapeHtml(mb.codename || mb.email)}</option>`).join("")}
       </select>`
         : (motoboys.length ? `<span class="status-lock" title="Atribua o motoboy após aprovar o pedido">🛵 após aprovação</span>` : "")}
+      <button class="admin-btn sm ghost" data-action="order-chat-cliente" data-id="${o.id}" title="Falar com o cliente">💬 Cliente${getUnread(threadKey(o.id, "cp")) ? ` <span class="chat-badge">${getUnread(threadKey(o.id, "cp"))}</span>` : ""}</button>
+      ${o.agenteResponsavel ? `<button class="admin-btn sm ghost" data-action="order-chat-motoboy" data-id="${o.id}" title="Falar com o motoboy">🛵 Motoboy${getUnread(threadKey(o.id, "mp")) ? ` <span class="chat-badge">${getUnread(threadKey(o.id, "mp"))}</span>` : ""}</button>` : ""}
     </div>
   </div>`;
 }
@@ -89,7 +99,18 @@ export function renderOrders() {
   // Mais novos primeiro (por criadoEm desc).
   let orders = [...getOrders()].sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0));
   if (filter !== "all") orders = orders.filter((o) => o.status === filter);
-  if (!orders.length) { setHtml("ordersList", '<div class="empty-state">📦</div>'); return; }
+  if (search) {
+    const q = search.toLowerCase();
+    orders = orders.filter((o) =>
+      (o.cliente || "").toLowerCase().includes(q) ||
+      (o.codename || "").toLowerCase().includes(q) ||
+      (o.numeroPedido || "").toLowerCase().includes(q) ||
+      (o.id || "").toLowerCase().includes(q));
+  }
+  if (!orders.length) {
+    setHtml("ordersList", `<div class="empty-state">${search ? "🔍 Nenhum pedido para “" + escapeHtml(search) + "”" : "📦"}</div>`);
+    return;
+  }
 
   // Agrupa por dia (mantendo a ordem já decrescente).
   const groups = [];
@@ -142,9 +163,42 @@ async function loadMotoboys() {
   catch (e) { console.warn("Falha ao carregar motoboys:", e?.message || e); }
 }
 
+// A plataforma observa as conversas com cliente (cp) e motoboy (mp) dos pedidos
+// recentes não cancelados, para tocar toast e contar não-lidas mesmo fora da aba.
+function syncAdminChat() {
+  if (!me) return;
+  const recent = [...getOrders()]
+    .filter((o) => o.status !== "cancelado")
+    .sort((a, b) => (b.criadoEm || 0) - (a.criadoEm || 0))
+    .slice(0, 40);
+  const threads = [];
+  for (const o of recent) {
+    threads.push({ orderId: o.id, channel: "cp" });
+    if (o.agenteResponsavel) threads.push({ orderId: o.id, channel: "mp" });
+  }
+  syncChatNotifiers(threads, me.uid);
+}
+
 export function initOrders() {
-  subscribeOrders(() => { if (document.getElementById("section-pedidos")?.classList.contains("active")) renderOrders(); });
+  subscribeOrders(() => {
+    syncAdminChat(); // notificações de chat valem mesmo fora da aba Pedidos
+    if (document.getElementById("section-pedidos")?.classList.contains("active")) renderOrders();
+  });
   loadMotoboys();
+
+  // Chat da plataforma com o cliente (cp) e com o motoboy (mp) do pedido.
+  onAction("order-chat-cliente", (el) => {
+    if (!me) return;
+    const o = getOrders().find((x) => x.id === el.dataset.id);
+    markRead(threadKey(el.dataset.id, "cp"));
+    openChat(el.dataset.id, me, `Cliente · ${o?.cliente || o?.codename || ""}`.trim(), "cp");
+  });
+  onAction("order-chat-motoboy", (el) => {
+    if (!me) return;
+    markRead(threadKey(el.dataset.id, "mp"));
+    openChat(el.dataset.id, me, "Motoboy", "mp");
+  });
+  onUnreadChange(() => { if (document.getElementById("section-pedidos")?.classList.contains("active")) renderOrders(); });
 
   // Atribuir/remover motoboy direto na linha do pedido.
   onChange("order-assign", async (el) => {
@@ -162,6 +216,9 @@ export function initOrders() {
     renderOrders();
   });
   onAction("order-view", (el) => viewOrder(el.dataset.id));
+  // Busca por cliente / nº do pedido (filtra a lista ao digitar).
+  const si = document.getElementById("ordersSearch");
+  if (si) si.addEventListener("input", () => { search = si.value.trim(); renderOrders(); });
   onChange("order-status", async (el) => {
     // Defesa: não produzir antes do corte das 13h (cliente ainda pode alterar/cancelar).
     const o = getOrders().find((x) => x.id === el.dataset.id);
@@ -170,7 +227,23 @@ export function initOrders() {
       renderOrders();
       return;
     }
-    try { await updateStatus(el.dataset.id, el.value); toastSuccess("Status atualizado → " + (ORDER_STATUS_LABELS[el.value] || el.value)); }
+    // Confirma ações arriscadas: cancelar o pedido ou voltar o status.
+    const target = el.value;
+    const curIdx = ORDER_FLOW.indexOf(o?.status);
+    const tgtIdx = ORDER_FLOW.indexOf(target);
+    const risky = target === "cancelado" || (curIdx > -1 && tgtIdx > -1 && tgtIdx < curIdx);
+    if (risky) {
+      const ok = await modalConfirm({
+        title: target === "cancelado" ? "Cancelar pedido?" : "Voltar o status?",
+        message: target === "cancelado"
+          ? "O pedido será marcado como CANCELADO."
+          : `Voltar de "${ORDER_STATUS_LABELS[o.status] || o.status}" para "${ORDER_STATUS_LABELS[target] || target}"?`,
+        confirmText: "Confirmar",
+        danger: target === "cancelado",
+      });
+      if (!ok) { renderOrders(); return; } // re-render reverte o <select> visualmente
+    }
+    try { await updateStatus(el.dataset.id, target); toastSuccess("Status atualizado → " + (ORDER_STATUS_LABELS[target] || target)); }
     catch { toastError("Falha ao atualizar status"); }
   });
 

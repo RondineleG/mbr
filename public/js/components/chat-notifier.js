@@ -1,59 +1,66 @@
 /* ═══════════════════════════════════════════════════════════════
-   CHAT NOTIFIER — avisa (toast) e conta não-lidas por pedido, sem abrir o chat.
-   Mantém um watcher por pedido ativo. "Lido" é persistido em localStorage.
+   CHAT NOTIFIER — avisa (toast) e conta não-lidas por CONVERSA, sem abrir o chat.
+   Uma conversa = (pedido, canal). Mantém um watcher por conversa ativa.
+   "Lido" é persistido em localStorage pela chave da thread.
    ═══════════════════════════════════════════════════════════════ */
-import { watchMessages } from "../services/chat.service.js";
+import { watchMessages, threadKey, CHANNELS } from "../services/chat.service.js";
 import { toast } from "./toast.js";
 
-const watchers = new Map();   // orderId -> { unsub, baseline }
-const unread = new Map();     // orderId -> contagem de não-lidas
+const watchers = new Map();   // threadKey -> { unsub, baseline }
+const unread = new Map();     // threadKey -> contagem de não-lidas
 const listeners = new Set();  // callbacks notificados quando a contagem muda
+
+const ROLE_LABEL = { cliente: "Cliente", motoboy: "Entregador", admin: "Atendimento MrBur" };
 
 const tsOf = (m) => {
   const v = m?.createdAt;
   return v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
 };
-const readKey = (id) => "chatRead:" + id;
-const getLastRead = (id) => { try { return +(localStorage.getItem(readKey(id)) || 0); } catch { return 0; } };
+const readKey = (tkey) => "chatRead:" + tkey;
+const getLastRead = (tkey) => { try { return +(localStorage.getItem(readKey(tkey)) || 0); } catch { return 0; } };
 
-function setUnread(id, n) {
-  if (unread.get(id) === n) return;
-  unread.set(id, n);
+function setUnread(tkey, n) {
+  if (unread.get(tkey) === n) return;
+  unread.set(tkey, n);
   listeners.forEach((fn) => { try { fn(); } catch {} });
 }
 
-/** Contagem de não-lidas de um pedido. */
-export function getUnread(id) { return unread.get(id) || 0; }
+/** Contagem de não-lidas de uma conversa (chave = threadKey(orderId, channel)). */
+export function getUnread(tkey) { return unread.get(tkey) || 0; }
 
 /** Assina mudanças de contagem (para re-renderizar badges). Retorna unsub. */
 export function onUnreadChange(fn) { listeners.add(fn); return () => listeners.delete(fn); }
 
-/** Marca o chat do pedido como lido (zera não-lidas). */
-export function markRead(id) {
-  try { localStorage.setItem(readKey(id), String(Date.now())); } catch {}
-  setUnread(id, 0);
+/** Marca a conversa como lida (zera não-lidas). */
+export function markRead(tkey) {
+  try { localStorage.setItem(readKey(tkey), String(Date.now())); } catch {}
+  setUnread(tkey, 0);
 }
 
 /**
- * Sincroniza watchers com a lista de pedidos atual.
- * - Atualiza a contagem de não-lidas (mensagens de outros após o "lido").
- * - Toca um toast quando surge mensagem NOVA de outra pessoa (não no histórico).
+ * Sincroniza watchers com a lista de conversas atual.
+ * @param {Array<{orderId:string, channel?:string}>} threads conversas a observar
+ * @param {string} meUid uid do usuário corrente (para ignorar as próprias msgs)
  */
-export function syncChatNotifiers(orderIds, meUid) {
-  const ids = new Set(orderIds || []);
-
-  for (const [id, w] of watchers) {
-    if (!ids.has(id)) { w.unsub?.(); watchers.delete(id); unread.delete(id); }
+export function syncChatNotifiers(threads, meUid) {
+  const specs = new Map(); // threadKey -> {orderId, channel}
+  for (const t of (threads || [])) {
+    const ch = t.channel || CHANNELS.CM;
+    specs.set(threadKey(t.orderId, ch), { orderId: t.orderId, channel: ch });
   }
 
-  for (const id of ids) {
-    if (watchers.has(id)) continue;
+  for (const [tkey, w] of watchers) {
+    if (!specs.has(tkey)) { w.unsub?.(); watchers.delete(tkey); unread.delete(tkey); }
+  }
+
+  for (const [tkey, { orderId, channel }] of specs) {
+    if (watchers.has(tkey)) continue;
     const w = { unsub: null, baseline: null };
-    watchers.set(id, w);
-    w.unsub = watchMessages(id, (msgs) => {
+    watchers.set(tkey, w);
+    w.unsub = watchMessages(orderId, (msgs) => {
       // Não-lidas (persistente): mensagens de outros depois do último "lido".
-      const lastRead = getLastRead(id);
-      setUnread(id, (msgs || []).filter((m) => m.from !== meUid && tsOf(m) > lastRead).length);
+      const lastRead = getLastRead(tkey);
+      setUnread(tkey, (msgs || []).filter((m) => m.from !== meUid && tsOf(m) > lastRead).length);
 
       // Toast só para mensagem nova (a 1ª leitura é baseline silenciosa).
       if (!msgs.length) { if (w.baseline == null) w.baseline = 0; return; }
@@ -63,10 +70,11 @@ export function syncChatNotifiers(orderIds, meUid) {
       if (lastTs > w.baseline) {
         w.baseline = lastTs;
         if (last.from && last.from !== meUid) {
-          toast("info", "💬", `Nova mensagem de ${last.fromRole || "alguém"}: ${String(last.text || "").slice(0, 40)}`);
+          const who = ROLE_LABEL[last.fromRole] || last.fromRole || "alguém";
+          toast("info", "💬", `Nova mensagem de ${who}: ${String(last.text || "").slice(0, 40)}`);
         }
       }
-    });
+    }, channel);
   }
 }
 

@@ -255,9 +255,15 @@ export async function enterApp(profile) {
   });
   unsubOrders = watchUserOrders(profile.uid, (orders) => {
     store.set("orders", orders);
-    // Avisa o cliente de novas mensagens nos pedidos com entregador atribuído.
-    const ids = (orders || []).filter((o) => o.agenteResponsavel && o.status !== "cancelado").map((o) => o.id);
-    syncChatNotifiers(ids, profile.uid);
+    // Avisa o cliente de novas mensagens: com o entregador (cm, quando atribuído)
+    // e com a plataforma/atendimento (cp, em qualquer pedido não cancelado).
+    const threads = [];
+    for (const o of (orders || [])) {
+      if (o.status === "cancelado") continue;
+      threads.push({ orderId: o.id, channel: "cp" });
+      if (o.agenteResponsavel) threads.push({ orderId: o.id, channel: "cm" });
+    }
+    syncChatNotifiers(threads, profile.uid);
     // Notifica mudanças de status do pedido (client-side, sem servidor) e
     // credita méritos de pedidos entregues que ficaram sem crédito (ex.:
     // entregues pelo motoboy, que não pode escrever no doc do cliente).

@@ -12,8 +12,9 @@ body {
     radial-gradient(circle at 1px 1px, rgba(201,168,76,0.05) 1px, transparent 0);
   background-size: 100% 100%, 24px 24px;
   background-attachment: fixed;
-  max-width: 480px;
-  margin: 0 auto;
+  /* Mobile/tablet: o app ocupa a tela inteira (full-bleed). A "coluna" de 480px
+     e a moldura só entram no desktop real (≥900px) — ver media query abaixo. */
+  width: 100%;
   min-height: 100vh;
   overflow-x: hidden;
   transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
@@ -48,14 +49,28 @@ button { cursor: pointer; color: inherit; }
 .divider { height: 8px; }
 .text-center { text-align: center; }
 
-/* Desktop / tablet: realça a "moldura" mobile premium (versão sóbria). */
-@media (min-width: 600px) {
+/* Desktop real (≥900px): a coluna mobile vira uma "moldura premium" centralizada,
+   com vinheta ambiente atrás (no html) e a coluna elevada (borda + sombra).
+   Abaixo disso (celular/tablet/foldable) o app é full-bleed — perfeito no mobile. */
+@media (min-width: 900px) {
+  html {
+    background-color: var(--bg);
+    background-image:
+      radial-gradient(ellipse 70% 55% at 50% -6%, var(--gw), transparent 60%),
+      radial-gradient(circle at 1px 1px, rgba(201,168,76,0.035) 1px, transparent 0);
+    background-size: 100% 100%, 28px 28px;
+    background-attachment: fixed;
+  }
   body {
-    box-shadow: 0 0 0 1px var(--bd), 0 30px 80px rgba(0,0,0,0.5);
-    border-radius: 4px;
-    margin-top: 12px;
-    margin-bottom: 12px;
-    min-height: calc(100vh - 24px);
+    max-width: 480px;
+    margin: 18px auto;
+    border: 1px solid var(--bd);
+    border-radius: 16px;
+    box-shadow:
+      0 28px 80px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(201,168,76,0.06),
+      inset 0 1px 0 rgba(255,255,255,0.03);
+    min-height: calc(100vh - 36px);
   }
 }
 

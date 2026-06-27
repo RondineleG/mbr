@@ -232,7 +232,22 @@ export function initSacola() {
     store.cartRemove(el.dataset.key);
     if (it) toastInfo("🗑", `${it.name} removido da sacola`);
   });
-  onAction("cart-clear", () => { store.cartClear(); toastInfo("🗑", "Sacola limpa"); });
+  onAction("cart-clear", async () => {
+    const snapshot = [...store.get("cart")];
+    if (!snapshot.length) return;
+    const ok = await modalConfirm({
+      title: "Limpar a sacola?",
+      message: "Isso remove todos os itens do carrinho.",
+      confirmText: "Limpar",
+      danger: true,
+    });
+    if (!ok) return;
+    store.cartClear();
+    toast("info", "🗑", "Sacola limpa", {
+      label: "Desfazer",
+      onClick: () => { store.set("cart", snapshot); toastInfo("↩️", "Sacola restaurada"); },
+    });
+  });
   onAction("checkout", (el) => checkout(el));
   onAction("sacola-tab", (el) => {
     currentTab = el.dataset.tab;

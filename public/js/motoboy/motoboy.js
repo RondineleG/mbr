@@ -10,6 +10,8 @@ import { updateDoc } from "../firebase/db.service.js";
 import { adjustPoints } from "../services/points.service.js";
 import { openChat } from "../components/chat.js";
 import { syncChatNotifiers, getUnread, onUnreadChange } from "../components/chat-notifier.js";
+import { threadKey } from "../services/chat.service.js";
+import { modalConfirm } from "../components/modal.js";
 import { money } from "../utils/format.js";
 import { DELIVERY_MERITOS, DELIVERY_FEE, STORE } from "../utils/constants.js";
 import { tspNearestNeighbor } from "../utils/geo.js";
@@ -47,7 +49,8 @@ function card(o) {
       </div>
       <div class="admin-item-actions" style="flex-direction:column;gap:8px">
         ${o.address?.lat != null ? `<button class="admin-btn sm ghost" data-action="moto-focus" data-id="${o.id}">🗺️ Rota</button>` : ""}
-        ${(o.status === ORDER_STATUS.SENT || o.status === ORDER_STATUS.DELIVERED) ? `<button class="admin-btn sm ghost" data-action="moto-chat" data-id="${o.id}">💬 Chat${getUnread(o.id) ? ` <span class="chat-badge">${getUnread(o.id)}</span>` : ""}</button>` : ""}
+        ${(o.status === ORDER_STATUS.SENT || o.status === ORDER_STATUS.DELIVERED) ? `<button class="admin-btn sm ghost" data-action="moto-chat" data-id="${o.id}">💬 Cliente${getUnread(threadKey(o.id, "cm")) ? ` <span class="chat-badge">${getUnread(threadKey(o.id, "cm"))}</span>` : ""}</button>` : ""}
+        <button class="admin-btn sm ghost" data-action="moto-chat-support" data-id="${o.id}">🎧 Suporte${getUnread(threadKey(o.id, "mp")) ? ` <span class="chat-badge">${getUnread(threadKey(o.id, "mp"))}</span>` : ""}</button>
         ${action}
       </div>
     </div>`;
@@ -239,8 +242,12 @@ function enter(profile) {
     orders = list || [];
     render();
     backfillCoords(orders);   // completa coordenadas faltantes → popula rota/mapa
-    // Avisa o motoboy de novas mensagens dos clientes nas entregas atribuídas.
-    syncChatNotifiers(orders.filter((o) => o.status !== "cancelado").map((o) => o.id), profile.uid);
+    // Avisa o motoboy de novas mensagens: do cliente (cm) e da plataforma (mp).
+    const threads = [];
+    for (const o of orders.filter((o) => o.status !== "cancelado")) {
+      threads.push({ orderId: o.id, channel: "cm" }, { orderId: o.id, channel: "mp" });
+    }
+    syncChatNotifiers(threads, profile.uid);
   });
 }
 
@@ -258,8 +265,16 @@ function showAccessError(msg) {
 }
 
 onAction("moto-sent", (el) => setStatus(el.dataset.id, ORDER_STATUS.SENT));
-onAction("moto-delivered", (el) => setStatus(el.dataset.id, ORDER_STATUS.DELIVERED));
-onAction("moto-chat", (el) => { if (me) openChat(el.dataset.id, me, "Cliente"); });
+onAction("moto-delivered", async (el) => {
+  const ok = await modalConfirm({
+    title: "Confirmar entrega?",
+    message: "O pedido será marcado como ENTREGUE e os méritos serão creditados. Não dá para desfazer.",
+    confirmText: "Confirmar entrega",
+  });
+  if (ok) setStatus(el.dataset.id, ORDER_STATUS.DELIVERED);
+});
+onAction("moto-chat", (el) => { if (me) openChat(el.dataset.id, me, "Cliente", "cm"); });
+onAction("moto-chat-support", (el) => { if (me) openChat(el.dataset.id, me, "Suporte MrBur", "mp"); });
 // "Rota" agora foca a entrega no mapa do próprio app (sem abrir o Google Maps).
 onAction("moto-focus", (el) => {
   const o = orders.find((x) => x.id === el.dataset.id);

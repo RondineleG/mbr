@@ -37,9 +37,10 @@ export function renderRewardCards(rewards, userPoints) {
       btn = `<button class="reward-card-btn" data-action="redeem" data-id="${r.id}">RESGATAR</button>`;
     }
     
-    // Stock indicator for physical items
-    const stockIndicator = r.type === 'physical' && r.stock !== null 
-      ? `<div class="reward-stock">📦 ${r.stock} disponíveis</div>` 
+    // Stock indicator for physical items.
+    // `!= null` cobre null E undefined (estoque não definido não vira "undefined disponíveis").
+    const stockIndicator = r.type === 'physical' && r.stock != null
+      ? `<div class="reward-stock">📦 ${r.stock} disponíveis</div>`
       : '';
     
     return `<div class="reward-card">
@@ -411,6 +412,19 @@ function setActiveTab(name) {
 }
 
 export function initClube() {
+  onAction("clube-help", () => {
+    const dlg = modalCustom(`
+      <div class="modal-title">Como funciona o Clube</div>
+      <div class="clube-help">
+        <p><b>⚡ Méritos</b> são seus pontos. Você ganha a cada pedido entregue, ao criar lanches e ao completar missões, e troca por recompensas em <i>Resgatar</i>.</p>
+        <p><b>🎖️ Patente</b> é o seu nível na Ordem: sobe conforme você acumula méritos.</p>
+        <p><b>🏆 Missões</b> são desafios que dão méritos extras ao concluir.</p>
+        <p><b>🍔 Criações</b>: monte um lanche inédito e ele vira sua criação. Outros podem "forkar" e favoritar, e o 1º a criar uma combinação ganha bônus.</p>
+        <p><b>👑 Ranking</b> mostra os agentes com mais méritos na semana.</p>
+      </div>
+      <div class="modal-actions"><button class="modal-btn primary" id="clubeHelpOk" type="button">Entendi</button></div>`);
+    dlg.el.querySelector("#clubeHelpOk").onclick = () => dlg.close();
+  });
   onAction("clube-tab", (el) => {
     tab = el.dataset.tab;
     setActiveTab(tab);

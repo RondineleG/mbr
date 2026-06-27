@@ -5,7 +5,7 @@ import { $, $$, onAction, show } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { createInvite, cancelInvite, listInvites, getInviteStats } from "../services/invite.service.js";
 import { getProfile } from "../services/user.service.js";
-import { modalPrompt } from "../components/modal.js";
+import { modalPrompt, modalConfirm } from "../components/modal.js";
 import { toastSuccess, toastError } from "../components/toast.js";
 import { loadingState, emptyState, withLoading, withEmpty } from "../utils/loading.js";
 
@@ -187,8 +187,14 @@ async function createNewInvite() {
 }
 
 async function cancelInviteHandler(code) {
-  if (!confirm("Tem certeza que deseja cancelar este convite?")) return;
-  
+  const ok = await modalConfirm({
+    title: "Cancelar convite",
+    message: "Tem certeza que deseja cancelar este convite? Esta ação não pode ser desfeita.",
+    confirmText: "Cancelar convite",
+    danger: true,
+  });
+  if (!ok) return;
+
   try {
     await cancelInvite(code);
     toastSuccess("Convite cancelado com sucesso!");

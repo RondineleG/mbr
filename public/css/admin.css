@@ -89,6 +89,9 @@ body.admin { max-width: none; margin: 0; }
 .admin-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
 .admin-title { font-family: var(--f-display); font-size: 26px; font-weight: 700; color: var(--text); }
 .admin-title-sub { font-size: 11px; letter-spacing: 2px; color: var(--text-dim); font-family: var(--f-mono); margin-top: 2px; }
+.admin-input { width: 100%; padding: 11px 14px; font-size: 13px; background: var(--bg-input, var(--card)); border: 1px solid var(--border, var(--bd)); border-radius: var(--radius-sm); color: var(--text); outline: none; font-family: inherit; transition: border var(--transition); }
+.admin-input:focus { border-color: var(--gold-border, var(--gold)); }
+.admin-input::placeholder { color: var(--text-dim, var(--t3)); }
 .admin-section { display: none; }
 .admin-section.active { display: block; animation: pageIn 0.3s ease; }
 

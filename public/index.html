@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>MrBur — A Ordem</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
 <!-- PWA -->
 <link rel="icon" type="image/png" href="/favicon-flame.png?v=133">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#C9A84C">
+<meta name="theme-color" content="#060503">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -295,7 +295,7 @@
 
   <!-- ═══ CLUBE ═══ -->
   <div class="page" id="page-clube">
-    <div class="section-title">Ações Rápidas</div>
+    <div class="section-title">Ações Rápidas <button class="clube-help-btn" data-action="clube-help" type="button">ⓘ Como funciona?</button></div>
     <div class="clube-actions">
       <div class="clube-action" data-action="clube-tab" data-tab="recompensas"><div class="clube-action-icon">🎁</div><div class="clube-action-label">Resgatar</div><div class="clube-action-sub">Usar pontos</div></div>
       <div class="clube-action" data-action="clube-tab" data-tab="historico"><div class="clube-action-icon">📊</div><div class="clube-action-label">Extrato</div><div class="clube-action-sub">Méritos</div></div>
@@ -360,9 +360,9 @@
     <div class="profile-section">
       <div class="profile-section-title">BASE DE OPERAÇÕES</div>
       <div class="profile-card">
-        <div class="profile-row" data-action="edit-field" data-field="street"><div class="profile-row-left"><span class="profile-row-icon">📍</span><div class="profile-row-info"><div class="profile-row-label">Endereço de Entrega</div><div class="profile-row-value" id="profAddress">—</div></div></div><span class="profile-row-arrow">›</span></div>
-        <div class="profile-row" data-action="edit-field" data-field="neighborhood"><div class="profile-row-left"><span class="profile-row-icon">🏘️</span><div class="profile-row-info"><div class="profile-row-label">Bairro</div><div class="profile-row-value" id="profNeighborhood">—</div></div></div><span class="profile-row-arrow">›</span></div>
-        <div class="profile-row" data-action="edit-field" data-field="cep"><div class="profile-row-left"><span class="profile-row-icon">📮</span><div class="profile-row-info"><div class="profile-row-label">CEP</div><div class="profile-row-value" id="profCep">—</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row" data-action="edit-address"><div class="profile-row-left"><span class="profile-row-icon">📍</span><div class="profile-row-info"><div class="profile-row-label">Endereço de Entrega</div><div class="profile-row-value" id="profAddress">—</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row" data-action="edit-address"><div class="profile-row-left"><span class="profile-row-icon">🏘️</span><div class="profile-row-info"><div class="profile-row-label">Bairro</div><div class="profile-row-value" id="profNeighborhood">—</div></div></div><span class="profile-row-arrow">›</span></div>
+        <div class="profile-row" data-action="edit-address"><div class="profile-row-left"><span class="profile-row-icon">📮</span><div class="profile-row-info"><div class="profile-row-label">CEP</div><div class="profile-row-value" id="profCep">—</div></div></div><span class="profile-row-arrow">›</span></div>
       </div>
     </div>
 

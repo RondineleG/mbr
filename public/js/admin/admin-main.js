@@ -11,7 +11,7 @@ import { initReports, renderReports } from "./reports.admin.js";
 import { initProducts, renderProducts } from "./products.admin.js";
 import { initMontar, renderMontar } from "./montar.admin.js";
 import { initSpecials, renderLancheDia, renderMboxAdmin } from "./specials.admin.js";
-import { initOrders, renderOrders, startOrdersWatch } from "./orders.admin.js";
+import { initOrders, renderOrders, startOrdersWatch, setAdminProfile } from "./orders.admin.js";
 import { initCustomers, renderCustomers } from "./customers.admin.js";
 import { initMissions, renderMissions } from "./missions.admin.js";
 import { initRewards, renderRewards } from "./rewards.admin.js";
@@ -84,6 +84,7 @@ function enterAdmin(profile) {
   $("#adminGate").classList.add("hidden");
   $("#adminShell").style.display = "flex";
   $("#adminWho").textContent = profile.codename || profile.email;
+  setAdminProfile(profile); // a plataforma (admin) participa dos chats cp/mp
   startOrdersWatch();   // realtime para dashboard + pedidos
   navigate("dashboard");
 }

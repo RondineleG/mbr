@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MrBur — Versão Web</title>
 <script>
+  // A Versão Web é só para telas grandes (desktop). Em celular / tela estreita
+  // a sidebar colapsa e fica ruim — então mandamos para o app mobile (PWA).
+  // Bypass p/ testar a web num aparelho pequeno: web.html?forceweb=1
+  (function () {
+    try {
+      if (location.search.indexOf("forceweb") === -1 &&
+          window.matchMedia("(max-width: 760px)").matches) {
+        location.replace("/");
+      }
+    } catch (e) { /* sem matchMedia: segue normal */ }
+  })();
   try { document.documentElement.setAttribute("data-theme", localStorage.getItem("admin-theme") === "light" ? "light" : "dark"); } catch (e) {}
 </script>
 <link rel="icon" type="image/png" href="/favicon-flame.png?v=133">

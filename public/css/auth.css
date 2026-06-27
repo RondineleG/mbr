@@ -45,8 +45,13 @@
   background-image: radial-gradient(circle at 1px 1px, var(--gold-glow) 1px, transparent 0);
   background-size: 40px 40px;
 }
-.login-card { position: relative; z-index: 1; width: 100%; max-width: 360px; text-align: center; }
-.login-logo { width: 56px; height: 56px; object-fit: contain; margin-bottom: 6px; filter: drop-shadow(0 0 16px rgba(201,168,76,0.3)); }
+.login-card {
+  position: relative; z-index: 1; width: 100%; max-width: 380px; text-align: center;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 22px; padding: 36px 26px 30px;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.login-logo { width: 64px; height: 64px; object-fit: contain; margin-bottom: 8px; filter: drop-shadow(0 0 16px rgba(201,168,76,0.3)); }
 .login-brand { font-family: var(--f-display); font-size: 26px; font-weight: 900; letter-spacing: 6px; color: var(--gold); margin-bottom: 2px; }
 .login-subtitle { font-size: 9px; letter-spacing: 4px; color: var(--text-dim); margin-bottom: 28px; font-family: var(--f-mono); }
 .login-tabs { display: flex; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); margin-bottom: 20px; }

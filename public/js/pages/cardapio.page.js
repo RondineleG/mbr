@@ -49,6 +49,7 @@ function renderStepTabs() {
     return `<div class="${cls}" data-action="build-step" data-step="${i}"></div>`;
   }).join(""));
   show($("#stepBackBtn"), currentStep > 0);
+  const back = $("#stepBackBtn"); if (back) back.textContent = "← Voltar";
   // Na revisão, as ações ficam dentro do resumo (montar outro / ir pra sacola);
   // o botão do rodapé some para não duplicar.
   const isReview = currentStep === V.length - 1;
@@ -57,11 +58,24 @@ function renderStepTabs() {
   $(".step-tab.active")?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
 }
 
+// Total parcial do lanche em montagem (base + extras já escolhidos), ao vivo.
+function partialTotal() {
+  let t = basePrice;
+  visible().forEach((s) => { if (s.id !== "finalizar") (selections[s.id] || []).forEach((it) => { t += it.price || 0; }); });
+  return t;
+}
+
 function renderStepContent() {
-  const step = visible()[currentStep];
+  const V = visible();
+  const step = V[currentStep];
   if (!step || step.id === "finalizar") return renderReview();
+  const buildCount = V.filter((s) => s.id !== "finalizar").length; // etapas de montagem (sem a revisão)
   const sel = selections[step.id] || [];
   setHtml("stepContent", `
+    <div class="build-meta">
+      <span class="build-meta-step">Etapa ${currentStep + 1} de ${buildCount}</span>
+      <span class="build-meta-total">Parcial <b>${money(partialTotal())}</b></span>
+    </div>
     <div class="menu-section-header">
       <div class="menu-section-title">Escolha — ${escapeHtml(step.label)}</div>
       <span class="menu-section-max">Máx: ${step.max}</span>

@@ -10,7 +10,7 @@ import { lookupCep, geocode } from "../services/geocode.service.js";
 import { listInvites } from "../services/invite.service.js";
 import { renderTopbar } from "../components/topbar.js";
 import { applyTheme, logout } from "../app/session.js";
-import { modalPrompt } from "../components/modal.js";
+import { modalPrompt, modalCustom } from "../components/modal.js";
 import { toast, toastSuccess } from "../components/toast.js";
 import { toggleNotify, notifyEnabled, notifySupported } from "../services/notify.service.js";
 
@@ -152,6 +152,47 @@ async function saveAddressWithCoords(p, address) {
   toastSuccess(coords ? "Endereço atualizado e localizado no mapa 📍" : "Endereço atualizado (sem coordenadas)");
 }
 
+// Edição de endereço em UM formulário só (em vez de um modal por campo).
+// CEP autopreenche rua/bairro ao sair do campo; salva e geocodifica de uma vez.
+async function editAddress() {
+  const p = store.get("profile");
+  if (!p) return;
+  const a = p.address || {};
+  const at = (v) => String(v || "").replace(/"/g, "&quot;");
+  const dlg = modalCustom(`
+    <div class="modal-title">Endereço de entrega</div>
+    <div class="modal-label">CEP</div>
+    <input class="modal-input" id="adCep" inputmode="numeric" placeholder="00000-000" value="${at(a.cep)}">
+    <div class="modal-label">RUA / AVENIDA</div>
+    <input class="modal-input" id="adStreet" placeholder="Rua, avenida…" value="${at(a.street)}">
+    <div style="display:flex;gap:10px">
+      <div style="flex:1"><div class="modal-label">NÚMERO</div><input class="modal-input" id="adNum" inputmode="numeric" value="${at(a.number)}"></div>
+      <div style="flex:2"><div class="modal-label">BAIRRO</div><input class="modal-input" id="adHood" value="${at(a.neighborhood)}"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn ghost" id="adCancel">Cancelar</button>
+      <button class="modal-btn primary" id="adSave">Salvar endereço</button>
+    </div>`);
+  const el = dlg.el;
+  el.querySelector("#adCep").onblur = async (e) => {
+    const info = await lookupCep(e.target.value).catch(() => null);
+    if (info?.street) el.querySelector("#adStreet").value = info.street;
+    if (info?.neighborhood) el.querySelector("#adHood").value = info.neighborhood;
+  };
+  el.querySelector("#adCancel").onclick = () => dlg.close();
+  el.querySelector("#adSave").onclick = async () => {
+    const merged = {
+      ...a,
+      cep: el.querySelector("#adCep").value.trim(),
+      street: el.querySelector("#adStreet").value.trim(),
+      number: el.querySelector("#adNum").value.trim(),
+      neighborhood: el.querySelector("#adHood").value.trim(),
+    };
+    dlg.close();
+    await saveAddressWithCoords(p, merged);
+  };
+}
+
 async function edit(field) {
   const cfg = EDITABLE[field];
   const p = store.get("profile");
@@ -186,6 +227,7 @@ function toggleTheme() {
 
 export function initPerfil() {
   onAction("edit-field", (el) => edit(el.dataset.field));
+  onAction("edit-address", () => editAddress());
   onAction("toggle-theme", () => toggleTheme());
   onAction("notify-toggle", () => toggleNotifyRow());
   onAction("logout", () => logout());
