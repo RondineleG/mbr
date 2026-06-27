@@ -8,6 +8,7 @@
    ═══════════════════════════════════════════════════════════════ */
 import { runTransaction, inc, tsNow, getDoc, getCollection, addDoc, updateDoc, setDoc } from "../firebase/db.service.js";
 import { adjustPoints } from "./points.service.js";
+import { toMillis } from "../utils/format.js";
 
 export const CRIACAO_MERITOS = 50;     // bônus do criador da combinação nova
 export const CAMPEAO_MERITOS = 100;    // bônus do campeão semanal (mais forkado)
@@ -131,8 +132,7 @@ export const addLancheComment = (lancheId, uid, nome, texto) =>
   addDoc("lancheComentarios", { lancheId, uid, nome: nome || "agente", texto: String(texto).slice(0, 500), criadoEm: tsNow() });
 export async function listLancheComments(lancheId) {
   const c = await getCollection("lancheComentarios", { where: [["lancheId", "==", lancheId]] });
-  const ms = (v) => v?.toMillis?.() ?? (typeof v === "number" ? v : 0);
-  return c.sort((a, b) => ms(a.criadoEm) - ms(b.criadoEm));
+  return c.sort((a, b) => toMillis(a.criadoEm) - toMillis(b.criadoEm));
 }
 
 /**
