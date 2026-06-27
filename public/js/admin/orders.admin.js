@@ -6,7 +6,7 @@ import { onAction, onChange, setHtml, escapeHtml } from "../utils/dom.js";
 import { getOrders, subscribeOrders, startOrdersWatch } from "./admin-store.js";
 import { updateStatus, assignAgent, ORDER_STATUS, ORDER_STATUS_LABELS } from "../services/order.service.js";
 import { listAgents } from "../services/user.service.js";
-import { money, dateShort, toDate } from "../utils/format.js";
+import { money, dateShort, toDate, toMillis } from "../utils/format.js";
 import { modalCustom, modalConfirm } from "../components/modal.js";
 import { toastSuccess, toastError, toastInfo } from "../components/toast.js";
 import { CANCEL_WINDOW_MS } from "../utils/constants.js";
@@ -17,7 +17,6 @@ import { syncChatNotifiers, onUnreadChange, unreadForOrder } from "../components
 let me = null;
 export function setAdminProfile(p) { me = p; }
 
-const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
 // O admin só aceita/produz após o corte das 13h (até lá o cliente pode alterar/cancelar).
 function lockRemaining(o) {
   if (o.status !== "recebido") return 0;

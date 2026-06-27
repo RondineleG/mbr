@@ -19,6 +19,10 @@ export function dateShort(value) {
     " às " + d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
+/** Timestamp (Firestore Timestamp | {seconds} | number | Date) → ms (0 se nulo). */
+export const toMillis = (v) =>
+  v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (v instanceof Date ? v.getTime() : (typeof v === "number" ? v : 0)));
+
 /** Normaliza qualquer formato de data para Date. */
 export function toDate(value) {
   if (!value) return null;

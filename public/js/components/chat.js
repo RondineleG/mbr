@@ -9,13 +9,12 @@ import { modalCustom } from "./modal.js";
 import { escapeHtml } from "../utils/dom.js";
 import { sendMessage, watchMessages, threadKey, CHANNELS } from "../services/chat.service.js";
 import { markRead } from "./chat-notifier.js";
+import { toMillis } from "../utils/format.js";
 
 export const roleOf = (me) => me.role === "admin" ? "admin" : (me.motoboy ? "motoboy" : "cliente");
 const ROLE_LABEL = { cliente: "Cliente", motoboy: "Entregador", admin: "Atendimento MrBur" };
 const whoLabel = (r) => ROLE_LABEL[r] || r || "";
 
-const toMillis = (v) =>
-  v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
 const hhmm = (d) => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 function dayLabel(d) {
   const t = new Date(), y = new Date(); y.setDate(t.getDate() - 1);

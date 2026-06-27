@@ -5,6 +5,7 @@
    ═══════════════════════════════════════════════════════════════ */
 import { watchOrderMessages, threadKey, CHANNELS } from "../services/chat.service.js";
 import { toast } from "./toast.js";
+import { toMillis } from "../utils/format.js";
 
 const watchers = new Map();   // orderId -> { unsub, baseline, channels:Set, keys:Set }
 const unread = new Map();     // threadKey -> contagem de não-lidas
@@ -13,10 +14,7 @@ const chanOf = (m) => m?.channel || CHANNELS.CM;
 
 const ROLE_LABEL = { cliente: "Cliente", motoboy: "Entregador", admin: "Atendimento MrBur" };
 
-const tsOf = (m) => {
-  const v = m?.createdAt;
-  return v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
-};
+const tsOf = (m) => toMillis(m?.createdAt);
 const readKey = (tkey) => "chatRead:" + tkey;
 const getLastRead = (tkey) => { try { return +(localStorage.getItem(readKey(tkey)) || 0); } catch { return 0; } };
 

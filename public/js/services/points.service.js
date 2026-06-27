@@ -4,7 +4,7 @@
    - pointsHistory: { userId, delta, reason, orderId, type, createdAt }
    ═══════════════════════════════════════════════════════════════ */
 import { getDoc, updateDoc, addDoc, getCollection, inc, tsNow } from "../firebase/db.service.js";
-import { rankFromPoints } from "../utils/format.js";
+import { rankFromPoints, toMillis } from "../utils/format.js";
 
 /**
  * Credita/debita méritos do agente e registra no extrato.
@@ -33,10 +33,6 @@ export async function adjustPoints(uid, delta, reason, orderId = null) {
   });
   return next;
 }
-
-// Converte createdAt (Timestamp do Firestore | number | Date) em ms para ordenar.
-const toMillis = (v) =>
-  v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
 
 export async function getHistory(uid) {
   // Só `where` (sem orderBy) p/ não exigir índice composto; ordena no cliente.

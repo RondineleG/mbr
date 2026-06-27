@@ -6,6 +6,7 @@
    Coleção: orderMessages { orderId, channel, from, fromRole, text, createdAt }
    ═══════════════════════════════════════════════════════════════ */
 import { addDoc, watchCollection, tsNow } from "../firebase/db.service.js";
+import { toMillis } from "../utils/format.js";
 
 export const CHANNELS = { CM: "cm", CP: "cp", MP: "mp" };
 
@@ -17,8 +18,6 @@ const chanOf = (m) => m?.channel || CHANNELS.CM;
 export const threadKey = (orderId, channel = CHANNELS.CM) =>
   channel === CHANNELS.CM ? orderId : `${orderId}#${channel}`;
 
-const toMillis = (v) =>
-  v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
 
 /** Envia uma mensagem no canal do pedido. */
 export function sendMessage(orderId, { from, fromRole, text, channel = CHANNELS.CM }) {

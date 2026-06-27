@@ -5,7 +5,7 @@
 import { setHtml, escapeHtml, onAction } from "../utils/dom.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
 import * as store from "../app/state.js";
-import { money, dateShort } from "../utils/format.js";
+import { money, dateShort, toMillis } from "../utils/format.js";
 import { ORDER_STATUS_LABELS, cancelOrder, canCancelOrder } from "../services/order.service.js";
 import { getOrderStats } from "../services/order.service.js";
 import { emptyState, withEmpty } from "../utils/loading.js";
@@ -67,7 +67,6 @@ async function mountTrackingMaps(orders) {
 }
 
 // criadoEm pode ser número (Date.now) ou Timestamp do Firestore.
-const toMillis = (v) => v?.toMillis?.() ?? (v?.seconds != null ? v.seconds * 1000 : (typeof v === "number" ? v : 0));
 
 // Rótulo do dia (hoje/amanhã/data) de um timestamp.
 function diaLabel(ts) {
