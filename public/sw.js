@@ -3,7 +3,7 @@
    Cache de recursos estáticos para funcionar offline
    Estratégia: Cache First para estáticos, Network First para dinâmicos
    ═══════════════════════════════════════════════════════════════ */
-const CACHE_VERSION = '1.4.36';
+const CACHE_VERSION = '1.4.37';
 const CACHE_NAME = `mrbur-${CACHE_VERSION}`;
 
 // Cache de recursos estáticos (app shell)
@@ -14,14 +14,14 @@ const STATIC_CACHE = [
   'firebase-config.js',
   'manifest.json',
   'favicon.svg',
-  'icon-72.png',
-  'icon-96.png',
-  'icon-128.png',
-  'icon-144.png',
-  'icon-152.png',
-  'icon-192.png',
-  'icon-384.png',
-  'icon-512.png'
+  'icon-light-72.png',
+  'icon-light-96.png',
+  'icon-light-128.png',
+  'icon-light-144.png',
+  'icon-light-152.png',
+  'icon-light-192.png',
+  'icon-light-384.png',
+  'icon-light-512.png'
 ];
 
 // Cache de recursos CSS/JS
