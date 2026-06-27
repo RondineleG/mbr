@@ -4,7 +4,7 @@
    { id, token, createdBy, roleCreator, emailDestino, status, dataCriacao, 
      dataExpiracao, dataUso, usadoPor, limiteUso, totalUsos }
    ═══════════════════════════════════════════════════════════════ */
-import { getDoc, addDoc, updateDoc, getCollection, runTransaction, tsNow } from "../firebase/db.service.js";
+import { getDoc, setDoc, updateDoc, getCollection, runTransaction, tsNow } from "../firebase/db.service.js";
 
 const norm = (code) => (code || "").toUpperCase().trim();
 
@@ -18,7 +18,7 @@ export async function checkInvite(code) {
   // Se não encontrar, busca por campo 'code' (formato antigo compatível)
   if (!invite) {
     const invites = await getCollection("invites", { 
-      where: [["code", "==", normalizedCode]] 
+      where: [["token", "==", normalizedCode]]
     });
     invite = invites.length > 0 ? invites[0] : null;
   }
@@ -42,9 +42,9 @@ export async function checkInvite(code) {
     const expiryTime = expiresAt.toDate ? expiresAt.toDate().getTime() : 
                       (expiresAt._seconds ? expiresAt._seconds * 1000 : expiresAt);
     if (now > expiryTime) {
-      // Atualizar status para expirado
-      const docId = invite.id || normalizedCode;
-      await updateDoc(`invites/${docId}`, { status: "expirado" });
+      // Pré-validação é SOMENTE LEITURA: não grava aqui (o cadastro roda sem
+      // login e `updateDoc` exige auth → daria permission-denied e mascararia
+      // o motivo real). O status "expirado" é consolidado no consumeInvite/admin.
       return { ok: false, reason: "EXPIRED" };
     }
   }
@@ -67,7 +67,7 @@ export async function consumeInvite(code, uid) {
     // Se não encontrar, busca por campo 'code' (formato antigo compatível)
     if (!invite) {
       const invites = await getCollection("invites", { 
-        where: [["code", "==", normalizedCode]] 
+        where: [["token", "==", normalizedCode]]
       });
       if (invites.length > 0) {
         invite = invites[0];
@@ -161,7 +161,9 @@ export async function createInvite(data) {
     totalUsos: 0
   };
 
-  await addDoc("invites", invite);
+  // doc id = CÓDIGO (não addDoc com id aleatório) — assim checkInvite/consumeInvite
+  // acham por getDoc(invites/CÓDIGO), que é leitura pública (sem precisar de list/login).
+  await setDoc(`invites/${code}`, invite);
   return code;
 }
 
