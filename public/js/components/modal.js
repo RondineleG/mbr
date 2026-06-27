@@ -5,25 +5,93 @@
 import { escapeHtml } from "../utils/dom.js";
 
 let overlay;
+let resolver = null;
+let lastFocus = null;
+let cancelValue = null;
+
+const focusableSelector = [
+  "button:not([disabled])",
+  "[href]",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(",");
 
 function ensure() {
   if (overlay) return;
   overlay = document.createElement("div");
   overlay.className = "modal-overlay";
-  overlay.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true"></div>`;
+  overlay.innerHTML = `<div class="modal-card" role="dialog" aria-modal="true" tabindex="-1"></div>`;
   document.body.appendChild(overlay);
-  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(null); });
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(cancelValue); });
 }
 
-let resolver = null;
-function open(html) {
+function visibleFocusable() {
+  const card = overlay?.querySelector(".modal-card");
+  if (!card) return [];
+  return Array.from(card.querySelectorAll(focusableSelector))
+    .filter((el) => el.offsetParent !== null || el === document.activeElement);
+}
+
+function onKeydown(e) {
+  if (!overlay?.classList.contains("show")) return;
+  const card = overlay.querySelector(".modal-card");
+  if (!card) return;
+  if (e.key === "Escape") {
+    e.preventDefault();
+    close(cancelValue);
+    return;
+  }
+  if (e.key !== "Tab") return;
+  const nodes = visibleFocusable();
+  if (!nodes.length) {
+    e.preventDefault();
+    card.focus();
+    return;
+  }
+  const first = nodes[0];
+  const last = nodes[nodes.length - 1];
+  if (e.shiftKey && (document.activeElement === first || !card.contains(document.activeElement))) {
+    e.preventDefault();
+    last.focus();
+  } else if (!e.shiftKey && document.activeElement === last) {
+    e.preventDefault();
+    first.focus();
+  }
+}
+
+function open(html, fallback = null) {
   ensure();
-  overlay.querySelector(".modal-card").innerHTML = html;
-  requestAnimationFrame(() => overlay.classList.add("show"));
+  cancelValue = fallback;
+  lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const card = overlay.querySelector(".modal-card");
+  card.innerHTML = html;
+  card.setAttribute("role", "dialog");
+  card.setAttribute("aria-modal", "true");
+  card.setAttribute("tabindex", "-1");
+  const title = card.querySelector(".modal-title");
+  if (title) {
+    title.id ||= "__modalTitle";
+    card.setAttribute("aria-labelledby", title.id);
+  } else {
+    card.removeAttribute("aria-labelledby");
+  }
+  document.addEventListener("keydown", onKeydown);
+  requestAnimationFrame(() => {
+    overlay.classList.add("show");
+    if (!card.contains(document.activeElement)) (visibleFocusable()[0] || card).focus({ preventScroll: true });
+  });
 }
 function close(value) {
   if (overlay) overlay.classList.remove("show");
+  document.removeEventListener("keydown", onKeydown);
+  const focusBack = lastFocus;
+  lastFocus = null;
   if (resolver) { resolver(value); resolver = null; }
+  requestAnimationFrame(() => {
+    if (focusBack?.isConnected) focusBack.focus({ preventScroll: true });
+  });
 }
 
 /** Campo de texto premium. Resolve com a string (ou null se cancelado). */
@@ -37,7 +105,7 @@ export function modalPrompt({ title, label, value = "", placeholder = "", type =
       <div class="modal-actions">
         <button class="modal-btn ghost" data-modal="cancel">Cancelar</button>
         <button class="modal-btn primary" data-modal="ok">Salvar</button>
-      </div>`);
+      </div>`, null);
     const input = overlay.querySelector("#__modalInput");
     input.focus();
     input.select();
@@ -57,7 +125,7 @@ export function modalConfirm({ title, message, confirmText = "Confirmar", danger
       <div class="modal-actions">
         <button class="modal-btn ghost" data-modal="cancel">Cancelar</button>
         <button class="modal-btn ${danger ? "danger" : "primary"}" data-modal="ok">${escapeHtml(confirmText)}</button>
-      </div>`);
+      </div>`, false);
     overlay.querySelector('[data-modal="ok"]').onclick = () => close(true);
     overlay.querySelector('[data-modal="cancel"]').onclick = () => close(false);
   });
@@ -66,7 +134,7 @@ export function modalConfirm({ title, message, confirmText = "Confirmar", danger
 /** Conteúdo HTML arbitrário (ex.: form de produto no admin). Retorna API. */
 export function modalCustom(html) {
   ensure();
-  open(html);
+  open(html, null);
   return {
     el: overlay.querySelector(".modal-card"),
     close: () => close(null),
