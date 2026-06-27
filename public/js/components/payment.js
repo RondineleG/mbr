@@ -16,6 +16,10 @@ export async function openPayment(total, opts = {}) {
   const custoMeritos = Math.round(total / meritoValue);
   const podeMeritos = opts.allowMeritos !== false; // permitir pagar com méritos
   return new Promise((resolve) => {
+    // Resolve uma única vez: o 1º a chamar vence. Evita que o onClose (ESC/clique-fora)
+    // dispare resolve(null) DEPOIS do "Pagar" e cancele o pedido por engano.
+    let done = false;
+    const finish = (val) => { if (done) return; done = true; resolve(val); };
     const dlg = modalCustom(`
       <div class="modal-title">Pagamento · ${money(total)}</div>
       <div class="pay-tabs">
@@ -58,7 +62,7 @@ export async function openPayment(total, opts = {}) {
       <div class="modal-actions">
         <button class="modal-btn ghost" id="payCancel">Cancelar</button>
         <button class="modal-btn primary" id="payConfirm">Pagar ${money(total)}</button>
-      </div>`, { onClose: () => resolve(null) }); // ESC/clique-fora cancela sem travar o checkout
+      </div>`, { onClose: () => finish(null) }); // ESC/clique-fora cancela sem travar o checkout
 
     const el = dlg.el;
     let metodo = "cartao";
@@ -109,7 +113,7 @@ export async function openPayment(total, opts = {}) {
     el.querySelector("#pcName").oninput = clearErr;
     el.querySelector("#ppCopy").onclick = () => { navigator.clipboard?.writeText(PIX_CODE).catch(() => {}); err(""); errBox.style.color = "var(--ok)"; errBox.textContent = "Código Pix copiado ✓"; setTimeout(() => { errBox.style.color = "var(--er)"; clearErr(); }, 1800); };
 
-    el.querySelector("#payCancel").onclick = () => { dlg.close(); resolve(null); };
+    el.querySelector("#payCancel").onclick = () => { finish(null); dlg.close(); };
     el.querySelector("#payConfirm").onclick = () => {
       if (metodo === "cartao") {
         const digits = num.value.replace(/\D/g, "");
@@ -120,11 +124,12 @@ export async function openPayment(total, opts = {}) {
       }
       if (metodo === "meritos") {
         if (saldo < custoMeritos) return err("Saldo insuficiente");
+        finish({ metodo, status: "pago", meritos: custoMeritos }); // resolve ANTES de fechar
         dlg.close();
-        return resolve({ metodo, status: "pago", meritos: custoMeritos });
+        return;
       }
+      finish({ metodo, status: "pago" }); // resolve ANTES de fechar
       dlg.close();
-      resolve({ metodo, status: "pago" });
     };
   });
 }
