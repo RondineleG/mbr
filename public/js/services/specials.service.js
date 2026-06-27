@@ -8,6 +8,7 @@
    ═══════════════════════════════════════════════════════════════ */
 import { getDoc, setDoc, watchDoc, getCollection } from "../firebase/db.service.js";
 import { WEEKDAYS, LANCHE_DIA_PRICE, MBOX_PRICE, MBOX_CUTOFF_DAY, MBOX_CUTOFF_HOUR, MBOX_STOCK } from "../utils/constants.js";
+import { mboxCutoffHour } from "./schedule.service.js";
 
 const DIA_PATH = "config/lancheDia";
 const MBOX_PATH = "config/mbox";
@@ -73,11 +74,11 @@ export function mboxSchedule(now = Date.now()) {
   const sat = new Date(d); sat.setHours(0, 0, 0, 0);
   sat.setDate(sat.getDate() + ((6 - sat.getDay() + 7) % 7));
   // Corte = sexta 22h imediatamente antes desse sábado.
-  let cutoff = new Date(sat); cutoff.setDate(cutoff.getDate() - 1); cutoff.setHours(MBOX_CUTOFF_HOUR, 0, 0, 0);
+  let cutoff = new Date(sat); cutoff.setDate(cutoff.getDate() - 1); cutoff.setHours(mboxCutoffHour(), 0, 0, 0);
   // Já passou do corte (ou estamos no próprio sábado/depois) → sábado da semana seguinte.
   if (now >= cutoff.getTime()) {
     sat.setDate(sat.getDate() + 7);
-    cutoff = new Date(sat); cutoff.setDate(cutoff.getDate() - 1); cutoff.setHours(MBOX_CUTOFF_HOUR, 0, 0, 0);
+    cutoff = new Date(sat); cutoff.setDate(cutoff.getDate() - 1); cutoff.setHours(mboxCutoffHour(), 0, 0, 0);
   }
   return { agendado: true, dataEntrega: sat.getTime(), cancelavelAte: cutoff.getTime() };
 }

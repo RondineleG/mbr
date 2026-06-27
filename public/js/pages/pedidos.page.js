@@ -11,7 +11,7 @@ import { getOrderStats } from "../services/order.service.js";
 import { emptyState, withEmpty } from "../utils/loading.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
-import { DELIVERY_WINDOW, ORDER_CUTOFF_HOUR, MBOX_CUTOFF_HOUR } from "../utils/constants.js";
+import { deliveryWindow } from "../services/schedule.service.js";
 import { loadLeaflet } from "../utils/leaflet-loader.js";
 import { haversineKm } from "../utils/geo.js";
 
@@ -153,9 +153,10 @@ function orderCard(o) {
     ? `<div class="order-mbox-reveal">📦 <b>Conteúdo da ${escapeHtml(mboxItem.name)}:</b> ${mboxItem.composicao.map((c) => `${c.icon || ""} ${escapeHtml(c.name)}`).join(" · ")}</div>`
     : `<div class="order-mbox-reveal locked">🔒 <b>${escapeHtml(mboxItem.name)} — surpresa!</b> O conteúdo é revelado após sexta 22h (quando o pedido entra em produção).</div>`);
 
-  // Cancelamento/alteração: até as 13h do dia de produção (ou sexta 22h p/ MBox).
+  // Cancelamento/alteração: até a hora de corte do dia de produção (vem do próprio
+  // pedido — cancelavelAte —, então reflete o horário configurado quando foi criado).
   const podeCancelar = canCancelOrder(o);
-  const limiteHora = o.tipo === "mbox" ? MBOX_CUTOFF_HOUR : ORDER_CUTOFF_HOUR;
+  const limiteHora = o.cancelavelAte ? new Date(o.cancelavelAte).getHours() : "";
   const cancelBlock = podeCancelar ? `
     <div class="order-cancel">
       <button class="order-cancel-btn" data-action="cancel-order" data-order-id="${o.id}">✕ Cancelar</button>
@@ -165,7 +166,7 @@ function orderCard(o) {
     <div class="order-cancel"><span class="order-cancel-locked">🔒 Prazo encerrado · pedido em produção (tudo fresco do dia)</span></div>` : "");
 
   // Entrega: dia (hoje/amanhã) + janela.
-  const entregaInfo = o.dataEntrega ? `<div class="order-date">🛵 Entrega ${diaLabel(o.dataEntrega)} · ${DELIVERY_WINDOW}${o.agendado ? " · agendado" : ""}</div>` : "";
+  const entregaInfo = o.dataEntrega ? `<div class="order-date">🛵 Entrega ${diaLabel(o.dataEntrega)} · ${deliveryWindow()}${o.agendado ? " · agendado" : ""}</div>` : "";
 
   return `<div class="order-card">
     <div class="order-card-head">

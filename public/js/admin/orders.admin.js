@@ -58,7 +58,7 @@ function row(o) {
   // Durante a janela de 120s o admin não pode aceitar: mostra cadeado + contagem.
   const lock = lockRemaining(o);
   const action = lock > 0
-    ? `<span class="status-lock" id="adminlock-${o.id}">🔒 produzir a partir das 13h de ${diaLabel(o.cancelavelAte)}</span>`
+    ? `<span class="status-lock" id="adminlock-${o.id}">🔒 produzir a partir das ${new Date(o.cancelavelAte).getHours()}h de ${diaLabel(o.cancelavelAte)}</span>`
     : `<select class="status-select" data-action="order-status" data-id="${o.id}" style="border-color:${color}66;color:${color}">${opts}</select>`;
   return `<div class="data-row">
     <div class="data-thumb" style="background:${color}1f;border-color:${color}55;color:${color};font-size:20px">${icon}</div>
@@ -225,7 +225,7 @@ export function initOrders() {
     // Defesa: não produzir antes do corte das 13h (cliente ainda pode alterar/cancelar).
     const o = getOrders().find((x) => x.id === el.dataset.id);
     if (o && lockRemaining(o) > 0) {
-      toastInfo(`Pedido liberado para produção às 13h de ${diaLabel(o.cancelavelAte)}`);
+      toastInfo(`Pedido liberado para produção às ${new Date(o.cancelavelAte).getHours()}h de ${diaLabel(o.cancelavelAte)}`);
       renderOrders();
       return;
     }

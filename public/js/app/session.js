@@ -14,6 +14,8 @@ import { watchUserOrders, reconcileOrderPoints } from "../services/order.service
 import { notifyStatusChange } from "../services/notify.service.js";
 import { listProducts } from "../services/product.service.js";
 import { listRewards } from "../services/reward.service.js";
+import { loadSchedule } from "../services/schedule.service.js";
+import { renderHome } from "../pages/home.page.js";
 import { renderTopbar, renderChatBadge } from "../components/topbar.js";
 import * as missionService from "../services/mission.service.js";
 import { modalConfirm, modalCustom } from "../components/modal.js";
@@ -296,6 +298,8 @@ export async function enterApp(profile) {
   // Catálogo + recompensas (uma vez).
   listProducts({ activeOnly: true }).then((p) => store.set("products", p)).catch(() => {});
   listRewards({ activeOnly: true }).then((r) => store.set("rewards", r)).catch(() => {});
+  // Grade de horários (config/horarios) → corte/entrega; re-render da home ao chegar.
+  loadSchedule().then(() => { if (store.get("page") === "home") renderHome(); }).catch(() => {});
 
   // Feature flags: carrega e observa em tempo real; reaplica os gates ao mudar.
   loadFeatures().then((f) => { store.set("features", f); applyFeatureGates(); }).catch(() => {});

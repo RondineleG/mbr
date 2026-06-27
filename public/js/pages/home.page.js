@@ -1,12 +1,18 @@
 /* ═══════════════════════════════════════════════════════════════
    HOME PAGE — status, progresso de rank, atalhos e recompensas
    ═══════════════════════════════════════════════════════════════ */
-import { setHtml, show } from "../utils/dom.js";
+import { setHtml, setText, show } from "../utils/dom.js";
 import * as store from "../app/state.js";
 import { rankFromPoints, money } from "../utils/format.js";
 import { skeletonCards } from "../components/skeleton.js";
 import { renderRewardCards } from "./clube.page.js";
 import { isEnabled } from "../services/features.service.js";
+import { orderCutoffHour, deliveryWindow } from "../services/schedule.service.js";
+
+// "Pedidos aceitos até Xh · Entrega …" — reflete a grade configurável.
+function renderStatusSub() {
+  setText("homeStatusSub", `Pedidos aceitos até ${orderCutoffHour()}h · Entrega ${deliveryWindow()}`);
+}
 
 function updateRewardsDots() {
   const scroll = document.getElementById("homeRewardsScroll");
@@ -56,6 +62,7 @@ function renderRewards() {
 export function renderHome() {
   renderRankProgress();
   renderRewards();
+  renderStatusSub();
 }
 
 export function initHome() {

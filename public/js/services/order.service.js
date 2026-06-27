@@ -6,7 +6,8 @@
 import { addDoc, updateDoc, getDoc, getCollection, watchCollection, tsNow } from "../firebase/db.service.js";
 import { adjustPoints } from "./points.service.js";
 import { updateMissionProgress, calculateUserStats } from "./mission.service.js";
-import { DELIVERY_FEE, POINTS_PER_BRL, ORDER_CUTOFF_HOUR } from "../utils/constants.js";
+import { DELIVERY_FEE, POINTS_PER_BRL } from "../utils/constants.js";
+import { orderCutoffHour, loadSchedule } from "./schedule.service.js";
 import { deliveryFeeFor } from "../utils/geo.js";
 import { geocode } from "./geocode.service.js";
 import { mboxSchedule, mboxReservedUnits, mboxUnitsOf, MBOX_STOCK } from "./specials.service.js";
@@ -28,13 +29,14 @@ const meritEligible = (items) => items.reduce((a, it) => a + (it.noMeritos ? 0 :
  * até as 13h do dia de produção (depois disso já está sendo feito, fresco).
  */
 export function productionInfo(now = Date.now()) {
+  const cutoff = orderCutoffHour(); // hora de corte configurável (config/horarios)
   const d = new Date(now);
-  const cutoffToday = new Date(d); cutoffToday.setHours(ORDER_CUTOFF_HOUR, 0, 0, 0);
+  const cutoffToday = new Date(d); cutoffToday.setHours(cutoff, 0, 0, 0);
   const agendado = d.getTime() >= cutoffToday.getTime(); // após o corte → próximo dia
   const prod = new Date(d);
   if (agendado) prod.setDate(prod.getDate() + 1);
   prod.setHours(0, 0, 0, 0);
-  const cancelavelAte = new Date(prod); cancelavelAte.setHours(ORDER_CUTOFF_HOUR, 0, 0, 0);
+  const cancelavelAte = new Date(prod); cancelavelAte.setHours(cutoff, 0, 0, 0);
   return { agendado, dataEntrega: prod.getTime(), cancelavelAte: cancelavelAte.getTime() };
 }
 
@@ -93,7 +95,8 @@ export async function createOrder({ uid, codename, items, address, agenteRespons
   const fee = deliveryFeeFor(addr);             // R$5 + R$0,50/km da sede ao cliente
   const total = subtotal + fee;
   const numeroPedido = generateOrderNumber();
-  // MBox tem agendamento próprio (sábado, corte sexta 22h); demais seguem o corte das 13h.
+  // MBox tem agendamento próprio (sábado); demais seguem o corte configurável.
+  await loadSchedule(); // garante a hora de corte mais recente (config/horarios)
   const hasMbox = items.some((it) => it.mbox);
   const { agendado, dataEntrega, cancelavelAte } = hasMbox ? mboxSchedule() : productionInfo();
 
