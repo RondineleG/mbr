@@ -26,3 +26,7 @@ Thumbs.db
 test-results/
 playwright-report/
 .playwright/
+
+# Vídeos gerados pelo harness de captura (regeráveis; não versionar)
+*.webm
+*.mp4
