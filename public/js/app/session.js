@@ -216,10 +216,12 @@ function stopWatchers() {
   stopChatNotifiers();
 }
 
-/** Aplica o tema salvo ao <body>. */
+/** Aplica o tema salvo ao <html>/<body> e atualiza a "chrome" (status bar + favicon). */
 export function applyTheme() {
-  const theme = store.get("theme");
-  document.body.setAttribute("data-theme", theme === "light" ? "light" : "dark");
+  const theme = store.get("theme") === "light" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", theme);
+  document.body.setAttribute("data-theme", theme);
+  try { window.__applyChrome && window.__applyChrome(theme); } catch { /* sem chrome helper */ }
 }
 
 export function showLogin() {

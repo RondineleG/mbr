@@ -15,6 +15,13 @@
       if (localStorage.getItem("mrbur:bootDay") === today)
         document.documentElement.classList.add("boot-skip"); // já carregou hoje → sem boot
     } catch (e) {}
+    // Cor da barra do app (status bar/splash) + favicon da aba seguem o tema.
+    window.__applyChrome = function (theme) {
+      theme = theme || document.documentElement.getAttribute("data-theme") || "light";
+      var dark = theme !== "light";
+      var m = document.getElementById("themeColor"); if (m) m.setAttribute("content", dark ? "#060503" : "#EFE7D3");
+      var f = document.getElementById("favicon"); if (f) f.setAttribute("href", (dark ? "/favicon-dark.png" : "/favicon-light.png") + "?v=134");
+    };
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,14 +33,15 @@
 <link rel="stylesheet" href="css/auth.css">
 <link rel="stylesheet" href="css/app.css">
 <!-- PWA -->
-<link rel="icon" type="image/png" href="/favicon-flame.png?v=133">
+<link rel="icon" type="image/png" id="favicon" href="/favicon-flame.png?v=133">
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#060503">
+<meta name="theme-color" id="themeColor" content="#060503">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="MrBur">
 <link rel="apple-touch-icon" href="/icon-192.png?v=133">
+<script>window.__applyChrome && window.__applyChrome();</script>
 <script>
   /* Captura o prompt de instalação ANTES dos módulos carregarem (o evento
      dispara cedo e só uma vez; senão é perdido e a instalação direta falha). */
