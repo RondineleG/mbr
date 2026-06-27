@@ -7,11 +7,21 @@ import { rankFromPoints, money } from "../utils/format.js";
 import { skeletonCards } from "../components/skeleton.js";
 import { renderRewardCards } from "./clube.page.js";
 import { isEnabled } from "../services/features.service.js";
-import { orderCutoffHour, deliveryWindow } from "../services/schedule.service.js";
+import { orderCutoffHour, deliveryWindow, isStoreOpen, storeOpenHour, storeCloseHour } from "../services/schedule.service.js";
 
-// "Pedidos aceitos até Xh · Entrega …" — reflete a grade configurável.
+// Status da loja (aberto/fechado pela grade) + linha "aceitos até Xh · Entrega …".
 function renderStatusSub() {
-  setText("homeStatusSub", `Pedidos aceitos até ${orderCutoffHour()}h · Entrega ${deliveryWindow()}`);
+  const open = isStoreOpen();
+  const box = document.getElementById("homeStatus");
+  const txt = document.getElementById("homeStatusText");
+  const dot = document.getElementById("homeStatusDot");
+  if (box) { box.classList.toggle("open", open); box.classList.toggle("closed", !open); }
+  if (txt) { txt.classList.toggle("open", open); txt.classList.toggle("closed", !open); txt.textContent = open ? "TRANSMISSÕES ABERTAS" : "TRANSMISSÕES FECHADAS"; }
+  if (dot) dot.textContent = open ? "🟢" : "🔴";
+  const sub = open
+    ? `Pedidos aceitos até ${orderCutoffHour()}h · Entrega ${deliveryWindow()}`
+    : `Fechado agora · abre às ${storeOpenHour()}h (fecha ${storeCloseHour()}h)`;
+  setText("homeStatusSub", sub);
 }
 
 function updateRewardsDots() {

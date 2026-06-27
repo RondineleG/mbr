@@ -12,6 +12,7 @@ let menuTabs = {};     // { monte:bool, dia:bool, ... } abas do cardápio
 let sched = {};        // grade de horários (config/horarios)
 
 const attr = (v) => String(v == null ? "" : v).replace(/"/g, "&quot;");
+const DAYS = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
 
 // Grade de horários parametrizável (corte de pedidos, janela de entrega, MBox).
 function scheduleCard() {
@@ -25,6 +26,14 @@ function scheduleCard() {
         <input type="text" id="schedWindow" class="admin-input" style="width:150px" value="${attr(s.deliveryWindow)}"></label>
       <label class="feat-row"><span class="feat-label">Corte da MBox (hora)</span>
         <input type="number" min="0" max="23" id="schedMbox" class="admin-input" style="width:88px" value="${attr(s.mboxCutoffHour)}"></label>
+      <label class="feat-row"><span class="feat-label">Dia de entrega da MBox</span>
+        <select id="schedMboxDay" class="admin-input" style="width:150px">
+          ${DAYS.map((d, i) => `<option value="${i}" ${Number(s.mboxDeliveryDay) === i ? "selected" : ""}>${d}</option>`).join("")}
+        </select></label>
+      <label class="feat-row"><span class="feat-label">Loja abre (hora)</span>
+        <input type="number" min="0" max="23" id="schedOpen" class="admin-input" style="width:88px" value="${attr(s.storeOpenHour)}"></label>
+      <label class="feat-row"><span class="feat-label">Loja fecha (hora, 1–24)</span>
+        <input type="number" min="1" max="24" id="schedClose" class="admin-input" style="width:88px" value="${attr(s.storeCloseHour)}"></label>
       <button class="admin-btn sm" data-action="save-schedule" type="button" style="margin-top:10px">Salvar horários</button>
       <div style="font-size:11px;color:var(--text-dim);margin-top:6px">Ex.: mude o corte de 13 para 18 para os pedidos abrirem às 18h. Vale para novos pedidos.</div>
     </div>`;
@@ -118,11 +127,20 @@ export function initFeatures() {
         orderCutoffHour: $("#schedCutoff")?.value,
         deliveryWindow: $("#schedWindow")?.value,
         mboxCutoffHour: $("#schedMbox")?.value,
+        mboxDeliveryDay: $("#schedMboxDay")?.value,
+        storeOpenHour: $("#schedOpen")?.value,
+        storeCloseHour: $("#schedClose")?.value,
       });
       toastSuccess(`Horários atualizados · corte às ${sched.orderCutoffHour}h`);
     } catch (e) {
-      toastError(e.message === "INVALID_HOUR" ? "Hora inválida (use 0–23)"
-        : e.message === "INVALID_WINDOW" ? "Informe a janela de entrega" : "Falha ao salvar horários");
+      const msg = {
+        INVALID_HOUR: "Hora inválida (use 0–23)",
+        INVALID_WINDOW: "Informe a janela de entrega",
+        INVALID_DAY: "Dia inválido",
+        INVALID_CLOSE: "Hora de fechar inválida (1–24)",
+        INVALID_RANGE: "Fechamento deve ser depois da abertura",
+      }[e.message] || "Falha ao salvar horários";
+      toastError(msg);
     }
   });
   // Liga/desliga a Versão Web/Desktop na hora (independe do botão Salvar).
