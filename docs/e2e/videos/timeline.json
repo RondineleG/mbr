@@ -1,0 +1,192 @@
+{
+  "pedido": "ORD-2606-B5ML",
+  "orderId": "cVjzziQC0nDbvBulKVt7",
+  "totalMs": 383072,
+  "videos": {
+    "cliente": "docs/e2e/videos/cliente.webm",
+    "admin": "docs/e2e/videos/admin.webm",
+    "motoboy": "docs/e2e/videos/motoboy.webm"
+  },
+  "steps": [
+    {
+      "label": "Cliente · login no app",
+      "ok": true,
+      "t": 1127
+    },
+    {
+      "label": "Cliente · abre o cardápio / Monte Seu Lanche",
+      "ok": true,
+      "t": 8364
+    },
+    {
+      "label": "Cliente · adiciona adicional (Extras) → vira criação",
+      "ok": true,
+      "t": 60168
+    },
+    {
+      "label": "Cliente · avança até a revisão e adiciona à sacola",
+      "ok": true,
+      "t": 62211
+    },
+    {
+      "label": "Cliente · abre a sacola",
+      "ok": true,
+      "t": 64594
+    },
+    {
+      "label": "Cliente · checkout + dados do cartão",
+      "ok": true,
+      "t": 91520
+    },
+    {
+      "label": "Cliente · confirma o pagamento (cria o pedido)",
+      "ok": true,
+      "t": 93705
+    },
+    {
+      "label": "Sistema · localiza o pedido recém-criado no Firestore",
+      "ok": true,
+      "t": 97968
+    },
+    {
+      "label": "Admin · login no painel",
+      "ok": true,
+      "t": 100052
+    },
+    {
+      "label": "Admin · vai para Pedidos e localiza o pedido",
+      "ok": true,
+      "t": 108835
+    },
+    {
+      "label": "Admin · status → Em análise",
+      "ok": true,
+      "t": 111519
+    },
+    {
+      "label": "Admin · status → Aprovado (aceita o pedido)",
+      "ok": true,
+      "t": 113730
+    },
+    {
+      "label": "Admin · atribui o motoboy ao pedido",
+      "ok": true,
+      "t": 116632
+    },
+    {
+      "label": "Admin · status → Em produção",
+      "ok": true,
+      "t": 119486
+    },
+    {
+      "label": "Admin · status → Enviado (saiu para entrega)",
+      "ok": true,
+      "t": 121522
+    },
+    {
+      "label": "Motoboy · login na Central de Entregas",
+      "ok": true,
+      "t": 125079
+    },
+    {
+      "label": "Motoboy · liga o rastreio 📡 (despacho de saída)",
+      "ok": true,
+      "t": 140020
+    },
+    {
+      "label": "Motoboy · mapa/rota do pedido ativo",
+      "ok": true,
+      "t": 145126
+    },
+    {
+      "label": "Motoboy · abre o chat e escreve ao cliente",
+      "ok": true,
+      "t": 148567
+    },
+    {
+      "label": "Cliente · vê o pedido a caminho (rastreio em tempo real)",
+      "ok": true,
+      "t": 153946
+    },
+    {
+      "label": "Cliente · abre o chat e recebe a mensagem do motoboy",
+      "ok": true,
+      "t": 185667
+    },
+    {
+      "label": "Cliente · responde no chat",
+      "ok": true,
+      "t": 188265
+    },
+    {
+      "label": "Motoboy · recebe a resposta do cliente no chat",
+      "ok": true,
+      "t": 191332
+    },
+    {
+      "label": "Cliente · fecha o chat do entregador e abre 'Falar com a loja'",
+      "ok": true,
+      "t": 193927
+    },
+    {
+      "label": "Admin · abre o chat com o cliente e recebe a mensagem",
+      "ok": true,
+      "t": 198455
+    },
+    {
+      "label": "Admin · responde ao cliente (plataforma)",
+      "ok": true,
+      "t": 201724
+    },
+    {
+      "label": "Cliente · recebe a resposta da plataforma",
+      "ok": true,
+      "t": 203557
+    },
+    {
+      "label": "Admin/Cliente · fecham os chats abertos",
+      "ok": true,
+      "t": 206035
+    },
+    {
+      "label": "Motoboy · fecha o chat do cliente e abre 'Suporte'",
+      "ok": true,
+      "t": 206914
+    },
+    {
+      "label": "Admin · abre o chat com o motoboy e recebe a mensagem",
+      "ok": true,
+      "t": 212461
+    },
+    {
+      "label": "Admin · responde ao motoboy (plataforma)",
+      "ok": true,
+      "t": 216271
+    },
+    {
+      "label": "Motoboy · recebe a resposta do suporte",
+      "ok": true,
+      "t": 218121
+    },
+    {
+      "label": "Todos · fecham os chats de plataforma",
+      "ok": true,
+      "t": 220398
+    },
+    {
+      "label": "Motoboy · fecha o chat e marca como Entregue",
+      "ok": true,
+      "t": 221389
+    },
+    {
+      "label": "Cliente · vê o pedido como Entregue",
+      "ok": true,
+      "t": 252107
+    },
+    {
+      "label": "Cliente · Clube → extrato de méritos creditados",
+      "ok": true,
+      "t": 307829
+    }
+  ]
+}

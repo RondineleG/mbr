@@ -1,8 +1,17 @@
 // Helpers compartilhados de login/navegação.
 export const ADMIN = { email: 'admin@mrbur.com', pass: 'admin123456' };
 
+// Contas de avaliação (clientes). agente1 é o candidato a motoboy no roteiro.
+export const AGENTE1 = { email: 'agente1@mrbur.com', pass: 'agente123456' };
+export const AGENTE2 = { email: 'agente2@mrbur.com', pass: 'agente123456' };
+
 /** Dispensa a animação de boot e loga no app principal. */
 export async function loginApp(page, creds = ADMIN) {
+  // Silencia o modal "📲 Instalar o MrBur" (pwaSuggest), que abre ~1,5s após o
+  // login e intercepta cliques no fluxo. Snooze por 24h via localStorage.
+  await page.addInitScript(() => {
+    try { localStorage.setItem('pwaModalSnoozeAt', String(Date.now())); } catch { /* sem storage */ }
+  });
   await page.goto('/');
   // Dispensa a cena de boot (botão PULAR), se presente.
   const skip = page.locator('#bootSkip');
@@ -25,13 +34,14 @@ export async function loginAdmin(page, creds = ADMIN) {
   await page.locator('#adminEmail').waitFor({ state: 'visible', timeout: 25000 });
   await page.fill('#adminEmail', creds.email);
   await page.fill('#adminPass', creds.pass);
-  // Re-tenta o clique de login (absorve falhas transitórias de signIn/Firestore no sandbox).
-  for (let attempt = 0; attempt < 3; attempt++) {
+  // Re-tenta o clique de login (absorve falhas transitórias de signIn/Firestore),
+  // mas com backoff p/ não disparar sign-ins em rajada e estressar o throttle.
+  for (let attempt = 0; attempt < 2; attempt++) {
     await page.click('#adminLoginBtn').catch(() => {});
     try {
       await page.locator('#adminShell').waitFor({ state: 'visible', timeout: 20000 });
       return;
-    } catch { /* tenta de novo */ }
+    } catch { await page.waitForTimeout(2500); }
   }
   await page.locator('#adminShell').waitFor({ state: 'visible', timeout: 20000 });
 }

@@ -15,18 +15,41 @@ export const CREDS = {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Abre um browser+contexto (geolocalização liberada p/ rastreio do motoboy). */
-export async function open() {
+/** Abre um browser+contexto (geolocalização liberada p/ rastreio do motoboy).
+ * Passe { video: "dir" } p/ gravar um .webm da sessão (1 vídeo por contexto). */
+export async function open({ video } = {}) {
   const browser = await chromium.launch({ headless: true });
   const ctx = await browser.newContext({
     viewport: { width: 1280, height: 900 },
     locale: "pt-BR",
     geolocation: { latitude: -22.7392, longitude: -47.3312 },
-    permissions: ["geolocation"],
+    permissions: ["geolocation", "notifications"],
+    ...(video ? { recordVideo: { dir: video, size: { width: 1280, height: 900 } } } : {}),
   });
   const page = await ctx.newPage();
   page.setDefaultTimeout(25000);
   return { browser, ctx, page };
+}
+
+/** Fecha o contexto e salva o vídeo com nome legível (<dir>/<name>.webm). */
+export async function closeVideo({ browser, ctx, page }, dir, name) {
+  let saved = null;
+  try {
+    const vid = page.video();
+    await ctx.close();           // finaliza/grava o arquivo de vídeo
+    if (vid) {
+      const src = await vid.path();
+      const dest = `${dir}/${name}.webm`;
+      fs.renameSync(src, dest);
+      saved = dest;
+      console.log(`  🎬 ${dest}`);
+    }
+  } catch (e) {
+    console.log(`  ⚠️  vídeo ${name}: ${e.message}`);
+  } finally {
+    await browser.close().catch(() => {});
+  }
+  return saved;
 }
 
 /** Captura numerada e sequencial dentro de uma pasta de persona. */

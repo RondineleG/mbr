@@ -1,0 +1,99 @@
+1
+00:00:03,127 --> 00:00:07,921
+Bem-vindo ao MrBur. Vamos acompanhar um pedido real, do toque ao entregue.
+
+2
+00:00:10,364 --> 00:00:16,296
+O cliente entra e vai direto ao Monte Seu Lanche. Em vez de pedir um lanche pronto, ele cria o seu.
+
+3
+00:00:37,000 --> 00:00:41,652
+Escolhe o pão, a carne e os ingredientes, montando o lanche do seu jeito.
+
+4
+00:01:02,168 --> 00:01:08,100
+Adiciona um toque especial, o bacon artesanal. Agora é uma criação dele, e vai pra sacola.
+
+5
+00:01:33,520 --> 00:01:39,208
+No checkout, informa o cartão e confirma o pagamento. Em segundos, o pedido está feito.
+
+6
+00:01:42,052 --> 00:01:46,692
+Do outro lado, na cozinha, o painel de Comando recebe o pedido na hora.
+
+7
+00:01:50,835 --> 00:01:54,268
+A plataforma encontra o pedido na lista, em tempo real.
+
+8
+00:01:55,730 --> 00:01:58,013
+Analisa e aprova o pedido.
+
+9
+00:01:58,632 --> 00:02:01,386
+Escolhe quem vai entregar e atribui o motoboy.
+
+10
+00:02:01,486 --> 00:02:03,293
+Manda para a produção.
+
+11
+00:02:03,522 --> 00:02:06,792
+E marca como enviado: o lanche saiu para a rua.
+
+12
+00:02:07,079 --> 00:02:11,975
+O entregador abre a Central de Entregas e o pedido já aparece na rota dele.
+
+13
+00:02:22,020 --> 00:02:26,196
+Ele ativa o rastreio, e o mapa desenha o caminho da loja até o cliente.
+
+14
+00:02:30,567 --> 00:02:33,617
+Pelo chat, avisa o cliente que já está a caminho.
+
+15
+00:02:35,946 --> 00:02:41,457
+No celular do cliente, o pedido aparece a caminho, com o entregador se movendo no mapa, ao vivo.
+
+16
+00:02:54,000 --> 00:02:57,886
+Tudo acontece em tempo real, sem precisar recarregar a tela.
+
+17
+00:03:07,667 --> 00:03:12,574
+A mensagem do entregador chega na hora, e o cliente responde sem sair do app.
+
+18
+00:03:15,927 --> 00:03:20,355
+Mas não é só com o entregador. Com uma dúvida, o cliente fala direto com a loja.
+
+19
+00:03:20,455 --> 00:03:23,981
+E o atendimento da plataforma responde, da cozinha.
+
+20
+00:03:28,914 --> 00:03:33,104
+Travou no portão do condomínio? O entregador aciona o suporte.
+
+21
+00:03:38,271 --> 00:03:43,289
+A plataforma resolve na hora. São três conversas independentes: cliente, entregador e loja.
+
+22
+00:03:43,389 --> 00:03:47,263
+Endereço alcançado: o entregador marca o pedido como entregue.
+
+23
+00:04:14,107 --> 00:04:17,911
+No app do cliente, o status muda sozinho, em tempo real.
+
+24
+00:04:44,000 --> 00:04:47,781
+Cada etapa ficou registrada, do recebido ao entregue.
+
+25
+00:05:09,829 --> 00:05:17,737
+E os méritos caem na conta: pela entrega, pela criação e pelas missões. Do primeiro toque ao último gole. MrBur.
