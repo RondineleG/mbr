@@ -20,6 +20,7 @@ export function setAdminProfile(p) { me = p; }
 // O admin só aceita/produz após o corte das 13h (até lá o cliente pode alterar/cancelar).
 function lockRemaining(o) {
   if (o.status !== "recebido") return 0;
+  if (o.clienteAprovado) return 0; // cliente aprovou → liberado para produzir na hora
   const limit = o.cancelavelAte || 0; // pedidos antigos sem corte → liberados
   return limit ? Math.max(0, limit - Date.now()) : 0;
 }
@@ -63,7 +64,7 @@ function row(o) {
   return `<div class="data-row">
     <div class="data-thumb" style="background:${color}1f;border-color:${color}55;color:${color};font-size:20px">${icon}</div>
     <div class="data-main">
-      <div class="data-name">#${(o.id || "").slice(-6).toUpperCase()} · ${escapeHtml(o.cliente || o.codename || "agente")}</div>
+      <div class="data-name">#${(o.id || "").slice(-6).toUpperCase()} · ${escapeHtml(o.cliente || o.codename || "agente")}${o.clienteAprovado ? ` <span class="status-lock" style="color:#3D7034;border-color:#3D703455" title="Cliente aprovou — liberado para produção">✅ aprovado</span>` : ""}</div>
       <div class="data-meta">${dateShort(o.criadoEm)} · ${qty} ${qty === 1 ? "item" : "itens"} · ${money(o.total)}</div>
     </div>
     <div class="data-actions">

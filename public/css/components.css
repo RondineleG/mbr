@@ -80,6 +80,9 @@
 .order-cancel-timer { font-size: 11px; color: var(--t2); font-family: 'Share Tech Mono', monospace; }
 .order-cancel-timer b { color: var(--er); }
 .order-cancel-locked { font-size: 11px; color: var(--t3); font-family: 'Share Tech Mono', monospace; }
+.order-approve-btn { padding: 9px 14px; font-size: 12px; font-weight: 700; letter-spacing: .5px; border: 1px solid var(--ok); border-radius: 8px; background: rgba(79,174,116,.12); color: var(--ok); font-family: 'Share Tech Mono', monospace; cursor: pointer; transition: all var(--dur) var(--ease); }
+.order-approve-btn:hover { background: var(--ok); color: #fff; }
+.order-approve-btn:disabled { opacity: .5; cursor: default; }
 
 /* ── Order timeline ── */
 .order-timeline { margin-top: 12px; padding: 12px; background: var(--bg3); border-radius: 8px; }

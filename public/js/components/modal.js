@@ -105,7 +105,6 @@ function close(value) {
 /** Campo de texto premium. Resolve com a string (ou null se cancelado). */
 export function modalPrompt({ title, label, value = "", placeholder = "", type = "text" }) {
   return new Promise((resolve) => {
-    resolver = resolve;
     open(`
       <div class="modal-title">${escapeHtml(title)}</div>
       ${label ? `<div class="modal-label">${escapeHtml(label)}</div>` : ""}
@@ -114,6 +113,7 @@ export function modalPrompt({ title, label, value = "", placeholder = "", type =
         <button class="modal-btn ghost" data-modal="cancel">Cancelar</button>
         <button class="modal-btn primary" data-modal="ok">Salvar</button>
       </div>`, null);
+    resolver = resolve; // após open() (ver nota em modalConfirm)
     const input = overlay.querySelector("#__modalInput");
     input.focus();
     input.select();
@@ -126,7 +126,9 @@ export function modalPrompt({ title, label, value = "", placeholder = "", type =
 /** Confirmação. Resolve true/false. */
 export function modalConfirm({ title, message, confirmText = "Confirmar", danger = false }) {
   return new Promise((resolve) => {
-    resolver = resolve;
+    // open() ANTES de setar o resolver: a limpeza de re-entrância dentro de open()
+    // encerra o modal anterior; se setássemos o resolver antes, open() o mataria
+    // (resolveria esta Promise com cancelValue) e o confirmar não faria nada.
     open(`
       <div class="modal-title">${escapeHtml(title)}</div>
       ${message ? `<div class="modal-message">${escapeHtml(message)}</div>` : ""}
@@ -134,6 +136,7 @@ export function modalConfirm({ title, message, confirmText = "Confirmar", danger
         <button class="modal-btn ghost" data-modal="cancel">Cancelar</button>
         <button class="modal-btn ${danger ? "danger" : "primary"}" data-modal="ok">${escapeHtml(confirmText)}</button>
       </div>`, false);
+    resolver = resolve;
     overlay.querySelector('[data-modal="ok"]').onclick = () => close(true);
     overlay.querySelector('[data-modal="cancel"]').onclick = () => close(false);
   });

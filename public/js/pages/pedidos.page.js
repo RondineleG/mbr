@@ -6,14 +6,14 @@ import { setHtml, escapeHtml, onAction } from "../utils/dom.js";
 import { toast, toastSuccess, toastError } from "../components/toast.js";
 import * as store from "../app/state.js";
 import { money, dateShort, toMillis } from "../utils/format.js";
-import { ORDER_STATUS_LABELS, cancelOrder, canCancelOrder } from "../services/order.service.js";
+import { ORDER_STATUS_LABELS, cancelOrder, canCancelOrder, approveOrder } from "../services/order.service.js";
 import { getOrderStats } from "../services/order.service.js";
 import { emptyState, withEmpty } from "../utils/loading.js";
 import { navigate } from "../app/router.js";
 import { modalConfirm } from "../components/modal.js";
 import { deliveryWindow } from "../services/schedule.service.js";
 import { loadLeaflet } from "../utils/leaflet-loader.js";
-import { haversineKm } from "../utils/geo.js";
+import { haversineKm, fetchRoadRoute } from "../utils/geo.js";
 
 // Velocidade urbana média (km/h) para estimar o tempo de chegada.
 const AVG_SPEED_KMH = 22;
@@ -59,9 +59,16 @@ async function mountTrackingMaps(orders) {
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 }).addTo(map);
     L.marker(dest, { icon: pin("🏠", "#1a1206") }).addTo(map).bindPopup("Seu endereço");
     L.marker(moto, { icon: pin("🛵", "#C9A84C") }).addTo(map).bindPopup("Entregador");
-    L.polyline([moto, dest], { color: "#C9A84C", weight: 3, opacity: .9, dashArray: "6 7" }).addTo(map);
+    // Linha reta imediata (fallback); trocada pela rota por ruas ao carregar.
+    const straight = L.polyline([moto, dest], { color: "#C9A84C", weight: 3, opacity: .45, dashArray: "6 7" }).addTo(map);
     map.fitBounds(L.latLngBounds([moto, dest]).pad(0.4));
     setTimeout(() => map.invalidateSize(), 120);
+    fetchRoadRoute([{ lat: moto[0], lng: moto[1] }, { lat: dest[0], lng: dest[1] }]).then((route) => {
+      if (!route || _trackMaps[o.id] !== map) return; // mapa recriado → descarta
+      straight.remove();
+      L.polyline(route.coords, { color: "#C9A84C", weight: 4, opacity: .9 }).addTo(map);
+      map.fitBounds(L.latLngBounds(route.coords).pad(0.3));
+    });
     _trackMaps[o.id] = map;
   });
 }
@@ -157,11 +164,17 @@ function orderCard(o) {
   // pedido — cancelavelAte —, então reflete o horário configurado quando foi criado).
   const podeCancelar = canCancelOrder(o);
   const limiteHora = o.cancelavelAte ? new Date(o.cancelavelAte).getHours() : "";
-  const cancelBlock = podeCancelar ? `
+  // Aprovar agora: o cliente abre mão do prazo de alteração e libera a cozinha
+  // para produzir já. Indisponível para MBox (que segue o agendamento-surpresa).
+  const podeAprovar = podeCancelar && !mboxItem;
+  const cancelBlock = o.clienteAprovado ? `
+    <div class="order-cancel"><span class="order-cancel-locked" style="color:var(--ok)">✅ Pedido aprovado · liberado para produção</span></div>`
+    : podeCancelar ? `
     <div class="order-cancel">
+      ${podeAprovar ? `<button class="order-approve-btn" data-action="approve-order" data-order-id="${o.id}">✓ Aprovar e produzir agora</button>` : ""}
       <button class="order-cancel-btn" data-action="cancel-order" data-order-id="${o.id}">✕ Cancelar</button>
       <button class="order-repeat-btn" data-action="edit-order" data-order-id="${o.id}" style="width:auto;padding:9px 14px">✎ Alterar</button>
-      <span class="order-cancel-timer">Até <b>${limiteHora}h de ${diaLabel(o.cancelavelAte)}</b></span>
+      <span class="order-cancel-timer">Ou altere/cancele até <b>${limiteHora}h de ${diaLabel(o.cancelavelAte)}</b></span>
     </div>` : (o.status !== "cancelado" && o.status !== "entregue" ? `
     <div class="order-cancel"><span class="order-cancel-locked">🔒 Prazo encerrado · pedido em produção (tudo fresco do dia)</span></div>` : "");
 
@@ -274,6 +287,21 @@ export function initPedidos() {
     btn.disabled = true;
     try { await cancelOrder(order.id); toast("success", "✅", "Pedido cancelado"); }
     catch (err) { console.error("Erro ao cancelar:", err); toastError("Não foi possível cancelar"); btn.disabled = false; }
+  });
+
+  // Aprovar pedido: encerra a janela de alteração e libera o admin a produzir já.
+  onAction("approve-order", async (el) => {
+    const order = (store.get("orders") || []).find((o) => o.id === el.dataset.orderId);
+    if (!order || !canCancelOrder(order)) { toastError("Prazo encerrado — o pedido já está em produção"); renderPedidos(); return; }
+    const ok = await modalConfirm({
+      title: "Aprovar pedido",
+      message: "Ao aprovar, a cozinha já começa a produzir e você não poderá mais alterar nem cancelar. Confirmar?",
+      confirmText: "Aprovar pedido",
+    });
+    if (!ok) return;
+    toast("info", "⏳", "Aprovando…");
+    try { await approveOrder(order.id); toast("success", "✅", "Pedido aprovado — em produção!"); }
+    catch (err) { console.error("Erro ao aprovar:", err); toastError("Falha ao aprovar: " + (err?.message || err)); }
   });
 
   // Alterar pedido: reabre os itens na sacola; o pagamento do novo total é

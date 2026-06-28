@@ -43,6 +43,7 @@ export function productionInfo(now = Date.now()) {
 /** O cliente ainda pode alterar/cancelar este pedido? (antes do corte das 13h) */
 export function canCancelOrder(order, now = Date.now()) {
   if (!order || order.status === "cancelado" || order.status === "entregue") return false;
+  if (order.clienteAprovado) return false; // cliente já liberou para produção
   const limit = order.cancelavelAte || 0;
   return limit ? now < limit : false;
 }
@@ -290,6 +291,31 @@ export async function addObservation(orderId, observacao) {
  */
 export async function cancelOrder(orderId, motivo = "") {
   return updateStatus(orderId, ORDER_STATUS.CANCELLED, motivo || "Pedido cancelado");
+}
+
+/**
+ * O cliente aprova o próprio pedido antes do corte: encerra a janela de
+ * alteração/cancelamento e libera o admin para iniciar a produção na hora
+ * (sem esperar as 13h). Mantém o status em "recebido" — quem produz é o admin.
+ */
+export async function approveOrder(orderId) {
+  const order = await getDoc(`orders/${orderId}`);
+  if (!order) throw new Error("Pedido não encontrado");
+  if (order.clienteAprovado) return; // idempotente
+  // Avança o status para "aprovado": some o cadeado das 13h no admin, aparece na
+  // timeline do cliente e o pedido fica pronto para o admin iniciar a produção.
+  const timelineEntry = {
+    status: ORDER_STATUS.APPROVED,
+    timestamp: Date.now(),
+    observacao: "Cliente aprovou o pedido — liberado para produção",
+  };
+  await updateDoc(`orders/${orderId}`, {
+    status: ORDER_STATUS.APPROVED,
+    clienteAprovado: true,
+    aprovadoEm: Date.now(),
+    timeline: [...(order.timeline || []), timelineEntry],
+    atualizadoEm: Date.now(),
+  });
 }
 
 /**
