@@ -72,6 +72,48 @@ export function tspNearestNeighbor(origin, points) {
   return { order, legs, totalKm: Math.round(total * 10) / 10 };
 }
 
+// Cache de rotas por ruas (chave = waypoints arredondados). Guarda a PROMISE
+// para dedupar chamadas concorrentes; falhas não ficam em cache (permite retry).
+const _roadCache = new Map();
+
+/**
+ * Rota seguindo as ruas (OSRM público) passando pelos waypoints na ordem dada.
+ * @param {{lat:number,lng:number}[]} waypoints  origem → paradas → destino.
+ * @returns {Promise<{coords:[number,number][], km:number}|null>}
+ *   coords em [lat,lng] para o Leaflet; null se o serviço falhar (use linha reta).
+ */
+export function fetchRoadRoute(waypoints) {
+  const valid = (waypoints || []).filter((p) => p && p.lat != null && p.lng != null);
+  // Remove waypoints repetidos em sequência (ex.: vários pedidos no MESMO endereço):
+  // coordenadas idênticas fazem o OSRM inserir retornos/laços e inflam a distância.
+  const pts = valid.filter((p, i) => {
+    const prev = valid[i - 1];
+    return !prev || Math.abs(prev.lat - p.lat) > 1e-5 || Math.abs(prev.lng - p.lng) > 1e-5;
+  });
+  if (pts.length < 2) return Promise.resolve(null);
+  const key = pts.map((p) => `${p.lat.toFixed(5)},${p.lng.toFixed(5)}`).join(";");
+  if (_roadCache.has(key)) return _roadCache.get(key);
+  const coordStr = pts.map((p) => `${p.lng},${p.lat}`).join(";");
+  const url = `https://router.project-osrm.org/route/v1/driving/${coordStr}?overview=full&geometries=geojson`;
+  const p = (async () => {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("OSRM " + res.status);
+      const data = await res.json();
+      const route = data?.routes?.[0];
+      const line = route?.geometry?.coordinates;
+      if (!line?.length) throw new Error("sem rota");
+      return { coords: line.map(([lng, lat]) => [lat, lng]), km: Math.round((route.distance / 1000) * 10) / 10 };
+    } catch (err) {
+      console.warn("[geo] rota por ruas indisponível, usando linha reta:", err?.message || err);
+      _roadCache.delete(key); // não cacheia falha → tenta de novo no próximo render
+      return null;
+    }
+  })();
+  _roadCache.set(key, p);
+  return p;
+}
+
 /** URL de navegação (Google Maps) origem → paradas (na ordem) → origem. */
 export function googleMapsRouteUrl(origin, orderedPoints) {
   const o = `${origin.lat},${origin.lng}`;

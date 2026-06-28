@@ -13,7 +13,7 @@ import { syncChatNotifiers, onUnreadChange, totalUnread } from "../components/ch
 import { modalConfirm } from "../components/modal.js";
 import { money } from "../utils/format.js";
 import { DELIVERY_MERITOS, DELIVERY_FEE, STORE } from "../utils/constants.js";
-import { tspNearestNeighbor } from "../utils/geo.js";
+import { tspNearestNeighbor, fetchRoadRoute } from "../utils/geo.js";
 import { geocode } from "../services/geocode.service.js";
 import { toast, toastError } from "../components/toast.js";
 
@@ -92,8 +92,9 @@ function renderRoute(active) {
       <small>${escapeHtml(addr || "—")} · ${legs[i]} km</small></div>
       <button class="admin-btn sm" data-action="moto-delivered" data-id="${o.id}">✅ Entregue</button></div>`;
   }).join("");
+  const totalTxt = (km) => `📍 ${pts.length} entrega(s) · <b>${km} km</b> no total (ida e volta à sede) · veja a rota no mapa acima ↑`;
   setHtml("motoRouteList",
-    `<div class="moto-route-total">📍 ${pts.length} entrega(s) · <b>${totalKm} km</b> no total (ida e volta à sede) · veja a rota no mapa acima ↑</div>` +
+    `<div class="moto-route-total" id="motoRouteTotal">${totalTxt(totalKm)}</div>` +
     lista);
 
   // Mapa Leaflet.
@@ -112,9 +113,22 @@ function renderRoute(active) {
     L.marker([p.lat, p.lng], { icon: pin(i + 1, "") }).addTo(LAYER).bindPopup(`${i + 1}. ${p.o.cliente || ""}`);
   });
   path.push([STORE.lat, STORE.lng]);
-  L.polyline(path, { color: "#C9A84C", weight: 3, opacity: .9 }).addTo(LAYER);
+  // Linha reta imediata (fallback) — substituída pela rota por ruas ao carregar.
+  const straight = L.polyline(path, { color: "#C9A84C", weight: 3, opacity: .45, dashArray: "4 6" }).addTo(LAYER);
   MAP.fitBounds(L.latLngBounds(path).pad(0.25));
   setTimeout(() => MAP.invalidateSize(), 150);
+
+  // Rota real seguindo as ruas (OSRM): sede → paradas (na ordem) → sede.
+  const myLayer = LAYER; // se um novo render trocar a camada, descarta este resultado
+  const waypoints = [STORE, ...order.map((idx) => ({ lat: pts[idx].lat, lng: pts[idx].lng })), STORE];
+  fetchRoadRoute(waypoints).then((route) => {
+    if (!route || LAYER !== myLayer) return; // falhou → mantém a linha reta
+    straight.remove();
+    L.polyline(route.coords, { color: "#C9A84C", weight: 4, opacity: .9 }).addTo(LAYER);
+    MAP.fitBounds(L.latLngBounds(route.coords).pad(0.2));
+    const totalEl = document.getElementById("motoRouteTotal");
+    if (totalEl) totalEl.innerHTML = totalTxt(route.km);
+  });
 }
 
 // Entrega concluída credita méritos ao MOTOBOY (missão especial), uma única vez.
