@@ -41,6 +41,16 @@ export function randomCodename() {
   return `${n.w}-${e[n.g]}`;
 }
 
+/** Normaliza um codinome para chave de busca/login: minúsculo, sem acento,
+ *  espaços/símbolos viram "-". "Falcão Dourado" → "falcao-dourado". */
+export function codenameSlug(s) {
+  return String(s || "")
+    .normalize("NFD").replace(/[̀-ͯ]/g, "") // remove acentos
+    .toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-")                       // não-alfanumérico → "-"
+    .replace(/^-+|-+$/g, "");                          // tira "-" das pontas
+}
+
 /** "falcao-dourado" → "FD" (iniciais para o avatar). */
 export function codenameInitials(codename) {
   if (!codename) return "??";

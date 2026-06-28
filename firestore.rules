@@ -23,6 +23,17 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Lookup codinome→e-mail (login por codinome). Resolvível por ID exato (get),
+    // mas NÃO enumerável (list negado) — não dá pra varrer todos os e-mails.
+    // Cada um só grava o mapa que aponta para o PRÓPRIO e-mail.
+    match /codenames/{slug} {
+      allow get: if true;
+      allow list: if false;
+      allow create, update: if isAdmin()
+        || (signedIn() && request.resource.data.email == request.auth.token.email);
+      allow delete: if isAdmin();
+    }
+
     // Config do app (ex.: versão oficial p/ forçar atualização): leitura pública, escrita admin.
     match /config/{doc} { allow read: if true; allow write: if isAdmin(); }
 

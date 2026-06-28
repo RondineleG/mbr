@@ -9,6 +9,7 @@ import { setInviteContext } from "./onboarding.page.js";
 import { modalPrompt } from "../components/modal.js";
 import { toastSuccess } from "../components/toast.js";
 import { maskInvite, isValidInvite } from "../utils/format.js";
+import { resolveCodename } from "../services/user.service.js";
 
 let mode = "agent";
 
@@ -31,11 +32,17 @@ function switchTab(next) {
 async function doLogin(btn) {
   setError("");
   if (mode === "agent") {
-    const email = $("#loginEmail").value.trim();
+    const id = $("#loginEmail").value.trim();
     const pass = $("#loginPass").value;
-    if (!email || !pass) return setError("Preencha e-mail e senha");
+    if (!id || !pass) return setError("Preencha e-mail/codinome e senha");
     btn.disabled = true;
     try {
+      // Campo único: com "@" é e-mail; senão é codinome → resolve para o e-mail.
+      let email = id;
+      if (!id.includes("@")) {
+        email = await resolveCodename(id);
+        if (!email) return setError("Codinome não encontrado — confira ou entre com seu e-mail");
+      }
       await auth.signIn(email, pass); // session.js reage e entra no app
     } catch (err) {
       setError(auth.authErrorMessage(err));
@@ -71,7 +78,8 @@ async function forgotPassword() {
     label: "E-MAIL DO AGENTE",
     type: "email",
     placeholder: "seu@email.com",
-    value: $("#loginEmail")?.value || "",
+    // Só pré-preenche se já for um e-mail (o campo de login também aceita codinome).
+    value: ($("#loginEmail")?.value || "").includes("@") ? $("#loginEmail").value.trim() : "",
   });
   if (!email) return;
   try {

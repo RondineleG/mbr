@@ -7,7 +7,7 @@ import { $, $$, onAction, show, escapeHtml } from "../utils/dom.js";
 import { randomCodename, maskPhone, maskCep } from "../utils/format.js";
 import * as auth from "../firebase/auth.service.js";
 import { checkInvite, consumeInvite } from "../services/invite.service.js";
-import { createProfile, getProfile } from "../services/user.service.js";
+import { createProfile, getProfile, codenameTaken, ensureCodenameLookup } from "../services/user.service.js";
 import { updateMissionProgress } from "../services/mission.service.js";
 import { enterApp } from "../app/session.js";
 import { toastSuccess } from "../components/toast.js";
@@ -130,6 +130,13 @@ async function finish() {
       return;
     }
 
+    // Unicidade do codinome (necessária p/ login por codinome resolver 1 conta).
+    if (await codenameTaken(codename)) {
+      step = 0; updateUI();
+      setError("Esse codinome já está em uso — gere outro (🎲 GERAR).");
+      return;
+    }
+
     const user = await auth.signUp(email, password);
     const invite = await consumeInvite(inviteCode, user.uid);
     
@@ -181,6 +188,9 @@ async function finish() {
       // Não bloquear o cadastro se a missão falhar
     }
     
+    // Cria o lookup codinome→e-mail (habilita login/recuperação por codinome).
+    await ensureCodenameLookup({ uid: user.uid, codename, email });
+
     await enterApp(profile);
     toastSuccess("Bem-vindo à Ordem, " + codename + "!");
   } catch (err) {

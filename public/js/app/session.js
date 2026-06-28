@@ -308,6 +308,8 @@ export async function enterApp(profile) {
   renderTopbar();
   navigate("home");
   userSvc.touchLogin(profile.uid);
+  // Backfill do lookup de codinome (contas antigas passam a poder logar por codinome).
+  userSvc.ensureCodenameLookup({ uid: profile.uid, codename: profile.codename, email: profile.email });
 
   // Pós-login: o botão "Instalar app" fica sempre acessível no navegador
   // (oculto só quando já está rodando como app instalado). E sugere instalar/abrir.

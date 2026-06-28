@@ -2,8 +2,39 @@
    USER SERVICE — perfil do agente (collection users)
    ═══════════════════════════════════════════════════════════════ */
 import { getDoc, setDoc, updateDoc, getCollection, watchDoc, tsNow } from "../firebase/db.service.js";
+import { codenameSlug } from "../utils/format.js";
 
 const path = (uid) => `users/${uid}`;
+const cnPath = (slug) => `codenames/${slug}`;
+
+/** Resolve um codinome → e-mail da conta (lookup público, lido só por ID).
+ *  Usado no login/recuperação por codinome. Retorna null se não encontrar. */
+export async function resolveCodename(codename) {
+  const slug = codenameSlug(codename);
+  if (!slug) return null;
+  try { const doc = await getDoc(cnPath(slug)); return doc?.email || null; }
+  catch { return null; }
+}
+
+/** Codinome já está em uso? (garante unicidade no cadastro, p/ login por codinome). */
+export async function codenameTaken(codename) {
+  const slug = codenameSlug(codename);
+  if (!slug) return false;
+  try { return !!(await getDoc(cnPath(slug))); } catch { return false; }
+}
+
+/** Garante o doc de lookup codinome→e-mail (criado no cadastro; backfill no login).
+ *  Não sobrescreve o mapa de OUTRO agente — evita "roubo" de codinome. */
+export async function ensureCodenameLookup({ uid, codename, email } = {}) {
+  const slug = codenameSlug(codename);
+  if (!slug || !email || !uid) return;
+  try {
+    const existing = await getDoc(cnPath(slug));
+    if (existing && existing.uid && existing.uid !== uid) return; // já é de outro agente
+    if (existing && existing.uid === uid && existing.email === email) return; // já atualizado
+    await setDoc(cnPath(slug), { codename: String(codename || ""), email, uid });
+  } catch (e) { console.warn("[user] lookup de codinome adiado:", e?.message || e); }
+}
 
 export const getProfile = (uid) => getDoc(path(uid));
 export const watchProfile = (uid, cb) => watchDoc(path(uid), cb);
