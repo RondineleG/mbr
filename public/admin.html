@@ -56,29 +56,38 @@
   <div class="admin-sidebar-overlay" id="adminSidebarOverlay" data-action="admin-toggle-sidebar"></div>
 
   <aside class="admin-side" id="adminSidebar">
-    <div class="admin-brand">
-      <span class="admin-brand-logo">🔥</span>
-      <div><div class="admin-brand-text">MRBUR</div><div class="admin-brand-sub">COMANDO</div></div>
-    </div>
-    <button class="admin-navbtn active" data-action="admin-nav" data-section="dashboard"><span class="admin-navbtn-icon">📊</span> Dashboard</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="relatorios"><span class="admin-navbtn-icon">📈</span> Relatórios</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="pedidos"><span class="admin-navbtn-icon">📥</span> Pedidos</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="produtos"><span class="admin-navbtn-icon">🍔</span> Produtos</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="montar"><span class="admin-navbtn-icon">🔧</span> Monte Seu Lanche</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="lanchedia"><span class="admin-navbtn-icon">📅</span> Lanche do Dia</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="mbox"><span class="admin-navbtn-icon">📦</span> MBox</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="clientes"><span class="admin-navbtn-icon">🕵️</span> Agentes</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="missoes"><span class="admin-navbtn-icon">🎯</span> Missões</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="recompensas"><span class="admin-navbtn-icon">🎁</span> Recompensas</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="convites"><span class="admin-navbtn-icon">🎫</span> Convites</button>
-    <button class="admin-navbtn" data-action="admin-nav" data-section="acessos"><span class="admin-navbtn-icon">🔐</span> Funcionalidades</button>
-    <div class="admin-side-foot">
-      <div style="font-size:10px;color:var(--text-dim);font-family:var(--f-mono);padding:8px;letter-spacing:1px" id="adminWho">—</div>
-      <button class="admin-navbtn" data-action="admin-theme-toggle" style="margin-bottom:8px">
-        <span class="admin-navbtn-icon" id="adminThemeIcon">🌙</span>
-        <span id="adminThemeLabel">Modo Escuro</span>
+    <div class="admin-side-top">
+      <div class="admin-brand">
+        <span class="admin-brand-logo">🔥</span>
+        <div><div class="admin-brand-text">MRBUR</div><div class="admin-brand-sub">COMANDO</div></div>
+      </div>
+      <button class="admin-collapse-btn" data-action="admin-collapse-toggle" title="Recolher menu" aria-label="Recolher menu">
+        <span class="admin-collapse-icon">«</span>
       </button>
-      <button class="admin-logout" data-action="admin-logout">🚪 SAIR</button>
+    </div>
+    <nav class="admin-nav">
+      <button class="admin-navbtn active" data-action="admin-nav" data-section="dashboard" title="Dashboard"><span class="admin-navbtn-icon">📊</span><span class="admin-navbtn-label">Dashboard</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="relatorios" title="Relatórios"><span class="admin-navbtn-icon">📈</span><span class="admin-navbtn-label">Relatórios</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="pedidos" title="Pedidos"><span class="admin-navbtn-icon">📥</span><span class="admin-navbtn-label">Pedidos</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="produtos" title="Produtos"><span class="admin-navbtn-icon">🍔</span><span class="admin-navbtn-label">Produtos</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="montar" title="Monte Seu Lanche"><span class="admin-navbtn-icon">🔧</span><span class="admin-navbtn-label">Monte Seu Lanche</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="lanchedia" title="Lanche do Dia"><span class="admin-navbtn-icon">📅</span><span class="admin-navbtn-label">Lanche do Dia</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="mbox" title="MBox"><span class="admin-navbtn-icon">📦</span><span class="admin-navbtn-label">MBox</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="clientes" title="Agentes"><span class="admin-navbtn-icon">🕵️</span><span class="admin-navbtn-label">Agentes</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="missoes" title="Missões"><span class="admin-navbtn-icon">🎯</span><span class="admin-navbtn-label">Missões</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="recompensas" title="Recompensas"><span class="admin-navbtn-icon">🎁</span><span class="admin-navbtn-label">Recompensas</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="convites" title="Convites"><span class="admin-navbtn-icon">🎫</span><span class="admin-navbtn-label">Convites</span></button>
+      <button class="admin-navbtn" data-action="admin-nav" data-section="acessos" title="Funcionalidades"><span class="admin-navbtn-icon">🔐</span><span class="admin-navbtn-label">Funcionalidades</span></button>
+    </nav>
+    <div class="admin-side-foot">
+      <div class="admin-who" id="adminWho">—</div>
+      <button class="admin-navbtn" data-action="admin-theme-toggle" title="Alternar tema">
+        <span class="admin-navbtn-icon" id="adminThemeIcon">🌙</span>
+        <span class="admin-navbtn-label" id="adminThemeLabel">Modo Escuro</span>
+      </button>
+      <button class="admin-logout" data-action="admin-logout" title="Sair">
+        <span class="admin-navbtn-icon">🚪</span><span class="admin-navbtn-label">SAIR</span>
+      </button>
     </div>
   </aside>
 

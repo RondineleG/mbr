@@ -10,15 +10,39 @@ body.admin { max-width: none; margin: 0; }
 .admin-side {
   width: 280px; flex-shrink: 0; padding: 24px 16px;
   border-right: 1px solid var(--border); background: var(--bg-card);
-  display: flex; flex-direction: column; gap: 6px;
+  display: flex; flex-direction: column; gap: 0; overflow: hidden;
   position: fixed; top: 0; left: 0; bottom: 0;
   height: 100vh; z-index: 1001;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .admin-side.open {
   transform: translateX(0);
 }
+
+/* Topo da sidebar: marca + botão de recolher */
+.admin-side-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+
+/* Lista de navegação rola sozinha; topo e rodapé ficam fixos */
+.admin-nav { display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding-right: 2px; }
+.admin-nav::-webkit-scrollbar { width: 6px; }
+.admin-nav::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.admin-nav { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+
+.admin-who { font-size: 10px; color: var(--text-dim); font-family: var(--f-mono); padding: 8px; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Botão de recolher/expandir (só desktop) */
+.admin-collapse-btn {
+  display: none; width: 34px; height: 34px; flex-shrink: 0;
+  align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text-muted); cursor: pointer;
+  font-size: 18px; line-height: 1; transition: all var(--transition);
+}
+.admin-collapse-btn:hover { border-color: var(--gold-border); color: var(--gold); }
+.admin-collapse-icon { display: inline-block; transition: transform 0.25s ease; }
 
 /* Mobile Header */
 .admin-mobile-header {
@@ -79,9 +103,10 @@ body.admin { max-width: none; margin: 0; }
 }
 .admin-navbtn:hover { background: var(--gold-glow); color: var(--text); }
 .admin-navbtn.active { background: var(--gold-glow); border-color: var(--gold-border); color: var(--gold); }
-.admin-navbtn-icon { font-size: 18px; width: 22px; text-align: center; }
-.admin-side-foot { margin-top: auto; }
-.admin-logout { width: 100%; padding: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--er-line); border-radius: var(--radius-sm); background: var(--er-soft); color: var(--danger); font-family: var(--f-mono); transition: all var(--transition); }
+.admin-navbtn-icon { font-size: 18px; width: 22px; text-align: center; flex-shrink: 0; }
+.admin-navbtn-label { white-space: nowrap; overflow: hidden; }
+.admin-side-foot { flex-shrink: 0; padding-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.admin-logout { width: 100%; padding: 12px; font-size: 11px; font-weight: 700; letter-spacing: 1px; border: 1px solid var(--er-line); border-radius: var(--radius-sm); background: var(--er-soft); color: var(--danger); font-family: var(--f-mono); transition: all var(--transition); display: flex; align-items: center; justify-content: center; gap: 12px; }
 .admin-logout:hover { background: var(--danger); color: #fff; }
 
 /* Main */
@@ -216,21 +241,36 @@ body.admin { max-width: none; margin: 0; }
     position: sticky;
     transform: translateX(0);
   }
-  
+
   /* Desktop: Hide mobile header */
   .admin-mobile-header {
     display: none;
   }
-  
+
   /* Desktop: Hide overlay */
   .admin-sidebar-overlay {
     display: none !important;
   }
-  
+
   /* Desktop: Main content has margin for sidebar */
   .admin-main {
     margin-left: 0;
   }
+
+  /* Desktop: botão de recolher disponível */
+  .admin-collapse-btn { display: flex; }
+
+  /* ── Sidebar RECOLHIDA (só ícones) ── */
+  .admin-side.collapsed { width: 76px; padding: 24px 10px; }
+  .admin-side.collapsed .admin-side-top { flex-direction: column; gap: 12px; }
+  .admin-side.collapsed .admin-brand { justify-content: center; margin-bottom: 4px; padding: 0; }
+  .admin-side.collapsed .admin-brand-text,
+  .admin-side.collapsed .admin-brand-sub,
+  .admin-side.collapsed .admin-navbtn-label,
+  .admin-side.collapsed .admin-who { display: none; }
+  .admin-side.collapsed .admin-navbtn,
+  .admin-side.collapsed .admin-logout { justify-content: center; gap: 0; padding-left: 0; padding-right: 0; }
+  .admin-side.collapsed .admin-collapse-icon { transform: rotate(180deg); }
 }
 
 /* Admin Item Layout */

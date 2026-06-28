@@ -81,6 +81,25 @@ function closeAdminSidebar() {
   document.getElementById("adminSidebarOverlay")?.classList.remove("open");
 }
 
+/* ── Sidebar recolhível (desktop): só ícones, expande ao clicar ── */
+let sidebarCollapsed = localStorage.getItem("admin-sidebar-collapsed") === "1";
+
+function applySidebarCollapsed() {
+  const sidebar = document.getElementById("adminSidebar");
+  const btn = document.querySelector("[data-action='admin-collapse-toggle']");
+  if (sidebar) sidebar.classList.toggle("collapsed", sidebarCollapsed);
+  if (btn) {
+    btn.title = sidebarCollapsed ? "Expandir menu" : "Recolher menu";
+    btn.setAttribute("aria-label", btn.title);
+  }
+}
+
+function toggleSidebarCollapsed() {
+  sidebarCollapsed = !sidebarCollapsed;
+  localStorage.setItem("admin-sidebar-collapsed", sidebarCollapsed ? "1" : "0");
+  applySidebarCollapsed();
+}
+
 function enterAdmin(profile) {
   const loading = $("#adminLoading"); if (loading) loading.style.display = "none";
   $("#adminGate").classList.add("hidden");
@@ -119,6 +138,8 @@ async function boot() {
 
   onAction("admin-nav", (el) => navigate(el.dataset.section));
   onAction("admin-toggle-sidebar", () => toggleAdminSidebar());
+  onAction("admin-collapse-toggle", () => toggleSidebarCollapsed());
+  applySidebarCollapsed();
   
   onAction("admin-login", () => doAdminLogin());
   onAction("admin-logout", async () => {
